@@ -1,0 +1,20 @@
+:root {
+  --primary-color: #0070f3;
+  --secondary-color: #7928ca;
+  --success-color: #0070f3;
+  --error-color: #e00;
+  --warning-color: #f5a623;
+  --text-primary: #000;
+  --text-secondary: #666;
+  --background: #fff;
+  --border-color: #eaeaea;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-primary: #fff;
+    --text-secondary: #999;
+    --background: #000;
+    --border-color: #333;
+  }
+}
