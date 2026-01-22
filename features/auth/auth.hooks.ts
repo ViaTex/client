@@ -3,41 +3,39 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { authService } from './auth.service';
 import type { LoginCredentials, RegisterData } from './auth.types';
-import { useAuthStore } from '@/store/auth.store';
+import { useAuth } from '@/lib/auth.context';
 
 export const useLogin = () => {
-  const setUser = useAuthStore((state) => state.setUser);
+  const { login } = useAuth();
   
   return useMutation({
-    mutationFn: (credentials: LoginCredentials) => authService.login(credentials),
-    onSuccess: (data) => {
-      setUser(data.user);
-      // Store token
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('token', data.token);
-      }
+    mutationFn: async (credentials: LoginCredentials) => {
+      const result = await authService.login(credentials);
+      await login(credentials); // Use context login method
+      return result;
     },
   });
 };
 
 export const useRegister = () => {
-  const setUser = useAuthStore((state) => state.setUser);
+  const { signup } = useAuth();
   
   return useMutation({
-    mutationFn: (data: RegisterData) => authService.register(data),
-    onSuccess: (response) => {
-      setUser(response.user);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('token', response.token);
-      }
+    mutationFn: async (data: RegisterData) => {
+      const result = await authService.register(data);
+      // Convert RegisterData to SignupFormData if needed
+      await signup(data as any); // Use context signup method
+      return result;
     },
   });
 };
 
 export const useCurrentUser = () => {
+  const { isAuthenticated } = useAuth();
+  
   return useQuery({
     queryKey: ['currentUser'],
     queryFn: () => authService.getCurrentUser(),
-    enabled: typeof window !== 'undefined' && !!localStorage.getItem('token'),
+    enabled: isAuthenticated,
   });
 };

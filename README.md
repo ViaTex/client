@@ -7,7 +7,7 @@ Frontend application for DishaSetu built with Next.js, TypeScript, and React.
 - **Framework**: Next.js 15
 - **Language**: TypeScript
 - **UI**: React 19
-- **State Management**: Zustand
+- **State Management**: React Context API
 - **Data Fetching**: TanStack Query (React Query)
 - **HTTP Client**: Axios
 
@@ -70,8 +70,7 @@ features/            # Feature-based modules
 └── user/
 
 hooks/               # Custom React hooks
-lib/                 # Libraries and utilities
-store/               # State management
+lib/                 # Libraries and utilities (includes auth context)
 types/               # TypeScript types
 utils/               # Utility functions
 ```
