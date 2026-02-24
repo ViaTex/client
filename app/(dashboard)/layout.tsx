@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 import { useAuth } from '@/lib/auth.context'
-import Sidebar from '@/components/dashboard/Sidebar'
+import Sidebar from '@/components/layout/Sidebar'
 import Navbar from '@/components/layout/Navbar'
 
 export default function DashboardLayout({
@@ -37,16 +37,15 @@ export default function DashboardLayout({
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* Top Navigation Bar */}
+      {/* Top Navigation Bar - fixed */}
       <Navbar />
 
-      {/* Main Layout with Sidebar */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* Sidebar */}
-        <Sidebar />
+      {/* Sidebar - fixed */}
+      <Sidebar />
 
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto">
+      {/* Main Content with padding to account for fixed nav and sidebar */}
+      <div className="pt-16 lg:pl-64 flex-1 flex flex-col min-h-screen">
+        <main className="flex-1 p-4 sm:p-6 pb-safe lg:pb-6">
           {children}
         </main>
       </div>

@@ -49,9 +49,9 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized - clear token and redirect
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
+        localStorage.removeItem('auth-storage');
         window.location.href = '/login';
       }
     }

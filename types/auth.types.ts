@@ -33,6 +33,10 @@ export interface SignupFormData {
   password: string;
   confirmPassword: string;
   role: Role;
+  phone?: string;
+  websiteUrl?: string;
+  designation?: string;
+  linkedInUrl?: string;
 }
 
 export interface LoginFormData {

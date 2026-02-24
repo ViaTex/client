@@ -1,23 +1,19 @@
-/**
- * Signup Form Component
- * Professional, clean design with role selection
- */
-
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth.context';
 import { useToast } from '@/lib/toast.context';
-import { SignupFormData, Role, ROLE_LABELS, ROLE_DESCRIPTIONS, ROLE_DASHBOARD_ROUTES } from '@/types/auth.types';
+import { SignupFormData, Role, ROLE_LABELS, ROLE_DASHBOARD_ROUTES } from '@/types/auth.types';
+import { Mail, Lock, User, ArrowRight, Building, GraduationCap, Briefcase, Globe, Phone, Linkedin } from 'lucide-react';
 
 export function SignupForm() {
   const router = useRouter();
-  const { signup, isLoading, error, clearError } = useAuth();
+  const searchParams = useSearchParams();
+  const { signup, isLoading, clearError } = useAuth();
   const toast = useToast();
 
-  const [step, setStep] = useState<'role-select' | 'form'>('role-select');
   const [formData, setFormData] = useState<SignupFormData>({
     fullName: '',
     email: '',
@@ -26,84 +22,91 @@ export function SignupForm() {
     role: Role.STUDENT,
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formErrors, setFormErrors] = useState<Partial<SignupFormData>>({});
 
-  // ====================================================================
-  // AVAILABLE ROLES (ADMIN excluded - no public signup)
-  // ====================================================================
+  const availableRoles = [
+    { id: Role.STUDENT, label: 'Student', icon: GraduationCap },
+    { id: Role.CORPORATE, label: 'Corporate', icon: Building },
+    { id: Role.UNIVERSITY, label: 'University', icon: Building },
+    { id: Role.MENTOR, label: 'Mentor', icon: Briefcase },
+  ];
 
-  const availableRoles = [Role.STUDENT, Role.CORPORATE, Role.UNIVERSITY, Role.MENTOR];
+  // Initialize or update role from URL parameter
+  useEffect(() => {
+    const typeParam = searchParams.get('type');
+    const roleParam = searchParams.get('role');
+    const paramValue = typeParam || roleParam;
 
-  // Role icons mapping
-  const roleIcons: Record<Role, string> = {
-    [Role.STUDENT]: '🎓',
-    [Role.CORPORATE]: '💼',
-    [Role.UNIVERSITY]: '🏫',
-    [Role.MENTOR]: '👨‍🏫',
-    [Role.ADMIN]: '👤',
+    if (paramValue) {
+      // Find matching role case-insensitively
+      const matchingRole = Object.values(Role).find(
+        (r) => r.toLowerCase() === paramValue.toLowerCase()
+      );
+
+      if (matchingRole) {
+        setFormData((prev) => ({ ...prev, role: matchingRole }));
+      }
+    }
+  }, [searchParams]);
+
+  // Handle manual role toggle inside the UI and reflect it back to URL
+  const handleRoleChange = (selectedRole: Role) => {
+    setFormData({ ...formData, role: selectedRole });
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('type', selectedRole.toLowerCase());
+    router.replace(`?${params.toString()}`, { scroll: false });
   };
-
-  // ====================================================================
-  // FORM VALIDATION
-  // ====================================================================
 
   const validateForm = (): boolean => {
     const errors: Partial<SignupFormData> = {};
 
-    // Validate full name
     if (!formData.fullName) {
       errors.fullName = 'Full name is required';
-    } else if (formData.fullName.length < 2) {
-      errors.fullName = 'Full name must be at least 2 characters';
-    } else if (formData.fullName.length > 100) {
-      errors.fullName = 'Full name must not exceed 100 characters';
     }
 
-    // Validate email
     if (!formData.email) {
       errors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       errors.email = 'Valid email is required';
     }
 
-    // Validate password
     if (!formData.password) {
       errors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       errors.password = 'Password must be at least 8 characters';
-    } else if (!/[A-Z]/.test(formData.password)) {
-      errors.password = 'Password must contain at least one uppercase letter';
-    } else if (!/[a-z]/.test(formData.password)) {
-      errors.password = 'Password must contain at least one lowercase letter';
-    } else if (!/[0-9]/.test(formData.password)) {
-      errors.password = 'Password must contain at least one number';
-    } else if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password)) {
-      errors.password = 'Password must contain at least one special character';
     }
 
-    // Validate confirm password
     if (!formData.confirmPassword) {
-      errors.confirmPassword = 'Please confirm your password';
+      errors.confirmPassword = 'Confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
       errors.confirmPassword = 'Passwords do not match';
     }
 
+    if (formData.role === Role.STUDENT && formData.phone) {
+      if (!/^\d{10,12}$/.test(formData.phone.replace(/\D/g, ''))) {
+        errors.phone = 'Valid phone number is required';
+      }
+    }
+
+    if (formData.role === Role.MENTOR) {
+      if (!formData.designation) {
+        errors.designation = 'Designation is required';
+      }
+      if (!formData.linkedInUrl) {
+        errors.linkedInUrl = 'LinkedIn URL is required';
+      } else if (!formData.linkedInUrl.includes('linkedin.com')) {
+        errors.linkedInUrl = 'Must be a valid LinkedIn URL';
+      }
+    }
+
+    if ((formData.role === Role.CORPORATE || formData.role === Role.UNIVERSITY) && formData.websiteUrl) {
+      if (!formData.websiteUrl.startsWith('http')) {
+        errors.websiteUrl = 'Website URL must start with http:// or https://';
+      }
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
-  };
-
-  // ====================================================================
-  // FORM HANDLERS
-  // ====================================================================
-
-  const handleRoleSelect = (role: Role) => {
-    setFormData((prev) => ({
-      ...prev,
-      role,
-    }));
-    setStep('form');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,7 +115,6 @@ export function SignupForm() {
       ...prev,
       [name]: value,
     }));
-    // Clear error for this field
     if (formErrors[name as keyof SignupFormData]) {
       setFormErrors((prev) => ({
         ...prev,
@@ -132,224 +134,247 @@ export function SignupForm() {
       clearError();
       const newUser = await signup(formData);
 
-      // Redirect to dashboard based on role
+      toast.success('Registration successful!');
+
       if (newUser?.role) {
         const dashboardRoute = ROLE_DASHBOARD_ROUTES[newUser.role] || '/dashboard';
         router.push(dashboardRoute);
       } else {
         router.push('/dashboard');
       }
-    } catch (error) {
-      console.error('Signup failed:', error);
-      // Error is handled by auth context
+    } catch (error: any) {
+      toast.error(error.message || 'Signup failed');
     }
   };
 
-  // ====================================================================
-  // ROLE SELECTION STEP
-  // ====================================================================
-
-  if (step === 'role-select') {
-    return (
-      <div className="space-y-6">
-        {/* Header for Role Selection */}
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Create your account</h1>
-        </div>
-
-        <div className="text-center mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">Choose Your Role</h2>
-          <p className="text-sm text-gray-600">Select the role that best describes you</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {availableRoles.map((role) => (
-            <button
-              key={role}
-              type="button"
-              onClick={() => handleRoleSelect(role)}
-              className="p-5 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-left group"
-            >
-              <div className="flex items-start gap-4">
-                <div className="text-3xl">{roleIcons[role]}</div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-base text-gray-900 mb-1 group-hover:text-blue-700 transition-colors">
-                    {ROLE_LABELS[role]}
-                  </h3>
-                  <p className="text-sm text-gray-600">{ROLE_DESCRIPTIONS[role]}</p>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // ====================================================================
-  // SIGNUP FORM STEP
-  // ====================================================================
-
   return (
-    <>
-      {/* Header with Big Icon and Role Account Title */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between mb-6">
-          <button
-            type="button"
-            onClick={() => setStep('role-select')}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors flex items-center gap-1"
-          >
-            <span>←</span> Back
-          </button>
-        </div>
-        
-        <div className="text-center">
-          {/* Big Icon */}
-          <div className="text-7xl mb-4">{roleIcons[formData.role]}</div>
-          
-          {/* Role Account Title */}
-          <h1 className="text-2xl font-bold text-gray-900">
-            {ROLE_LABELS[formData.role]} Account
+    <div className="flex-1 flex items-center justify-center px-4 py-12 pt-24 md:pt-32 relative z-10 w-full min-h-screen bg-gray-50">
+      <div
+        className="w-full max-w-[519px] bg-white rounded-lg border border-[#AEAEAE] p-[24px]"
+        style={{
+          boxShadow: '2px -2px 4px 0px rgba(0, 0, 0, 0.25), -2px 2px 4px 0px rgba(0, 0, 0, 0.25)'
+        }}
+      >
+        <div className="text-center mb-6 space-y-2">
+          <h1 className="text-[32px] font-semibold text-black leading-[24px] mb-2 font-['Poppins']">
+            Create an Account
           </h1>
-        </div>
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Full Name Field */}
-        <div>
-          <label htmlFor="fullName" className="block text-sm font-medium text-gray-700 mb-1.5">
-            Full Name
-          </label>
-          <input
-            id="fullName"
-            type="text"
-            name="fullName"
-            value={formData.fullName}
-            onChange={handleChange}
-            disabled={isLoading}
-            className={`w-full px-3 py-2.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400 ${
-              formErrors.fullName ? 'border-red-500' : 'border-gray-300'
-            } disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed transition`}
-            placeholder="Enter your full name"
-          />
-          {formErrors.fullName && (
-            <p className="mt-1 text-sm text-red-600">{formErrors.fullName}</p>
-          )}
-        </div>
-
-        {/* Email Field */}
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-            Business Email
-          </label>
-          <input
-            id="email"
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={handleChange}
-            disabled={isLoading}
-            className={`w-full px-3 py-2.5 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400 ${
-              formErrors.email ? 'border-red-500' : 'border-gray-300'
-            } disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed transition`}
-            placeholder="Enter your email"
-          />
-          {formErrors.email && <p className="mt-1 text-sm text-red-600">{formErrors.email}</p>}
-        </div>
-
-        {/* Password Field */}
-        <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
-            Password
-          </label>
-          <div className="relative">
-            <input
-              id="password"
-              type={showPassword ? 'text' : 'password'}
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              disabled={isLoading}
-              className={`w-full px-3 py-2.5 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400 ${
-                formErrors.password ? 'border-red-500' : 'border-gray-300'
-              } disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed transition`}
-              placeholder="Create a password"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-              tabIndex={-1}
-            >
-              {showPassword ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              )}
-            </button>
-          </div>
-          {formErrors.password && <p className="mt-1 text-sm text-red-600">{formErrors.password}</p>}
-          <p className="mt-1 text-xs text-gray-500">
-            Must be at least 8 characters with uppercase, lowercase, number, and special character
+          <p className="text-sm text-gray-600">
+            Join us to start your professional journey
           </p>
         </div>
 
-        {/* Confirm Password Field */}
-        <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5">
-            Confirm Password
-          </label>
-          <div className="relative">
-            <input
-              id="confirmPassword"
-              type={showConfirmPassword ? 'text' : 'password'}
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              disabled={isLoading}
-              className={`w-full px-3 py-2.5 pr-10 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400 ${
-                formErrors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-              } disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed transition`}
-              placeholder="Confirm your password"
-            />
-            <button
-              type="button"
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
-              tabIndex={-1}
-            >
-              {showConfirmPassword ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              )}
-            </button>
-          </div>
-          {formErrors.confirmPassword && (
-            <p className="mt-1 text-sm text-red-600">{formErrors.confirmPassword}</p>
-          )}
+        {/* Role Selection Tabs */}
+        <div className="flex bg-gray-100 p-1 rounded-lg mb-6 overflow-x-auto space-x-1">
+          {availableRoles.map((roleOpt) => {
+            const Icon = roleOpt.icon;
+            const isSelected = formData.role === roleOpt.id;
+            return (
+              <button
+                key={roleOpt.id}
+                type="button"
+                onClick={() => handleRoleChange(roleOpt.id as Role)}
+                className={`flex-1 flex items-center justify-center gap-2 py-2 px-3 rounded-md text-sm font-medium transition-all ${isSelected
+                  ? 'bg-white text-[#00BAE8] shadow-sm'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
+                  }`}
+              >
+                <Icon className="w-4 h-4 hidden sm:block" />
+                <span>{roleOpt.label}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full bg-blue-600 text-white py-2.5 px-4 rounded-md font-semibold uppercase tracking-wide hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-        >
-          {isLoading ? 'Creating account...' : 'CREATE ACCOUNT'}
-        </button>
-      </form>
-    </>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-[20px]">
+          {/* Dynamic "Name" Field based on Role */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-black flex items-center gap-2">
+              {formData.role === Role.CORPORATE || formData.role === Role.UNIVERSITY ? (
+                <Building className="w-4 h-4" />
+              ) : (
+                <User className="w-4 h-4" />
+              )}
+              {formData.role === Role.CORPORATE ? 'Company Name'
+                : formData.role === Role.UNIVERSITY ? 'University / College Name'
+                  : 'Full Name'}
+            </label>
+            <input
+              id="fullName"
+              name="fullName"
+              type="text"
+              value={formData.fullName}
+              onChange={handleChange}
+              disabled={isLoading}
+              placeholder={
+                formData.role === Role.CORPORATE ? 'Acme Corp'
+                  : formData.role === Role.UNIVERSITY ? 'Stanford University'
+                    : 'John Doe'
+              }
+              className={`w-full h-[50px] px-4 bg-white text-gray-700 border ${formErrors.fullName ? 'border-red-500' : 'border-[#AEAEAE]'} rounded-[8px] focus:ring-1 focus:ring-primary-500 focus:outline-none`}
+            />
+            {formErrors.fullName && <p className="text-xs text-red-500">{formErrors.fullName}</p>}
+          </div>
+
+          {/* Dynamic "Email" Field based on Role */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-black flex items-center gap-2">
+              <Mail className="w-4 h-4" />
+              {formData.role === Role.STUDENT ? 'Email'
+                : formData.role === Role.UNIVERSITY ? 'Official Email'
+                  : 'Business Email'}
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              disabled={isLoading}
+              placeholder="your@email.com"
+              className={`w-full h-[50px] px-4 bg-white text-gray-700 border ${formErrors.email ? 'border-red-500' : 'border-[#AEAEAE]'} rounded-[8px] focus:ring-1 focus:ring-primary-500 focus:outline-none`}
+            />
+            {formErrors.email && <p className="text-xs text-red-500">{formErrors.email}</p>}
+          </div>
+
+          {/* Role-Specific Secondary Fields */}
+          {formData.role === Role.STUDENT && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-black flex items-center gap-2">
+                <Phone className="w-4 h-4" />
+                Phone Number
+              </label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                value={formData.phone || ''}
+                onChange={handleChange}
+                disabled={isLoading}
+                placeholder="+91 9876543210"
+                className={`w-full h-[50px] px-4 bg-white text-gray-700 border ${formErrors.phone ? 'border-red-500' : 'border-[#AEAEAE]'} rounded-[8px] focus:ring-1 focus:ring-primary-500 focus:outline-none`}
+              />
+              {formErrors.phone && <p className="text-xs text-red-500">{formErrors.phone}</p>}
+            </div>
+          )}
+
+          {(formData.role === Role.CORPORATE || formData.role === Role.UNIVERSITY) && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-black flex items-center gap-2">
+                <Globe className="w-4 h-4" />
+                Website URL (Optional)
+              </label>
+              <input
+                id="websiteUrl"
+                name="websiteUrl"
+                type="url"
+                value={formData.websiteUrl || ''}
+                onChange={handleChange}
+                disabled={isLoading}
+                placeholder="https://example.com"
+                className={`w-full h-[50px] px-4 bg-white text-gray-700 border ${formErrors.websiteUrl ? 'border-red-500' : 'border-[#AEAEAE]'} rounded-[8px] focus:ring-1 focus:ring-primary-500 focus:outline-none`}
+              />
+              {formErrors.websiteUrl && <p className="text-xs text-red-500">{formErrors.websiteUrl}</p>}
+            </div>
+          )}
+
+          {formData.role === Role.MENTOR && (
+            <>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-black flex items-center gap-2">
+                  <Briefcase className="w-4 h-4" />
+                  Designation / Job Title
+                </label>
+                <input
+                  id="designation"
+                  name="designation"
+                  type="text"
+                  value={formData.designation || ''}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  placeholder="Senior Software Engineer"
+                  className={`w-full h-[50px] px-4 bg-white border ${formErrors.designation ? 'border-red-500' : 'border-[#AEAEAE]'} rounded-[8px] focus:ring-1 focus:ring-primary-500 focus:outline-none`}
+                />
+                {formErrors.designation && <p className="text-xs text-red-500">{formErrors.designation}</p>}
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-black flex items-center gap-2">
+                  <Linkedin className="w-4 h-4" />
+                  LinkedIn Profile URL
+                </label>
+                <input
+                  id="linkedInUrl"
+                  name="linkedInUrl"
+                  type="url"
+                  value={formData.linkedInUrl || ''}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                  placeholder="https://linkedin.com/in/username"
+                  className={`w-full h-[50px] px-4 bg-white border ${formErrors.linkedInUrl ? 'border-red-500' : 'border-[#AEAEAE]'} rounded-[8px] focus:ring-1 focus:ring-primary-500 focus:outline-none`}
+                />
+                {formErrors.linkedInUrl && <p className="text-xs text-red-500">{formErrors.linkedInUrl}</p>}
+              </div>
+            </>
+          )}
+
+          {/* Password Fields Wrapper */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-black flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                Password
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                value={formData.password}
+                onChange={handleChange}
+                disabled={isLoading}
+                placeholder="Password"
+                className={`w-full h-[50px] px-4 bg-white border ${formErrors.password ? 'border-red-500' : 'border-[#AEAEAE]'} rounded-[8px] focus:ring-1 focus:ring-primary-500 focus:outline-none`}
+              />
+              {formErrors.password && <p className="text-xs text-red-500">{formErrors.password}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-black flex items-center gap-2">
+                <Lock className="w-4 h-4" />
+                Confirm
+              </label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                disabled={isLoading}
+                placeholder="Confirm password"
+                className={`w-full h-[50px] px-4 bg-white border ${formErrors.confirmPassword ? 'border-red-500' : 'border-[#AEAEAE]'} rounded-[8px] focus:ring-1 focus:ring-primary-500 focus:outline-none`}
+              />
+              {formErrors.confirmPassword && <p className="text-xs text-red-500">{formErrors.confirmPassword}</p>}
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full mt-2 h-[50px] text-base font-medium bg-[#00BAE8] hover:bg-[#009bc2] text-white rounded-[8px] transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+          >
+            {isLoading ? 'Creating account...' : 'Create Account'}
+            {!isLoading && <ArrowRight className="w-5 h-5" />}
+          </button>
+
+          <div className="text-center">
+            <p className="text-sm text-black font-medium">
+              Already have an account?{' '}
+              <Link href="/login" className="text-blue-600 hover:underline">
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }

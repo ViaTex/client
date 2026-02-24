@@ -1,25 +1,33 @@
 'use client'
 
+import { Suspense } from 'react'
 import { SignupForm } from '@/components/auth/SignupForm'
 import Link from 'next/link'
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-2xl">
-        {/* Signup Card */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-          <SignupForm />
-        </div>
+    <div className="relative min-h-screen">
+      <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+        <SignupForm />
+      </Suspense>
 
-        {/* Footer */}
-        <div className="mt-6 text-center">
-          <p className="text-sm text-gray-600">
-            Already have an account?{' '}
-            <Link href="/login" className="text-blue-600 hover:text-blue-700 font-medium">
-              Sign in
+      {/* Footer Links - Absolute positioned at bottom */}
+      <div className="absolute bottom-8 left-0 right-0">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex items-center justify-center gap-8">
+            <Link
+              href="/privacy"
+              className="text-xs text-gray-400 hover:text-gray-600 uppercase tracking-widest font-medium transition-colors"
+            >
+              PRIVACY
             </Link>
-          </p>
+            <Link
+              href="/terms"
+              className="text-xs text-gray-400 hover:text-gray-600 uppercase tracking-widest font-medium transition-colors"
+            >
+              TERMS
+            </Link>
+          </div>
         </div>
       </div>
     </div>

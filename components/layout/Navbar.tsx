@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/lib/auth.context'
+import { LogOut, User as UserIcon } from 'lucide-react'
 
 export default function Navbar() {
   const pathname = usePathname()
@@ -11,33 +12,35 @@ export default function Navbar() {
 
   const isDashboard = pathname?.startsWith('/dashboard')
 
+  const navbarClasses = "w-full z-50 transition-all duration-300 fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-200/50"
+
   return (
-    <nav className="bg-white border-b border-gray-200 shadow-sm h-16">
-      <div className="px-4 sm:px-6 lg:px-8 h-full">
-        <div className="flex justify-between items-center h-full">
+    <nav className={navbarClasses}>
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href={isDashboard ? "/dashboard" : "/"} className="flex items-center">
-            <h1 className="text-xl font-bold text-gray-900">DishaSetu</h1>
+          <Link href={isDashboard ? "/dashboard" : "/"} className="flex items-center gap-2">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">DishaSetu</h1>
           </Link>
 
           {/* Navigation Links - Only show on non-dashboard pages */}
           {!isDashboard && (
             <div className="hidden md:flex items-center gap-6">
-              <Link
-                href="/"
-                className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+              <button
+                onClick={() => document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-gray-700 hover:text-[#00BAE8] transition-colors text-sm font-medium"
               >
                 Home
-              </Link>
-              <a
-                href="#features"
-                className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+              </button>
+              <button
+                onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+                className="text-gray-700 hover:text-[#00BAE8] transition-colors text-sm font-medium"
               >
                 Features
-              </a>
+              </button>
               <a
                 href="#stakeholders"
-                className="text-gray-600 hover:text-gray-900 transition-colors text-sm font-medium"
+                className="text-gray-700 hover:text-[#00BAE8] transition-colors text-sm font-medium"
               >
                 For Everyone
               </a>
@@ -45,39 +48,35 @@ export default function Navbar() {
           )}
 
           {/* Auth Buttons / User Menu */}
-          <div className="flex items-center gap-3 md:gap-4">
+          <div className="flex items-center space-x-3">
             {isAuthenticated ? (
               <>
-                <div className="hidden sm:block text-sm text-gray-700">
-                  <span className="font-medium">{user?.fullName}</span>
-                  <span className="text-gray-500 ml-2">({user?.role})</span>
-                </div>
-                {!isDashboard && (
-                  <Link
-                    href={`/dashboard/${user?.role?.toLowerCase()}`}
-                    className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors font-medium"
-                  >
-                    Dashboard
-                  </Link>
-                )}
+                <Link
+                  href={`/dashboard/${user?.role?.toLowerCase()}`}
+                  className="hidden md:flex items-center justify-center px-5 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white rounded-md text-sm font-medium transition-colors gap-2"
+                >
+                  <UserIcon className="w-4 h-4" />
+                  <span>Dashboard</span>
+                </Link>
                 <button
                   onClick={handleLogout}
-                  className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+                  className="flex items-center justify-center px-5 py-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors font-medium text-sm gap-2"
                 >
-                  Logout
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden md:inline">Logout</span>
                 </button>
               </>
             ) : (
               <>
                 <button
                   onClick={() => router.push('/login')}
-                  className="px-4 py-2 text-gray-700 hover:text-gray-900 transition-colors text-sm font-medium"
+                  className="px-5 py-2 border border-[#00BAE8] text-[#00BAE8] hover:bg-[#00BAE8] hover:text-white rounded-md text-sm font-medium transition-colors"
                 >
                   Login
                 </button>
                 <button
                   onClick={() => router.push('/register')}
-                  className="px-4 md:px-6 py-2 bg-blue-600 text-white font-medium rounded-md text-sm md:text-base hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  className="px-5 py-2 bg-[#00BAE8] hover:bg-[#009bc2] text-white rounded-md text-sm font-medium transition-colors"
                 >
                   Get Started
                 </button>
