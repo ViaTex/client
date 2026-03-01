@@ -32,7 +32,7 @@ export default function CollegeDashboard() {
             >
                 <div>
                     <h1 className="text-3xl font-bold mb-2">
-                        Dashboard for {user?.name?.split(' ')[0] || 'College'} 🏫
+                        Dashboard for {user?.email?.split('@')[0] || 'College'} 🏫
                     </h1>
                     <p className="text-teal-100 max-w-xl">
                         Monitor student progression, orchestrate recruitment drives, and cultivate successful placements effortlessly.

@@ -34,7 +34,7 @@ export default function AdminDashboard() {
             >
                 <div>
                     <h1 className="text-3xl font-bold mb-2">
-                        System Overview, {user?.name?.split(' ')[0] || 'Admin'} 🛡️
+                        System Overview, {user?.email?.split('@')[0] || 'Admin'} 🛡️
                     </h1>
                     <p className="text-rose-100 max-w-xl">
                         Monitor platform health, verify new institutional accounts, and oversee global analytics for the DishaSetu ecosystem.

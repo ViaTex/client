@@ -2,8 +2,8 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Poppins } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/providers/theme-provider'
+import { AuthProvider } from '@/components/providers/auth-provider'
 import { Toaster } from 'react-hot-toast'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 const poppins = Poppins({
@@ -39,7 +39,9 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange
                 >
-                    {children}
+                    <AuthProvider>
+                        {children}
+                    </AuthProvider>
                     <Toaster
                         position="top-right"
                         toastOptions={{

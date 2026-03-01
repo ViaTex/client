@@ -32,7 +32,7 @@ export default function CorporateDashboard() {
             >
                 <div>
                     <h1 className="text-3xl font-bold mb-2">
-                        Welcome to {user?.name?.split(' ')[0] || 'Corporate'} HQ 🏢
+                        Welcome to {user?.email?.split('@')[0] || 'Corporate'} HQ 🏢
                     </h1>
                     <p className="text-indigo-100 max-w-xl">
                         Manage your job postings, review incoming applications, and discover top campus talent to accelerate your growth.

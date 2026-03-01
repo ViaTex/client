@@ -37,8 +37,8 @@ export function Navbar({
         return `${basePath}?redirect=${encodeURIComponent(pathname || '')}`
     }
 
-    const handleLogout = () => {
-        logout()
+    const handleLogout = async () => {
+        await logout()
         setIsMobileMenuOpen(false)
     }
 
@@ -124,7 +124,7 @@ export function Navbar({
                                     </Button>
                                 </Link>
                                 <span className="text-sm text-gray-600 dark:text-gray-400">
-                                    {user.name || user.email} · {getUserTypeLabel()}
+                                    {user.email} · {getUserTypeLabel()}
                                 </span>
                                 <Button
                                     variant="ghost"

@@ -18,7 +18,9 @@ import {
     Shield,
     Settings,
     Menu,
-    X
+    X,
+    UserCheck,
+    MessageSquare
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
@@ -58,6 +60,15 @@ const adminNavigation = [
     { name: 'Settings', href: '/dashboard/admin/settings', icon: Settings },
 ]
 
+const mentorNavigation = [
+    { name: 'Dashboard', href: '/dashboard/mentor', icon: LayoutDashboard },
+    { name: 'My Profile', href: '/dashboard/mentor/profile', icon: User },
+    { name: 'Mentees', href: '/dashboard/mentor/mentees', icon: Users },
+    { name: 'Sessions', href: '/dashboard/mentor/sessions', icon: MessageSquare },
+    { name: 'Courses', href: '/dashboard/mentor/courses', icon: BookOpen },
+    { name: 'Settings', href: '/dashboard/mentor/settings', icon: Settings },
+]
+
 export function Sidebar() {
     const pathname = usePathname()
     const { user, logout } = useAuth()
@@ -73,6 +84,8 @@ export function Sidebar() {
             return collegeNavigation
         } else if (user.user_type === 'admin') {
             return adminNavigation
+        } else if (user.user_type === 'mentor') {
+            return mentorNavigation
         }
 
         return studentNavigation
@@ -151,20 +164,20 @@ export function Sidebar() {
                 <div className="shrink-0 border-t border-gray-200 dark:border-gray-800 p-4">
                     <div className="flex items-center gap-3 mb-4 px-2">
                         <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-400 flex items-center justify-center text-white shrink-0 shadow-inner font-bold">
-                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                            {user?.email?.charAt(0)?.toUpperCase() || 'U'}
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-                                {user?.name || `${user?.user_type?.charAt(0).toUpperCase()}${user?.user_type?.slice(1)} User` || 'User'}
+                                {user?.role || `${user?.user_type?.charAt(0).toUpperCase()}${user?.user_type?.slice(1)} User`}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                                {user?.email || 'student@example.com'}
+                                {user?.email || ''}
                             </p>
                         </div>
                     </div>
                     <Button
                         variant="outline"
-                        onClick={logout}
+                        onClick={() => logout()}
                         className="w-full justify-start border-gray-200 dark:border-gray-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:hover:bg-red-900/20 dark:hover:text-red-400 gap-2"
                     >
                         <LogOut className="w-4 h-4" />

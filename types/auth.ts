@@ -1,86 +1,134 @@
-export type UserType = 'student' | 'corporate' | 'college' | 'admin';
+// Frontend user type categories
+export type UserType = 'student' | 'corporate' | 'college' | 'mentor' | 'admin';
 
-export interface StudentRegisterRequest {
-    name: string;
+// Backend role values
+export type BackendRole = 'Student' | 'Mentor' | 'TPO' | 'Corporate HR';
+
+// Backend account type values
+export type BackendAccountType = 'Individual' | 'Institutional';
+
+// ============= Mapping Helpers =============
+
+// Map frontend user_type to backend role + account_type
+export const USER_TYPE_TO_BACKEND: Record<Exclude<UserType, 'admin'>, { role: BackendRole; account_type: BackendAccountType }> = {
+    student: { role: 'Student', account_type: 'Individual' },
+    corporate: { role: 'Corporate HR', account_type: 'Institutional' },
+    college: { role: 'TPO', account_type: 'Institutional' },
+    mentor: { role: 'Mentor', account_type: 'Individual' },
+};
+
+// Map backend role to frontend user_type
+export const BACKEND_ROLE_TO_USER_TYPE: Record<BackendRole, UserType> = {
+    'Student': 'student',
+    'Mentor': 'mentor',
+    'TPO': 'college',
+    'Corporate HR': 'corporate',
+};
+
+// ============= Registration =============
+
+export interface RegisterRequest {
     email: string;
+    phone_number: string;
     password: string;
-    phone?: string;
-    dob?: string;
-    gender?: 'male' | 'female' | 'other';
-    institution?: string;
-    degree?: string;
-    graduation_year?: number;
-    branch?: string;
-    tenth_grade_percentage?: number;
-    twelfth_grade_percentage?: number;
-    btech_cgpa?: number;
-    major?: string;
-    technical_skills?: string;
-    preferred_industry?: string;
-    job_roles_of_interest?: string;
+    account_type: BackendAccountType;
+    role: BackendRole;
 }
 
-export interface CorporateRegisterRequest {
-    company_name: string;
+export interface RegisterResponse {
+    user_id: string;
     email: string;
-    password: string;
-    website_url?: string;
-    industry?: string;
-    company_size?: string;
-    founded_year?: number;
-    contact_person?: string;
-    contact_designation?: string;
-    phone?: string;
-    address?: string;
-    description?: string;
-    company_type?: string;
+    phone_number: string;
+    message: string;
 }
 
-export interface CollegeRegisterRequest {
-    college_name: string;
-    email: string;
-    password: string;
-    website_url?: string;
-    institute_type?: string;
-    established_year?: number;
-    contact_person_name?: string;
-    contact_designation?: string;
-    phone?: string;
-    address?: string;
-    courses_offered?: string;
-    branch?: string;
+// ============= OTP Verification =============
+
+export interface OTPVerifyRequest {
+    user_id: string;
+    email_otp: string;
+    phone_otp: string;
 }
 
-export interface AdminRegisterRequest {
-    name: string;
-    email: string;
-    password: string;
-    role?: string;
+export interface OTPVerifyResponse {
+    success: boolean;
+    message: string;
+    access_token?: string;
+    token_type: string;
 }
+
+export interface OTPResendRequest {
+    user_id: string;
+    type: 'email' | 'phone' | 'both';
+}
+
+// ============= Login =============
 
 export interface LoginRequest {
     email: string;
     password: string;
-    user_type: UserType;
+}
+
+// ============= Token & User Response =============
+
+export interface UserResponse {
+    id: string;
+    email: string;
+    phone_number: string;
+    account_type: BackendAccountType;
+    role: BackendRole;
+    email_verified: boolean;
+    phone_verified: boolean;
+    account_status: string;
+    last_login_at: string | null;
+    created_at: string;
 }
 
 export interface TokenResponse {
     access_token: string;
-    refresh_token: string;
     token_type: string;
-    user_type?: UserType;
-    user_id?: string;
-    name?: string;
+    expires_in: number;
+    user: UserResponse;
 }
 
-export interface UserInfo {
+export interface TokenRefreshResponse {
+    access_token: string;
+    token_type: string;
+    expires_in: number;
+}
+
+// ============= Password Reset =============
+
+export interface PasswordResetRequest {
+    email: string;
+}
+
+export interface PasswordResetConfirm {
+    user_id: string;
+    otp_code: string;
+    new_password: string;
+}
+
+// ============= Frontend User (derived from backend) =============
+
+export interface User {
     id: string;
     email: string;
-    name: string;
+    phone_number: string;
     user_type: UserType;
-    status: string;
+    role: BackendRole;
+    account_type: BackendAccountType;
     email_verified: boolean;
     phone_verified: boolean;
+    account_status: string;
+    last_login_at: string | null;
     created_at: string;
-    last_login?: string;
+}
+
+// Helper to convert backend UserResponse to frontend User
+export function toFrontendUser(backendUser: UserResponse): User {
+    return {
+        ...backendUser,
+        user_type: BACKEND_ROLE_TO_USER_TYPE[backendUser.role] || 'student',
+    };
 }

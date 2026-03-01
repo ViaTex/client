@@ -33,7 +33,7 @@ export default function StudentDashboard() {
             >
                 <div>
                     <h1 className="text-3xl font-bold mb-2">
-                        Welcome back, {user?.name?.split(' ')[0] || 'Student'}! 👋
+                        Welcome back, {user?.email?.split('@')[0] || 'Student'}! 👋
                     </h1>
                     <p className="text-blue-100 max-w-xl">
                         Track your applications, update your profile, and discover new opportunities to accelerate your career journey.
