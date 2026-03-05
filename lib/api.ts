@@ -39,6 +39,11 @@ export const apiClient = {
         return response.data
     },
 
+    logout: async () => {
+        const response = await axiosInstance.post('/auth/logout')
+        return response.data
+    },
+
     registerStudent: async (data: any) => {
         const response = await axiosInstance.post(`/auth/register/student`, data)
         return response.data
