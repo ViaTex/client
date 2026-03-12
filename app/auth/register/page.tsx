@@ -127,7 +127,7 @@ function RegisterContent() {
                 }
 
                 switch (selectedUserType) {
-                    case 'student': router.push('/dashboard/student'); break
+                    case 'student': router.push('/dashboard/student/profile'); break
                     case 'corporate': router.push('/dashboard/corporate'); break
                     case 'college': router.push('/dashboard/college'); break
                     default: router.push('/dashboard')
