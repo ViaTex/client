@@ -3,27 +3,85 @@
 import { useAuth } from '@/hooks/useAuth'
 import { motion } from 'framer-motion'
 import {
-    Award,
-    Wallet,
-    TrendingUp,
-    Zap,
-    Code,
-    Paintbrush,
-    Database,
-    ChevronRight,
-    Sparkles,
-    BadgeCheck,
-    Star,
-    Check,
+    Lock,
     Pencil,
-    Lock
+    Check,
+    Star,
+    BadgeCheck,
+    Sparkles,
+    ChevronRight,
+    Database,
+    Paintbrush,
+    Code,
+    Zap,
+    TrendingUp,
+    Wallet,
+    Award,
+    AlertCircle,
+    X,
+    ArrowRight
 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { apiClient } from '@/lib/api'
+import Link from 'next/link'
+import { AnimatePresence } from 'framer-motion'
 
 export default function StudentDashboard() {
     const { user } = useAuth()
+    const [profileIncomplete, setProfileIncomplete] = useState(false)
+    const [showToast, setShowToast] = useState(false)
+
+    useEffect(() => {
+        const checkProfile = async () => {
+            try {
+                const profile = await apiClient.getStudentProfile()
+                if (!profile?.institution || !profile?.degree || !profile?.technical_skills) {
+                    setProfileIncomplete(true)
+                    setTimeout(() => setShowToast(true), 1500)
+                }
+            } catch {
+                // Backend unreachable or profile not found — skip nudge; profile page will handle its own errors
+            }
+        }
+        checkProfile()
+    }, [])
 
     return (
-        <div className="w-full font-sans text-[#1b140d] dark:text-gray-100">
+        <div className="w-full font-sans text-[#1b140d] dark:text-gray-100 relative">
+            
+            {/* Profile Incomplete Toast/Badge */}
+            <AnimatePresence>
+                {showToast && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9, y: 50 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9, y: 50 }}
+                        className="fixed bottom-10 right-10 z-[100] max-w-sm w-full"
+                    >
+                        <div className="bg-[#1b140d] dark:bg-amber-100 dark:text-[#1b140d] text-white p-5 rounded-3xl shadow-2xl border border-white/10 flex flex-col gap-4">
+                            <div className="flex items-start justify-between">
+                                <div className="p-2 bg-[#ee8c2b] rounded-xl text-white">
+                                    <AlertCircle className="w-5 h-5" />
+                                </div>
+                                <button onClick={() => setShowToast(false)} className="text-gray-400 dark:text-gray-500 hover:text-white dark:hover:text-black">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-lg leading-tight">Setup your profile</h4>
+                                <p className="text-gray-400 dark:text-gray-600 text-sm mt-1">Please complete your profile to unlock all features and start applying.</p>
+                            </div>
+                            <Link 
+                                href="/dashboard/student/profile" 
+                                className="bg-[#ee8c2b] dark:bg-[#ee8c2b] text-white py-3 px-4 rounded-2xl font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-all text-sm"
+                            >
+                                Setup Now
+                                <ArrowRight className="w-4 h-4" />
+                            </Link>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
             {/* Bento Grid Layout */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
 

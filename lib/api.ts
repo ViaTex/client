@@ -4,6 +4,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
+    timeout: 15000,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -56,6 +57,17 @@ export const apiClient = {
 
     registerCollege: async (data: any) => {
         const response = await axiosInstance.post(`/auth/register/college`, data)
+        return response.data
+    },
+
+    // Student Profile
+    getStudentProfile: async () => {
+        const response = await axiosInstance.get('/student/profile')
+        return response.data
+    },
+
+    updateStudentProfile: async (data: any) => {
+        const response = await axiosInstance.patch('/student/profile', data)
         return response.data
     },
 
