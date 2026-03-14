@@ -30,20 +30,20 @@ import { Select } from '@/components/ui/select'
 import { apiClient } from '@/lib/api'
 import { toast } from 'react-hot-toast'
 
-type ProjectStatus = 'Completed' | 'In Progress'
+type ProjectStatus = 'completed' | 'in_progress'
 
 type StudentProject = {
     id: string
     title: string
     description: string
-    skills: string[]
-    technologies: string[]
+    skills_used: string[]
+    technologies_used: string[]
     start_date: string
     end_date: string
     project_url?: string
     github_url?: string
     demo_url?: string
-    project_images: string[]
+    images: string[]
     status: ProjectStatus
 }
 
@@ -57,18 +57,6 @@ type CustomAchievement = {
     tags: string[]
     url?: string
     date: string
-}
-
-const PROJECTS_STORAGE_KEY = 'ds.student_profile.projects.v1'
-const ACHIEVEMENTS_STORAGE_KEY = 'ds.student_profile.achievements.v1'
-
-function safeJsonParse<T>(value: string | null): T | null {
-    if (!value) return null
-    try {
-        return JSON.parse(value) as T
-    } catch {
-        return null
-    }
 }
 
 function generateId() {
@@ -93,15 +81,20 @@ function normalizeProjects(value: unknown): StudentProject[] {
             id: typeof v?.id === 'string' ? v.id : generateId(),
             title: typeof v?.title === 'string' ? v.title : '',
             description: typeof v?.description === 'string' ? v.description : '',
-            skills: normalizeStringArray(v?.skills),
-            technologies: normalizeStringArray(v?.technologies),
+            skills_used: normalizeStringArray(v?.skills_used ?? v?.skills),
+            technologies_used: normalizeStringArray(v?.technologies_used ?? v?.technologies),
             start_date: typeof v?.start_date === 'string' ? v.start_date : '',
             end_date: typeof v?.end_date === 'string' ? v.end_date : '',
             project_url: typeof v?.project_url === 'string' ? v.project_url : '',
             github_url: typeof v?.github_url === 'string' ? v.github_url : '',
             demo_url: typeof v?.demo_url === 'string' ? v.demo_url : '',
-            project_images: normalizeStringArray(v?.project_images),
-            status: v?.status === 'Completed' ? 'Completed' : 'In Progress',
+            images: normalizeStringArray(v?.images ?? v?.project_images),
+            status:
+                v?.status === 'completed' || v?.status === 'Completed'
+                    ? 'completed'
+                    : v?.status === 'in_progress' || v?.status === 'In Progress'
+                        ? 'in_progress'
+                        : 'in_progress',
         }))
 }
 
@@ -119,34 +112,11 @@ function normalizeAchievements(value: unknown): CustomAchievement[] {
         }))
 }
 
-function readProjectsFromStorage(): StudentProject[] {
-    if (typeof window === 'undefined') return []
-    return normalizeProjects(safeJsonParse<unknown>(localStorage.getItem(PROJECTS_STORAGE_KEY)))
-}
-
-function readAchievementsFromStorage(): CustomAchievement[] {
-    if (typeof window === 'undefined') return []
-    return normalizeAchievements(safeJsonParse<unknown>(localStorage.getItem(ACHIEVEMENTS_STORAGE_KEY)))
-}
-
-function writeProjectsToStorage(projects: StudentProject[]) {
-    if (typeof window === 'undefined') return
-    localStorage.setItem(PROJECTS_STORAGE_KEY, JSON.stringify(projects))
-}
-
-function writeAchievementsToStorage(achievements: CustomAchievement[]) {
-    if (typeof window === 'undefined') return
-    localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(achievements))
-}
-
 function hydrateDynamicSections(data: any) {
-    const incomingProjects = normalizeProjects(data?.projects)
-    const incomingAchievements = normalizeAchievements(data?.custom_achievements)
-
     return {
         ...(data ?? {}),
-        projects: incomingProjects.length ? incomingProjects : readProjectsFromStorage(),
-        custom_achievements: incomingAchievements.length ? incomingAchievements : readAchievementsFromStorage(),
+        projects: normalizeProjects(data?.projects),
+        custom_achievements: normalizeAchievements(data?.custom_achievements),
     }
 }
 
@@ -270,9 +240,6 @@ export default function StudentProfile() {
     const handleSaveProfile = async () => {
         try {
             setIsSaving(true)
-            // Persist dynamic sections locally so UX works even if backend schema isn't updated yet.
-            writeProjectsToStorage(normalizeProjects(profileData?.projects))
-            writeAchievementsToStorage(normalizeAchievements(profileData?.custom_achievements))
             await apiClient.updateStudentProfile(profileData)
             toast.success("Profile updated successfully!")
             setShowNudge(false)
@@ -346,15 +313,15 @@ export default function StudentProfile() {
             id: generateId(),
             title: '',
             description: '',
-            skills: [],
-            technologies: [],
+            skills_used: [],
+            technologies_used: [],
             start_date: '',
             end_date: '',
             project_url: '',
             github_url: '',
             demo_url: '',
-            project_images: [],
-            status: 'In Progress',
+            images: [],
+            status: 'in_progress',
         }
         setProjects([next, ...projects])
     }
@@ -734,8 +701,8 @@ export default function StudentProfile() {
                                                 onChange={(e) => updateProject(project.id, { status: e.target.value as ProjectStatus })}
                                                 className="rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
                                                 options={[
-                                                    { value: 'In Progress', label: 'In Progress' },
-                                                    { value: 'Completed', label: 'Completed' },
+                                                    { value: 'in_progress', label: 'In Progress' },
+                                                    { value: 'completed', label: 'Completed' },
                                                 ]}
                                             />
                                         </div>
@@ -776,8 +743,8 @@ export default function StudentProfile() {
                                         <div className="md:col-span-2 space-y-2">
                                             <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Skills Used (tags)</label>
                                             <TagInput
-                                                value={project.skills}
-                                                onChange={(next) => updateProject(project.id, { skills: next })}
+                                                value={project.skills_used}
+                                                onChange={(next) => updateProject(project.id, { skills_used: next })}
                                                 placeholder="e.g. Problem solving, Communication"
                                             />
                                         </div>
@@ -785,8 +752,8 @@ export default function StudentProfile() {
                                         <div className="md:col-span-2 space-y-2">
                                             <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Technologies Used (tags)</label>
                                             <TagInput
-                                                value={project.technologies}
-                                                onChange={(next) => updateProject(project.id, { technologies: next })}
+                                                value={project.technologies_used}
+                                                onChange={(next) => updateProject(project.id, { technologies_used: next })}
                                                 placeholder="e.g. Next.js, FastAPI, PostgreSQL"
                                             />
                                         </div>
@@ -794,8 +761,8 @@ export default function StudentProfile() {
                                         <div className="md:col-span-2 space-y-2">
                                             <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Project Images (optional)</label>
                                             <TagInput
-                                                value={project.project_images}
-                                                onChange={(next) => updateProject(project.id, { project_images: next })}
+                                                value={project.images}
+                                                onChange={(next) => updateProject(project.id, { images: next })}
                                                 placeholder="Paste image URLs (comma separated)"
                                             />
                                         </div>
