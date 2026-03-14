@@ -1,6 +1,6 @@
 "use client"
 
-import { usePathname } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { Bell, Search, Rocket } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import Link from 'next/link'
@@ -14,19 +14,42 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from '@/hooks/useAuth'
 
-export function TopNav() {
-    const pathname = usePathname()
+type TopNavProps = {
+    isSidebarCollapsed: boolean
+}
+
+export function TopNav({ isSidebarCollapsed }: TopNavProps) {
     const { logout } = useAuth()
 
+    const [isDesktop, setIsDesktop] = useState(false)
+
+    useEffect(() => {
+        if (typeof window === 'undefined') return
+        const handleResize = () => {
+            setIsDesktop(window.innerWidth >= 1024)
+        }
+        handleResize()
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
+    const sidebarWidth = isDesktop ? (isSidebarCollapsed ? 72 : 270) : 0
+
     return (
-        <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e5e3df] dark:border-gray-800 px-6 lg:px-10 py-4 bg-white dark:bg-[#221910] sticky top-0 z-50">
+        <header
+            className="fixed top-0 right-0 z-40 flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e5e3df] dark:border-gray-800 w-full px-4 lg:px-8 py-4 bg-white/95 dark:bg-[#221910]/95 backdrop-blur-md"
+            style={{
+                left: sidebarWidth,
+                width: `calc(100% - ${sidebarWidth}px)`,
+            }}
+        >
             <div className="flex items-center gap-8">
-                <div className="flex items-center gap-3">
+                {/* <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-[#ee8c2b] rounded-xl flex items-center justify-center text-white">
                         <Rocket className="w-6 h-6" />
                     </div>
                     <h2 className="text-[#1b140d] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">Dishasetu</h2>
-                </div>
+                </div> */}
                 <nav className="hidden md:flex items-center gap-8">
                     <Link className="text-[#1b140d] dark:text-gray-100 text-sm font-semibold border-b-2 border-[#ee8c2b] pb-1" href="/dashboard/student">Dashboard</Link>
                     <Link className="text-[#1b140d]/60 dark:text-gray-400 text-sm font-medium hover:text-[#ee8c2b] transition-colors" href="/dashboard/learning">Learning</Link>

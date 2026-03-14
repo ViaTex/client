@@ -21,6 +21,26 @@ axiosInstance.interceptors.request.use((config) => {
     return config
 })
 
+// Response interceptor to handle 401 Unauthorized globally
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (typeof window !== 'undefined' && error?.response?.status === 401) {
+            // Clear all auth state and redirect to login
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('refresh_token')
+            localStorage.removeItem('user_data')
+            localStorage.removeItem('temp_user_data')
+            localStorage.removeItem('temp_user_type')
+            // Only redirect if not already on the auth pages
+            if (!window.location.pathname.startsWith('/auth/')) {
+                window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`
+            }
+        }
+        return Promise.reject(error)
+    }
+)
+
 export const apiClient = {
     // Auth
     login: async (data: { email: string; password: string; user_type: string }) => {

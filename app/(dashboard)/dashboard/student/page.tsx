@@ -19,31 +19,55 @@ import {
     Award,
     AlertCircle,
     X,
-    ArrowRight
+    ArrowRight,
+    User
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { apiClient } from '@/lib/api'
 import Link from 'next/link'
 import { AnimatePresence } from 'framer-motion'
 
+interface StudentProfile {
+    id?: string
+    name?: string
+    email?: string
+    institution?: string
+    degree?: string
+    branch?: string
+    graduation_year?: number
+    technical_skills?: string
+    soft_skills?: string
+    city?: string
+    state?: string
+    bio?: string
+}
+
 export default function StudentDashboard() {
     const { user } = useAuth()
+    const [profile, setProfile] = useState<StudentProfile | null>(null)
+    const [profileLoading, setProfileLoading] = useState(true)
     const [profileIncomplete, setProfileIncomplete] = useState(false)
     const [showToast, setShowToast] = useState(false)
 
     useEffect(() => {
-        const checkProfile = async () => {
+        const fetchProfile = async () => {
             try {
-                const profile = await apiClient.getStudentProfile()
-                if (!profile?.institution || !profile?.degree || !profile?.technical_skills) {
+                setProfileLoading(true)
+                const data = await apiClient.getStudentProfile()
+                setProfile(data)
+                if (!data?.institution || !data?.degree || !data?.technical_skills) {
                     setProfileIncomplete(true)
                     setTimeout(() => setShowToast(true), 1500)
                 }
             } catch {
                 // Backend unreachable or profile not found — skip nudge; profile page will handle its own errors
+                setProfileIncomplete(true)
+                setTimeout(() => setShowToast(true), 1500)
+            } finally {
+                setProfileLoading(false)
             }
         }
-        checkProfile()
+        fetchProfile()
     }, [])
 
     return (
@@ -93,12 +117,27 @@ export default function StudentDashboard() {
                         className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)] border border-white/40 dark:bg-[#221910] dark:border-gray-800"
                     >
                         <div className="flex flex-col items-center text-center">
-                            <div
-                                className="w-24 h-24 rounded-full bg-center bg-cover mb-4 ring-4 ring-[#ee8c2b]/10"
-                                style={{ backgroundImage: 'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDtPUu1gJQO4DGK_WQX-vU3hZlKU5DSUIbKLvoa9BfKBoS7DsSc0wrju-zrEXPoCblnKwsDB6kO4v2dYp887PNHCCGTv1Tkiz5ZxYlHqD9dhkTUh--bL6Ij_8CtKDUF5kxQlkhwPhLdJIa1BGBjSAkSLiEhVRQL2BDvqkzMWiyhfcfs43JHhjtXWxyoAten2nIp3ddIM2t9LScegu9-NlVd9awKfc7U_bokFa2756ei3eJgITYYChWkVvGrrYuYKYdJ9OgjkI4LnPVM")' }}
-                            ></div>
-                            <h3 className="text-xl font-bold">{user?.name || 'Aryan Sharma'}</h3>
-                            <p className="text-sm text-[#9a734c] font-medium mb-3">ID: DS-99283</p>
+                            {/* Avatar placeholder (no photo URL in profile yet) */}
+                            <div className="w-24 h-24 rounded-full bg-[#ee8c2b]/10 flex items-center justify-center mb-4 ring-4 ring-[#ee8c2b]/10">
+                                <User className="w-12 h-12 text-[#ee8c2b]" />
+                            </div>
+                            {profileLoading ? (
+                                <>
+                                    <div className="h-6 w-36 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse mb-2" />
+                                    <div className="h-4 w-24 bg-gray-100 dark:bg-gray-800 rounded-lg animate-pulse mb-3" />
+                                </>
+                            ) : (
+                                <>
+                                    <h3 className="text-xl font-bold">{profile?.name || user?.name || user?.email?.split('@')[0] || 'Student'}</h3>
+                                    <p className="text-sm text-[#9a734c] font-medium mb-1">{profile?.email || user?.email || ''}</p>
+                                    {profile?.id && (
+                                        <p className="text-xs text-[#9a734c]/70 font-mono mb-3">ID: DS-{profile.id.slice(-6).toUpperCase()}</p>
+                                    )}
+                                    {(profile?.institution || profile?.degree) && (
+                                        <p className="text-xs text-gray-500 mb-3">{[profile?.degree, profile?.institution].filter(Boolean).join(' · ')}</p>
+                                    )}
+                                </>
+                            )}
                             <div className="flex items-center gap-2 px-3 py-1 bg-[#ee8c2b]/10 text-[#ee8c2b] rounded-full text-xs font-bold uppercase tracking-wider">
                                 <Award className="w-4 h-4" />
                                 Gold Tier Explorer

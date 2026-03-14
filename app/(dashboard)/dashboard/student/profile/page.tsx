@@ -118,6 +118,7 @@ export default function StudentProfile() {
 
             const data = await response.json()
             toast.success("Resume uploaded successfully!")
+            setProfileData((prev: any) => ({ ...prev, resume_url: data.url }))
             setIsUploading(false)
             setUploadSuccess(true)
         } catch (error: any) {
@@ -445,6 +446,23 @@ export default function StudentProfile() {
                             Resume
                         </h3>
                         <p className="text-sm text-gray-500 mb-6">Upload your latest resume (PDF/DOCX)</p>
+
+                        {profileData.resume_url && (
+                            <div className="mb-4 p-4 rounded-2xl bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-red-100 dark:bg-red-900/30 text-red-600 rounded-lg">
+                                        <FileText className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold">Current Resume</p>
+                                        <a href={profileData.resume_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">View Document</a>
+                                    </div>
+                                </div>
+                                <a href={profileData.resume_url} target="_blank" rel="noopener noreferrer" className="p-2 text-gray-400 hover:text-[#ee8c2b]">
+                                    <LinkIcon className="w-4 h-4" />
+                                </a>
+                            </div>
+                        )}
 
                         <label className={`relative flex flex-col items-center justify-center w-full h-40 border-2 ${uploadSuccess ? 'border-green-500 bg-green-50/20' : 'border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-black/20'} rounded-2xl cursor-pointer hover:border-[#ee8c2b] transition-all overflow-hidden group`}>
                             <div className="flex flex-col items-center justify-center p-4 text-center">
