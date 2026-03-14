@@ -1,16 +1,28 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
 import { TopNav } from '@/components/dashboard/top-nav'
 import { Sidebar } from '@/components/dashboard/sidebar'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function DashboardLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
+    const { isAuthenticated, isLoading } = useAuth()
+    const router = useRouter()
+    const pathname = usePathname()
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
     const [isDesktop, setIsDesktop] = useState(false)
+
+    // Auth guard: redirect unauthenticated users to login
+    useEffect(() => {
+        if (!isLoading && !isAuthenticated) {
+            router.replace(`/auth/login?redirect=${encodeURIComponent(pathname)}`)
+        }
+    }, [isAuthenticated, isLoading, router, pathname])
 
     useEffect(() => {
         if (typeof window === 'undefined') return
@@ -23,6 +35,18 @@ export default function DashboardLayout({
     }, [])
 
     const sidebarWidth = isDesktop ? (isSidebarCollapsed ? 72 : 270) : 0
+
+    // Show nothing while checking auth or if not authenticated (during redirect)
+    if (isLoading || !isAuthenticated) {
+        return (
+            <div className="min-h-screen bg-[#E3DED1] dark:bg-[#1b140d] flex items-center justify-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="w-10 h-10 border-4 border-[#ee8c2b] border-t-transparent rounded-full animate-spin" />
+                    <p className="text-sm text-[#9a734c] font-medium">Checking authentication...</p>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div className="min-h-screen bg-[#E3DED1] dark:bg-[#1b140d] font-sans overflow-hidden">
