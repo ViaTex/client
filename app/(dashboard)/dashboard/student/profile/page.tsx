@@ -201,10 +201,59 @@ export default function StudentProfile() {
     const [resumeFile, setResumeFile] = useState<File | null>(null)
     const [isUploading, setIsUploading] = useState(false)
     const [uploadSuccess, setUploadSuccess] = useState(false)
+    const [resumeJobId, setResumeJobId] = useState<string | null>(null)
+    const [resumeJobStatus, setResumeJobStatus] = useState<string>('none')
 
     useEffect(() => {
         fetchProfile()
     }, [])
+
+    useEffect(() => {
+        if (!resumeJobId) return
+
+        let cancelled = false
+        const startedAt = Date.now()
+
+        const tick = async () => {
+            try {
+                const status = await apiClient.getResumeJobStatus()
+                if (cancelled) return
+
+                const nextStatus = status?.status || 'unknown'
+                setResumeJobStatus(nextStatus)
+
+                if (nextStatus === 'succeeded') {
+                    toast.success('Resume parsed. Profile updated!')
+                    setResumeJobId(null)
+                    fetchProfile()
+                } else if (nextStatus === 'failed') {
+                    const err = status?.error ? `: ${status.error}` : ''
+                    toast.error(`Resume parsing failed${err}`)
+                    setResumeJobId(null)
+                }
+            } catch {
+                // Keep polling; backend/redis might be temporarily unavailable.
+            }
+        }
+
+        const interval = setInterval(() => {
+            if (Date.now() - startedAt > 2 * 60 * 1000) {
+                setResumeJobId(null)
+                setResumeJobStatus('timeout')
+                toast('Resume is still processing. Check back in a bit.', { icon: '⏳' })
+                return
+            }
+            tick()
+        }, 2000)
+
+        // initial tick
+        tick()
+
+        return () => {
+            cancelled = true
+            clearInterval(interval)
+        }
+    }, [resumeJobId])
 
     const fetchProfile = async () => {
         try {
@@ -258,30 +307,24 @@ export default function StudentProfile() {
         setResumeFile(file)
         setIsUploading(true)
         setUploadSuccess(false)
+        setResumeJobStatus('none')
 
         try {
-            const formData = new FormData()
-            formData.append("resume", file)
-
-            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
-            const response = await fetch(`${apiUrl}/student/upload-resume`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                },
-                body: formData
-            })
-
-            if (!response.ok) {
-                const errorData = await response.json()
-                throw new Error(errorData.detail || "Upload failed")
-            }
-
-            const data = await response.json()
+            const data = await apiClient.uploadResume(file)
             toast.success("Resume uploaded successfully!")
             setProfileData((prev: any) => ({ ...prev, resume_url: data.url }))
             setIsUploading(false)
             setUploadSuccess(true)
+
+            if (data?.job_id) {
+                setResumeJobId(data.job_id)
+                setResumeJobStatus(data?.job_status || 'queued')
+                toast('Parsing resume in background...', { icon: '🤖' })
+            } else {
+                // Upload succeeded but Redis enqueue failed
+                setResumeJobStatus('enqueue_failed')
+                toast('Resume uploaded, but parsing was not queued. Start the worker and try again.', { icon: '⚠️' })
+            }
         } catch (error: any) {
             console.error("Error uploading resume:", error)
             toast.error(error.message || "Failed to upload resume")

@@ -91,6 +91,40 @@ export const apiClient = {
         return response.data
     },
 
+    uploadResume: async (file: File) => {
+        const formData = new FormData()
+        formData.append('resume', file)
+
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+        const token = typeof window !== 'undefined' ? localStorage.getItem('access_token') : null
+
+        const response = await fetch(`${baseUrl}/student/upload-resume`, {
+            method: 'POST',
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+            body: formData,
+        })
+
+        if (!response.ok) {
+            let detail = 'Upload failed'
+            try {
+                const err = await response.json()
+                detail = err?.detail || err?.message || detail
+            } catch {
+                // ignore
+            }
+            const error: any = new Error(detail)
+            error.status = response.status
+            throw error
+        }
+
+        return response.json()
+    },
+
+    getResumeJobStatus: async () => {
+        const response = await axiosInstance.get('/student/resume-job-status')
+        return response.data
+    },
+
     // Token management
     setAuthTokens: (accessToken: string, refreshToken: string) => {
         if (typeof window !== 'undefined') {

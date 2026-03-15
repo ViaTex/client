@@ -20,12 +20,14 @@ import {
     AlertCircle,
     X,
     ArrowRight,
-    User
+    User,
+    UploadCloud
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { apiClient } from '@/lib/api'
 import Link from 'next/link'
 import { AnimatePresence } from 'framer-motion'
+import { toast } from 'react-hot-toast'
 
 interface StudentProfile {
     id?: string
@@ -49,6 +51,10 @@ export default function StudentDashboard() {
     const [profileIncomplete, setProfileIncomplete] = useState(false)
     const [showToast, setShowToast] = useState(false)
 
+    const [isResumeUploading, setIsResumeUploading] = useState(false)
+    const [resumeJobId, setResumeJobId] = useState<string | null>(null)
+    const [resumeJobStatus, setResumeJobStatus] = useState<string>('none')
+
     useEffect(() => {
         const fetchProfile = async () => {
             try {
@@ -69,6 +75,79 @@ export default function StudentDashboard() {
         }
         fetchProfile()
     }, [])
+
+    useEffect(() => {
+        if (!resumeJobId) return
+
+        let cancelled = false
+        const startedAt = Date.now()
+
+        const tick = async () => {
+            try {
+                const status = await apiClient.getResumeJobStatus()
+                if (cancelled) return
+
+                const nextStatus = status?.status || 'unknown'
+                setResumeJobStatus(nextStatus)
+
+                if (nextStatus === 'succeeded') {
+                    toast.success('Resume parsed. Profile updated!')
+                    setResumeJobId(null)
+                    const data = await apiClient.getStudentProfile()
+                    setProfile(data)
+                } else if (nextStatus === 'failed') {
+                    const err = status?.error ? `: ${status.error}` : ''
+                    toast.error(`Resume parsing failed${err}`)
+                    setResumeJobId(null)
+                }
+            } catch {
+                // ignore; keep polling
+            }
+        }
+
+        const interval = setInterval(() => {
+            if (Date.now() - startedAt > 2 * 60 * 1000) {
+                setResumeJobId(null)
+                setResumeJobStatus('timeout')
+                toast('Resume is still processing. Check back soon.', { icon: '⏳' })
+                return
+            }
+            tick()
+        }, 2000)
+
+        tick()
+
+        return () => {
+            cancelled = true
+            clearInterval(interval)
+        }
+    }, [resumeJobId])
+
+    const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        setIsResumeUploading(true)
+        setResumeJobStatus('none')
+
+        try {
+            const res = await apiClient.uploadResume(file)
+            toast.success('Resume uploaded! Parsing in background...')
+            if (res?.job_id) {
+                setResumeJobId(res.job_id)
+                setResumeJobStatus(res?.job_status || 'queued')
+            } else {
+                setResumeJobStatus('enqueue_failed')
+                toast('Upload succeeded, but parsing was not queued. Start the worker and retry.', { icon: '⚠️' })
+            }
+        } catch (err: any) {
+            toast.error(err?.message || 'Resume upload failed')
+        } finally {
+            setIsResumeUploading(false)
+            // allow re-uploading same file
+            e.target.value = ''
+        }
+    }
 
     return (
         <div className="w-full font-sans text-[#1b140d] dark:text-gray-100 relative">
@@ -143,6 +222,41 @@ export default function StudentDashboard() {
                                 Gold Tier Explorer
                             </div>
                         </div>
+                    </motion.div>
+
+                    {/* Resume Upload */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.05 }}
+                        className="bg-white rounded-[1.5rem] p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)] border border-white/40 dark:bg-[#221910] dark:border-gray-800"
+                    >
+                        <div className="flex items-center justify-between mb-3">
+                            <p className="text-sm font-bold">Resume</p>
+                            <UploadCloud className="w-5 h-5 text-[#ee8c2b]" />
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                            Upload a PDF resume to auto-fill profile.
+                        </p>
+
+                        <label className="w-full">
+                            <input
+                                type="file"
+                                accept="application/pdf"
+                                onChange={handleResumeUpload}
+                                className="hidden"
+                                disabled={isResumeUploading}
+                            />
+                            <span className="inline-flex w-full items-center justify-center bg-[#ee8c2b] text-white py-3 rounded-xl font-bold shadow-lg shadow-[#ee8c2b]/20 hover:opacity-90 transition-all cursor-pointer">
+                                {isResumeUploading ? 'Uploading…' : 'Upload Resume'}
+                            </span>
+                        </label>
+
+                        {resumeJobStatus !== 'none' && (
+                            <p className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+                                Status: <span className="font-semibold">{resumeJobStatus}</span>
+                            </p>
+                        )}
                     </motion.div>
 
                     {/* Earnings Potli */}
