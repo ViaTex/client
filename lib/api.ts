@@ -4,6 +4,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
+    timeout: 15000,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -19,6 +20,26 @@ axiosInstance.interceptors.request.use((config) => {
     }
     return config
 })
+
+// Response interceptor to handle 401 Unauthorized globally
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (typeof window !== 'undefined' && error?.response?.status === 401) {
+            // Clear all auth state and redirect to login
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('refresh_token')
+            localStorage.removeItem('user_data')
+            localStorage.removeItem('temp_user_data')
+            localStorage.removeItem('temp_user_type')
+            // Only redirect if not already on the auth pages
+            if (!window.location.pathname.startsWith('/auth/')) {
+                window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`
+            }
+        }
+        return Promise.reject(error)
+    }
+)
 
 export const apiClient = {
     // Auth
@@ -39,6 +60,11 @@ export const apiClient = {
         return response.data
     },
 
+    logout: async () => {
+        const response = await axiosInstance.post('/auth/logout')
+        return response.data
+    },
+
     registerStudent: async (data: any) => {
         const response = await axiosInstance.post(`/auth/register/student`, data)
         return response.data
@@ -51,6 +77,17 @@ export const apiClient = {
 
     registerCollege: async (data: any) => {
         const response = await axiosInstance.post(`/auth/register/college`, data)
+        return response.data
+    },
+
+    // Student Profile
+    getStudentProfile: async () => {
+        const response = await axiosInstance.get('/student/profile')
+        return response.data
+    },
+
+    updateStudentProfile: async (data: any) => {
+        const response = await axiosInstance.patch('/student/profile', data)
         return response.data
     },
 

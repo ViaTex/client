@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { UserType } from '@/types/auth'
+import { apiClient } from '@/lib/api'
 
 export interface User {
     id: string
@@ -90,15 +91,22 @@ export function useAuth() {
         setIsAuthenticated(true)
     }
 
-    const logout = () => {
-        localStorage.removeItem('access_token')
-        localStorage.removeItem('refresh_token')
-        localStorage.removeItem('user_data')
-        localStorage.removeItem('temp_user_data')
-        localStorage.removeItem('temp_user_type')
-        setUser(null)
-        setIsAuthenticated(false)
-        router.push('/auth/login')
+    const logout = async () => {
+        try {
+            // Notify the backend (best-effort; don't block user logout if it fails)
+            await apiClient.logout()
+        } catch (e) {
+            // Ignore errors — we still clear local state
+        } finally {
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('refresh_token')
+            localStorage.removeItem('user_data')
+            localStorage.removeItem('temp_user_data')
+            localStorage.removeItem('temp_user_type')
+            setUser(null)
+            setIsAuthenticated(false)
+            router.push('/auth/login')
+        }
     }
 
     const redirectIfAuthenticated = () => {
