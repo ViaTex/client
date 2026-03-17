@@ -22,7 +22,10 @@ import {
     X,
     Calendar,
     MapPin,
-    Briefcase
+    Briefcase,
+    Plus,
+    Pencil,
+    Trash2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -57,6 +60,19 @@ type CustomAchievement = {
     tags: string[]
     url?: string
     date: string
+}
+
+type EducationLevel = 'UG' | 'PG' | 'Diploma' | '12th' | '10th' | 'Other'
+
+type StudentEducation = {
+    id: string
+    level: EducationLevel
+    custom_level?: string
+    institution: string
+    start_date: string
+    end_date: string
+    score: string
+    description: string
 }
 
 function generateId() {
@@ -112,12 +128,34 @@ function normalizeAchievements(value: unknown): CustomAchievement[] {
         }))
 }
 
+function normalizeEducation(value: unknown): StudentEducation[] {
+    if (!Array.isArray(value)) return []
+    return value.map((v: any) => ({
+        id: typeof v?.id === 'string' ? v.id : generateId(),
+        level: (v?.level === 'UG' || v?.level === 'PG' || v?.level === 'Diploma' || v?.level === '12th' || v?.level === '10th' || v?.level === 'Other')
+            ? v.level
+            : 'Other',
+        custom_level: typeof v?.custom_level === 'string' ? v.custom_level : '',
+        institution: typeof v?.institution === 'string' ? v.institution : '',
+        start_date: typeof v?.start_date === 'string' ? v.start_date : '',
+        end_date: typeof v?.end_date === 'string' ? v.end_date : '',
+        score: typeof v?.score === 'string' || typeof v?.score === 'number' ? String(v.score) : '',
+        description: typeof v?.description === 'string' ? v.description : '',
+    }))
+}
+
 function hydrateDynamicSections(data: any) {
     return {
         ...(data ?? {}),
+        education: normalizeEducation(data?.education),
         projects: normalizeProjects(data?.projects),
         custom_achievements: normalizeAchievements(data?.custom_achievements),
     }
+}
+
+function hasEducationEntries(value: unknown) {
+    if (!Array.isArray(value)) return false
+    return value.some((entry: any) => Boolean(entry?.institution) && Boolean(entry?.level))
 }
 
 function TagInput({
@@ -196,6 +234,10 @@ export default function StudentProfile() {
     const [isSaving, setIsSaving] = useState(false)
     const [profileData, setProfileData] = useState<any>({})
     const [showNudge, setShowNudge] = useState(false)
+    const [educationDraft, setEducationDraft] = useState<StudentEducation | null>(null)
+    const [editingEducationId, setEditingEducationId] = useState<string | null>(null)
+    const [isEducationSaving, setIsEducationSaving] = useState(false)
+    const [isAddingEducation, setIsAddingEducation] = useState(false)
 
     // Resume Upload States
     const [resumeFile, setResumeFile] = useState<File | null>(null)
@@ -211,7 +253,7 @@ export default function StudentProfile() {
             setIsLoading(true)
             const data = await apiClient.getStudentProfile()
             setProfileData(hydrateDynamicSections(data ?? {}))
-            if (!data?.institution || !data?.degree || !data?.technical_skills) {
+            if (!hasEducationEntries(data?.education) || !data?.technical_skills) {
                 setShowNudge(true)
             }
         } catch (error: any) {
@@ -240,7 +282,8 @@ export default function StudentProfile() {
     const handleSaveProfile = async () => {
         try {
             setIsSaving(true)
-            await apiClient.updateStudentProfile(profileData)
+            const { education, ...payload } = profileData || {}
+            await apiClient.updateStudentProfile(payload)
             toast.success("Profile updated successfully!")
             setShowNudge(false)
         } catch (error) {
@@ -299,6 +342,7 @@ export default function StudentProfile() {
 
     const projects: StudentProject[] = normalizeProjects(profileData?.projects)
     const achievements: CustomAchievement[] = normalizeAchievements(profileData?.custom_achievements)
+    const educationEntries: StudentEducation[] = normalizeEducation(profileData?.education)
 
     const setProjects = (next: StudentProject[]) => {
         setProfileData((prev: any) => ({ ...prev, projects: next }))
@@ -307,6 +351,7 @@ export default function StudentProfile() {
     const setAchievements = (next: CustomAchievement[]) => {
         setProfileData((prev: any) => ({ ...prev, custom_achievements: next }))
     }
+
 
     const addProject = () => {
         const next: StudentProject = {
@@ -353,6 +398,107 @@ export default function StudentProfile() {
 
     const removeAchievement = (id: string) => {
         setAchievements(achievements.filter((a) => a.id !== id))
+    }
+
+    const startAddEducation = () => {
+        setIsAddingEducation(true)
+        setEditingEducationId(null)
+        setEducationDraft({
+            id: '',
+            level: 'UG',
+            custom_level: '',
+            institution: '',
+            start_date: '',
+            end_date: '',
+            score: '',
+            description: '',
+        })
+    }
+
+    const startEditEducation = (entry: StudentEducation) => {
+        setIsAddingEducation(false)
+        setEditingEducationId(entry.id)
+        setEducationDraft({ ...entry })
+    }
+
+    const cancelEducationEdit = () => {
+        setIsAddingEducation(false)
+        setEditingEducationId(null)
+        setEducationDraft(null)
+    }
+
+    const saveEducation = async () => {
+        if (!educationDraft) return
+
+        const institution = educationDraft.institution?.trim()
+        if (!educationDraft.level || !institution) {
+            toast.error('Level and institution are required')
+            return
+        }
+        if (educationDraft.level === 'Other' && !educationDraft.custom_level?.trim()) {
+            toast.error('Custom level is required when level is Other')
+            return
+        }
+
+        try {
+            setIsEducationSaving(true)
+            const { id, ...payload } = educationDraft
+
+            if (isAddingEducation) {
+                const created = await apiClient.addStudentEducation(payload)
+                setProfileData((prev: any) => ({
+                    ...prev,
+                    education: [created, ...(prev?.education ?? [])],
+                }))
+                toast.success('Education added')
+            } else if (editingEducationId) {
+                const updated = await apiClient.updateStudentEducation(editingEducationId, payload)
+                setProfileData((prev: any) => ({
+                    ...prev,
+                    education: normalizeEducation(prev?.education).map((entry) =>
+                        entry.id === editingEducationId ? updated : entry
+                    ),
+                }))
+                toast.success('Education updated')
+            }
+
+            cancelEducationEdit()
+        } catch (error) {
+            console.error('Error saving education:', error)
+            toast.error('Failed to save education')
+        } finally {
+            setIsEducationSaving(false)
+        }
+    }
+
+    const deleteEducation = async (educationId: string) => {
+        try {
+            setIsEducationSaving(true)
+            await apiClient.deleteStudentEducation(educationId)
+            setProfileData((prev: any) => ({
+                ...prev,
+                education: normalizeEducation(prev?.education).filter((entry) => entry.id !== educationId),
+            }))
+            toast.success('Education removed')
+        } catch (error) {
+            console.error('Error deleting education:', error)
+            toast.error('Failed to delete education')
+        } finally {
+            setIsEducationSaving(false)
+        }
+    }
+
+    const educationLevelOptions = [
+        { value: 'UG', label: 'UG' },
+        { value: 'PG', label: 'PG' },
+        { value: 'Diploma', label: 'Diploma' },
+        { value: '12th', label: '12th' },
+        { value: '10th', label: '10th' },
+        { value: 'Other', label: 'Other' },
+    ]
+
+    const updateEducationDraft = (patch: Partial<StudentEducation>) => {
+        setEducationDraft((prev) => (prev ? { ...prev, ...patch } : prev))
     }
 
     return (
@@ -469,69 +615,304 @@ export default function StudentProfile() {
                         </div>
                     </div>
 
-                    {/* Academic Details */}
+                    {/* Education */}
                     <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 dark:bg-[#221910] dark:border-gray-800">
-                        <h3 className="text-xl font-bold mb-8 flex items-center gap-3">
-                            <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl text-emerald-600">
-                                <GraduationCap className="w-5 h-5" />
-                            </div>
-                            Academic Background
-                        </h3>
+                        <div className="flex items-start justify-between gap-4 mb-8">
+                            <h3 className="text-xl font-bold flex items-center gap-3">
+                                <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl text-emerald-600">
+                                    <GraduationCap className="w-5 h-5" />
+                                </div>
+                                Education
+                            </h3>
+                            <Button
+                                type="button"
+                                onClick={startAddEducation}
+                                className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#ee8c2b]/20"
+                            >
+                                <Plus className="w-4 h-4" />
+                                Add Education
+                            </Button>
+                        </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="md:col-span-2 space-y-2">
-                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Institution / College</label>
-                                <Input 
-                                    name="institution"
-                                    value={profileData.institution || ''}
-                                    onChange={handleInputChange}
-                                    className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
-                                    placeholder="Enter your college name"
-                                />
+                        {isAddingEducation && educationDraft && (
+                            <div className="mb-6 rounded-3xl border border-emerald-100 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-900/10 p-6">
+                                <div className="flex items-center justify-between gap-3 mb-5">
+                                    <p className="text-sm font-extrabold text-emerald-700 dark:text-emerald-200">New Education</p>
+                                    <button
+                                        type="button"
+                                        onClick={cancelEducationEdit}
+                                        className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
+                                    >
+                                        <X className="w-4 h-4" />
+                                        Cancel
+                                    </button>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Institution</label>
+                                        <Input
+                                            value={educationDraft.institution}
+                                            onChange={(e) => updateEducationDraft({ institution: e.target.value })}
+                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                            placeholder="e.g. IIT Bhubaneswar"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Level</label>
+                                        <Select
+                                            value={educationDraft.level}
+                                            onChange={(e) => updateEducationDraft({ level: e.target.value as EducationLevel })}
+                                            className="rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                            options={educationLevelOptions}
+                                        />
+                                    </div>
+
+                                    {educationDraft.level === 'Other' && (
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Custom Level</label>
+                                            <Input
+                                                value={educationDraft.custom_level || ''}
+                                                onChange={(e) => updateEducationDraft({ custom_level: e.target.value })}
+                                                className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                placeholder="e.g. Certificate Course"
+                                            />
+                                        </div>
+                                    )}
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Start Date</label>
+                                        <Input
+                                            type="date"
+                                            value={educationDraft.start_date}
+                                            onChange={(e) => updateEducationDraft({ start_date: e.target.value })}
+                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">End Date</label>
+                                        <Input
+                                            type="date"
+                                            value={educationDraft.end_date}
+                                            onChange={(e) => updateEducationDraft({ end_date: e.target.value })}
+                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Score</label>
+                                        <Input
+                                            value={educationDraft.score}
+                                            onChange={(e) => updateEducationDraft({ score: e.target.value })}
+                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                            placeholder="CGPA / Percentage"
+                                        />
+                                    </div>
+
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Description</label>
+                                        <textarea
+                                            value={educationDraft.description}
+                                            onChange={(e) => updateEducationDraft({ description: e.target.value })}
+                                            rows={3}
+                                            className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
+                                            placeholder="Optional highlights, specialization, awards"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-3 mt-6">
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={cancelEducationEdit}
+                                        className="rounded-xl"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        onClick={saveEducation}
+                                        loading={isEducationSaving}
+                                        className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-6"
+                                    >
+                                        Save
+                                    </Button>
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Degree</label>
-                                <Input 
-                                    name="degree"
-                                    value={profileData.degree || ''}
-                                    onChange={handleInputChange}
-                                    className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
-                                    placeholder="e.g. B.Tech, MBA"
-                                />
+                        )}
+
+                        {educationEntries.length === 0 && !isAddingEducation && (
+                            <div className="p-5 rounded-2xl bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400">
+                                Add your education history to showcase your academic journey.
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Branch / Specialization</label>
-                                <Input 
-                                    name="branch"
-                                    value={profileData.branch || ''}
-                                    onChange={handleInputChange}
-                                    className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
-                                    placeholder="e.g. Computer Science"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Graduation Year</label>
-                                <Input 
-                                    type="number"
-                                    name="graduation_year"
-                                    value={profileData.graduation_year || ''}
-                                    onChange={handleInputChange}
-                                    className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
-                                    placeholder="2025"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">B.Tech CGPA</label>
-                                <Input 
-                                    type="number"
-                                    step="0.01"
-                                    name="btech_cgpa"
-                                    value={profileData.btech_cgpa || ''}
-                                    onChange={handleInputChange}
-                                    className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
-                                    placeholder="0.00"
-                                />
-                            </div>
+                        )}
+
+                        <div className="space-y-6">
+                            {educationEntries.map((entry) => {
+                                const isEditing = editingEducationId === entry.id
+                                const levelLabel = entry.level === 'Other'
+                                    ? entry.custom_level?.trim() || 'Other'
+                                    : entry.level
+                                const timeline = [entry.start_date, entry.end_date].filter(Boolean).join(' - ')
+                                const meta = [timeline, entry.score ? `Score: ${entry.score}` : ''].filter(Boolean).join(' | ')
+
+                                return (
+                                    <div
+                                        key={entry.id}
+                                        className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-black/20 p-6"
+                                    >
+                                        {!isEditing && (
+                                            <>
+                                                <div className="flex items-start justify-between gap-4 mb-4">
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-extrabold text-gray-700 dark:text-gray-200 truncate">
+                                                            {levelLabel} - {entry.institution || 'Institution'}
+                                                        </p>
+                                                        {meta && (
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{meta}</p>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => startEditEducation(entry)}
+                                                            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-[#ee8c2b] transition-colors"
+                                                        >
+                                                            <Pencil className="w-3.5 h-3.5" />
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => deleteEducation(entry.id)}
+                                                            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {entry.description && (
+                                                    <p className="text-sm text-gray-600 dark:text-gray-300">{entry.description}</p>
+                                                )}
+                                            </>
+                                        )}
+
+                                        {isEditing && educationDraft && (
+                                            <>
+                                                <div className="flex items-center justify-between gap-3 mb-5">
+                                                    <p className="text-sm font-extrabold text-gray-700 dark:text-gray-200">Edit Education</p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={cancelEducationEdit}
+                                                        className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                        Cancel
+                                                    </button>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <div className="md:col-span-2 space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Institution</label>
+                                                        <Input
+                                                            value={educationDraft.institution}
+                                                            onChange={(e) => updateEducationDraft({ institution: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            placeholder="e.g. IIT Bhubaneswar"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Level</label>
+                                                        <Select
+                                                            value={educationDraft.level}
+                                                            onChange={(e) => updateEducationDraft({ level: e.target.value as EducationLevel })}
+                                                            className="rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            options={educationLevelOptions}
+                                                        />
+                                                    </div>
+
+                                                    {educationDraft.level === 'Other' && (
+                                                        <div className="space-y-2">
+                                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Custom Level</label>
+                                                            <Input
+                                                                value={educationDraft.custom_level || ''}
+                                                                onChange={(e) => updateEducationDraft({ custom_level: e.target.value })}
+                                                                className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                                placeholder="e.g. Certificate Course"
+                                                            />
+                                                        </div>
+                                                    )}
+
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Start Date</label>
+                                                        <Input
+                                                            type="date"
+                                                            value={educationDraft.start_date}
+                                                            onChange={(e) => updateEducationDraft({ start_date: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">End Date</label>
+                                                        <Input
+                                                            type="date"
+                                                            value={educationDraft.end_date}
+                                                            onChange={(e) => updateEducationDraft({ end_date: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                        />
+                                                    </div>
+
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Score</label>
+                                                        <Input
+                                                            value={educationDraft.score}
+                                                            onChange={(e) => updateEducationDraft({ score: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            placeholder="CGPA / Percentage"
+                                                        />
+                                                    </div>
+
+                                                    <div className="md:col-span-2 space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Description</label>
+                                                        <textarea
+                                                            value={educationDraft.description}
+                                                            onChange={(e) => updateEducationDraft({ description: e.target.value })}
+                                                            rows={3}
+                                                            className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
+                                                            placeholder="Optional highlights, specialization, awards"
+                                                        />
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex justify-end gap-3 mt-6">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        onClick={cancelEducationEdit}
+                                                        className="rounded-xl"
+                                                    >
+                                                        Cancel
+                                                    </Button>
+                                                    <Button
+                                                        type="button"
+                                                        onClick={saveEducation}
+                                                        loading={isEducationSaving}
+                                                        className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-6"
+                                                    >
+                                                        Save
+                                                    </Button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+                                )
+                            })}
                         </div>
                     </div>
 

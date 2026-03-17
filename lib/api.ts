@@ -91,6 +91,26 @@ export const apiClient = {
         return response.data
     },
 
+    getStudentEducation: async () => {
+        const response = await axiosInstance.get('/student/education')
+        return response.data
+    },
+
+    addStudentEducation: async (data: any) => {
+        const response = await axiosInstance.post('/student/education', data)
+        return response.data
+    },
+
+    updateStudentEducation: async (educationId: string, data: any) => {
+        const response = await axiosInstance.patch(`/student/education/${educationId}`, data)
+        return response.data
+    },
+
+    deleteStudentEducation: async (educationId: string) => {
+        const response = await axiosInstance.delete(`/student/education/${educationId}`)
+        return response.data
+    },
+
     // Token management
     setAuthTokens: (accessToken: string, refreshToken: string) => {
         if (typeof window !== 'undefined') {
