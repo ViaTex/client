@@ -1,6 +1,5 @@
 "use client"
 
-import { useAuth } from '@/hooks/useAuth'
 import { motion } from 'framer-motion'
 import {
     Lock,
@@ -8,13 +7,11 @@ import {
     Check,
     Star,
     BadgeCheck,
-    Sparkles,
     ChevronRight,
     Database,
     Paintbrush,
     Code,
     Zap,
-    TrendingUp,
     Wallet,
     Award,
     AlertCircle,
@@ -46,13 +43,18 @@ interface StudentProfile {
     city?: string
     state?: string
     bio?: string
+    current_des_score?: number
+    badge?: string
+}
+
+type EducationEntry = {
+    institution?: string
+    level?: string
 }
 
 export default function StudentDashboard() {
-    const { user } = useAuth()
     const [profile, setProfile] = useState<StudentProfile | null>(null)
     const [profileLoading, setProfileLoading] = useState(true)
-    const [profileIncomplete, setProfileIncomplete] = useState(false)
     const [showToast, setShowToast] = useState(false)
 
     useEffect(() => {
@@ -62,14 +64,12 @@ export default function StudentDashboard() {
                 const data = await apiClient.getStudentProfile()
                 setProfile(data)
                 const hasEducation = Array.isArray(data?.education)
-                    && data.education.some((entry: any) => entry?.institution && entry?.level)
+                    && data.education.some((entry: EducationEntry) => entry?.institution && entry?.level)
                 if (!hasEducation || !data?.technical_skills) {
-                    setProfileIncomplete(true)
                     setTimeout(() => setShowToast(true), 1500)
                 }
             } catch {
                 // Backend unreachable or profile not found — skip nudge; profile page will handle its own errors
-                setProfileIncomplete(true)
                 setTimeout(() => setShowToast(true), 1500)
             } finally {
                 setProfileLoading(false)
@@ -77,6 +77,15 @@ export default function StudentDashboard() {
         }
         fetchProfile()
     }, [])
+
+    const desScore = Math.max(0, Math.min(10, Number(profile?.current_des_score ?? 0)))
+    const desScoreDisplay = desScore.toFixed(2)
+    const scoreStroke = `${Math.round((desScore / 10) * 282)} 282`
+    const locationLabel = [profile?.city, profile?.state].filter(Boolean).join(', ')
+    const coreSkills = [
+        ...(profile?.technical_skills ? profile.technical_skills.split(',').map((s) => s.trim()).filter(Boolean) : []),
+        ...(profile?.soft_skills ? profile.soft_skills.split(',').map((s) => s.trim()).filter(Boolean) : []),
+    ].slice(0, 3)
 
     return (
         <div className="w-full font-sans text-[#1b140d] dark:text-gray-100 relative">
@@ -136,8 +145,8 @@ export default function StudentDashboard() {
                                 </>
                             ) : (
                                 <>
-                                    <h3 className="text-xl font-bold">{profile?.name || user?.name || user?.email?.split('@')[0] || 'Student'}</h3>
-                                    <p className="text-sm text-[#9a734c] font-medium mb-1">{profile?.email || user?.email || ''}</p>
+                                    <h3 className="text-xl font-bold">{profile?.name || 'Not available'}</h3>
+                                    <p className="text-sm text-[#9a734c] font-medium mb-1">{profile?.email || 'Not available'}</p>
                                     {profile?.id && (
                                         <p className="text-xs text-[#9a734c]/70 font-mono mb-3">ID: DS-{profile.id.slice(-6).toUpperCase()}</p>
                                     )}
@@ -156,7 +165,7 @@ export default function StudentDashboard() {
                             )}
                             <div className="flex items-center gap-2 px-3 py-1 bg-[#ee8c2b]/10 text-[#ee8c2b] rounded-full text-xs font-bold uppercase tracking-wider">
                                 <Award className="w-4 h-4" />
-                                Gold Tier Explorer
+                                {profile?.badge || 'No Badge Yet'}
                             </div>
                         </div>
                     </motion.div>
@@ -170,14 +179,22 @@ export default function StudentDashboard() {
                             <p className="text-[#1b140d]/60 dark:text-gray-400 text-sm font-semibold uppercase tracking-tight">Earnings Potli</p>
                             <Wallet className="w-5 h-5 text-[#ee8c2b]" />
                         </div>
-                        <p className="text-4xl font-bold mb-1">₹4,200</p>
-                        <div className="flex items-center gap-1 text-[#07880e] text-sm font-medium">
-                            <TrendingUp className="w-4 h-4" />
-                            <span>+15% this month</span>
-                        </div>
-                        <button className="w-full mt-6 bg-[#ee8c2b] text-white py-3 rounded-xl font-bold shadow-lg shadow-[#ee8c2b]/20 hover:opacity-90 transition-all">
-                            Redeem Rewards
-                        </button>
+                        {locationLabel ? (
+                            <p className="text-2xl font-bold mb-1">{locationLabel}</p>
+                        ) : (
+                            <p className="text-sm text-gray-500 mb-1">Location not available</p>
+                        )}
+                        {coreSkills.length > 0 ? (
+                            <div className="flex flex-wrap gap-2 mt-3">
+                                {coreSkills.map((skill, idx) => (
+                                    <span key={`${skill}-${idx}`} className="text-xs font-semibold px-2 py-1 rounded-full bg-[#ee8c2b]/10 text-[#ee8c2b]">
+                                        {skill}
+                                    </span>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-sm text-gray-500">No skills available</p>
+                        )}
                     </motion.div>
 
                     {/* Skill Badhao */}
@@ -235,25 +252,23 @@ export default function StudentDashboard() {
                             <div className="relative w-48 h-48">
                                 <svg className="w-48 h-48 -rotate-90" viewBox="0 0 100 100">
                                     <circle cx="50" cy="50" fill="none" r="45" stroke="#f3ede7" strokeWidth="8" strokeLinecap="round" className="dark:stroke-gray-800"></circle>
-                                    <circle cx="50" cy="50" fill="none" r="45" stroke="#ee8c2b" strokeWidth="8" strokeDasharray="165 282" strokeLinecap="round"></circle>
+                                    <circle cx="50" cy="50" fill="none" r="45" stroke="#ee8c2b" strokeWidth="8" strokeDasharray={scoreStroke} strokeLinecap="round"></circle>
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <p className="text-4xl font-black text-[#ee8c2b]">780</p>
-                                    <p className="text-xs font-bold text-gray-400 uppercase">of 1000</p>
+                                    <p className="text-4xl font-black text-[#ee8c2b]">{desScoreDisplay}</p>
+                                    <p className="text-xs font-bold text-gray-400 uppercase">of 10.00</p>
                                 </div>
                             </div>
                             <div className="flex-1 text-center md:text-left">
                                 <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
                                     <h2 className="text-2xl font-bold">DES Score</h2>
-                                    <span className="bg-[#ee8c2b]/20 text-[#ee8c2b] text-[10px] font-bold px-2 py-0.5 rounded uppercase">Top 5%</span>
+                                    {profile?.badge && (
+                                        <span className="bg-[#ee8c2b]/20 text-[#ee8c2b] text-[10px] font-bold px-2 py-0.5 rounded uppercase">{profile.badge}</span>
+                                    )}
                                 </div>
                                 <p className="text-gray-500 text-sm leading-relaxed mb-6">
-                                    Your Dishasetu Employability Score is trending up. Complete 1 more project to reach the 'Elite' bracket.
+                                    {profile?.bio || 'Profile bio not available.'}
                                 </p>
-                                <button className="flex items-center justify-center gap-2 w-full md:w-auto bg-[#1b140d] text-white px-6 py-3 rounded-2xl font-bold hover:bg-black transition-all dark:bg-white dark:text-[#1b140d] dark:hover:bg-gray-200">
-                                    <Sparkles className="w-5 h-5" />
-                                    Score Sudharein
-                                </button>
                             </div>
                         </div>
 
@@ -262,16 +277,16 @@ export default function StudentDashboard() {
                             <div className="p-4 rounded-2xl bg-[#fcfaf8] dark:bg-white/5">
                                 <div className="flex items-center gap-2 text-[#ee8c2b] mb-1">
                                     <BadgeCheck className="w-4 h-4" />
-                                    <span className="text-xs font-bold uppercase">Consistency</span>
+                                    <span className="text-xs font-bold uppercase">Badge</span>
                                 </div>
-                                <p className="text-sm font-semibold">12-Day Streak!</p>
+                                <p className="text-sm font-semibold">{profile?.badge || 'Not assigned'}</p>
                             </div>
                             <div className="p-4 rounded-2xl bg-[#fcfaf8] dark:bg-white/5">
                                 <div className="flex items-center gap-2 text-[#ee8c2b] mb-1">
                                     <Star className="w-4 h-4" />
-                                    <span className="text-xs font-bold uppercase">Skill Match</span>
+                                    <span className="text-xs font-bold uppercase">Core Skill</span>
                                 </div>
-                                <p className="text-sm font-semibold">94% React Fit</p>
+                                <p className="text-sm font-semibold">{coreSkills[0] || 'Not available'}</p>
                             </div>
                         </div>
                     </motion.div>

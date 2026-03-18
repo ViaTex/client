@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { Bell, Search, Rocket } from 'lucide-react'
+import { Bell, Search } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import Link from 'next/link'
 import {
@@ -44,18 +44,7 @@ export function TopNav({ isSidebarCollapsed }: TopNavProps) {
             }}
         >
             <div className="flex items-center gap-8">
-                {/* <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#ee8c2b] rounded-xl flex items-center justify-center text-white">
-                        <Rocket className="w-6 h-6" />
-                    </div>
-                    <h2 className="text-[#1b140d] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">Dishasetu</h2>
-                </div> */}
-                <nav className="hidden md:flex items-center gap-8">
-                    <Link className="text-[#1b140d] dark:text-gray-100 text-sm font-semibold border-b-2 border-[#ee8c2b] pb-1" href="/dashboard/student">Dashboard</Link>
-                    <Link className="text-[#1b140d]/60 dark:text-gray-400 text-sm font-medium hover:text-[#ee8c2b] transition-colors" href="/dashboard/learning">Learning</Link>
-                    <Link className="text-[#1b140d]/60 dark:text-gray-400 text-sm font-medium hover:text-[#ee8c2b] transition-colors" href="/dashboard/internships">Internships</Link>
-                    <Link className="text-[#1b140d]/60 dark:text-gray-400 text-sm font-medium hover:text-[#ee8c2b] transition-colors" href="/dashboard/community">Community</Link>
-                </nav>
+                <div className="h-6" />
             </div>
             <div className="flex items-center gap-6">
                 <label className="hidden lg:flex flex-col min-w-64 h-10">
