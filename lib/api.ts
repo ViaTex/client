@@ -65,17 +65,17 @@ export const apiClient = {
         return response.data
     },
 
-    registerStudent: async (data: any) => {
+    registerStudent: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.post(`/auth/register/student`, data)
         return response.data
     },
 
-    registerCorporate: async (data: any) => {
+    registerCorporate: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.post(`/auth/register/corporate`, data)
         return response.data
     },
 
-    registerCollege: async (data: any) => {
+    registerCollege: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.post(`/auth/register/college`, data)
         return response.data
     },
@@ -86,7 +86,7 @@ export const apiClient = {
         return response.data
     },
 
-    updateStudentProfile: async (data: any) => {
+    updateStudentProfile: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.patch('/student/profile', data)
         return response.data
     },
@@ -96,18 +96,37 @@ export const apiClient = {
         return response.data
     },
 
-    addStudentEducation: async (data: any) => {
+    addStudentEducation: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.post('/student/education', data)
         return response.data
     },
 
-    updateStudentEducation: async (educationId: string, data: any) => {
+    updateStudentEducation: async (educationId: string, data: Record<string, unknown>) => {
         const response = await axiosInstance.patch(`/student/education/${educationId}`, data)
         return response.data
     },
 
     deleteStudentEducation: async (educationId: string) => {
         const response = await axiosInstance.delete(`/student/education/${educationId}`)
+        return response.data
+    },
+
+    uploadSectionIntro: async (formData: FormData) => {
+        const response = await axiosInstance.post('/exams/section-intro', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        })
+        return response.data
+    },
+
+    endExamSession: async (data: {
+        student_id: string
+        exam_session_id?: string
+        status: 'aborted'
+        increment_attempt: boolean
+    }) => {
+        const response = await axiosInstance.post('/exams/end', data)
         return response.data
     },
 

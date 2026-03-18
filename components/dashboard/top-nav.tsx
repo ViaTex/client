@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Bell, Search } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -20,8 +21,31 @@ type TopNavProps = {
 
 export function TopNav({ isSidebarCollapsed }: TopNavProps) {
     const { logout } = useAuth()
+    const pathname = usePathname()
 
     const [isDesktop, setIsDesktop] = useState(false)
+    const [customTitle, setCustomTitle] = useState<string | undefined>(undefined)
+
+    const defaultTitle = useMemo(() => {
+        if (pathname.startsWith('/dashboard/student/profile')) return 'Student Profile'
+        if (pathname.startsWith('/dashboard/student')) return 'Student Dashboard'
+        if (pathname.startsWith('/dashboard/corporate')) return 'Corporate Dashboard'
+        if (pathname.startsWith('/dashboard/college')) return 'College Dashboard'
+        if (pathname.startsWith('/dashboard/admin')) return 'Admin Dashboard'
+        return 'Dashboard'
+    }, [pathname])
+
+    const title = customTitle || defaultTitle
+
+    useEffect(() => {
+        const onTitleChange = (event: Event) => {
+            const customEvent = event as CustomEvent<{ title?: string }>
+            setCustomTitle(customEvent.detail?.title || undefined)
+        }
+
+        window.addEventListener('dashboard:title-change', onTitleChange as EventListener)
+        return () => window.removeEventListener('dashboard:title-change', onTitleChange as EventListener)
+    }, [])
 
     useEffect(() => {
         if (typeof window === 'undefined') return
@@ -44,7 +68,7 @@ export function TopNav({ isSidebarCollapsed }: TopNavProps) {
             }}
         >
             <div className="flex items-center gap-8">
-                <div className="h-6" />
+                <h1 className="text-xl lg:text-2xl font-extrabold text-[#1b140d] dark:text-white tracking-tight">{title}</h1>
             </div>
             <div className="flex items-center gap-6">
                 <label className="hidden lg:flex flex-col min-w-64 h-10">
