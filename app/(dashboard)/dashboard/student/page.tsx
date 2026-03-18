@@ -31,10 +31,16 @@ interface StudentProfile {
     id?: string
     name?: string
     email?: string
-    institution?: string
-    degree?: string
-    branch?: string
-    graduation_year?: number
+    education?: Array<{
+        id?: string
+        level?: string
+        custom_level?: string
+        institution?: string
+        start_date?: string
+        end_date?: string
+        score?: string
+        description?: string
+    }>
     technical_skills?: string
     soft_skills?: string
     city?: string
@@ -55,7 +61,9 @@ export default function StudentDashboard() {
                 setProfileLoading(true)
                 const data = await apiClient.getStudentProfile()
                 setProfile(data)
-                if (!data?.institution || !data?.degree || !data?.technical_skills) {
+                const hasEducation = Array.isArray(data?.education)
+                    && data.education.some((entry: any) => entry?.institution && entry?.level)
+                if (!hasEducation || !data?.technical_skills) {
                     setProfileIncomplete(true)
                     setTimeout(() => setShowToast(true), 1500)
                 }
@@ -133,8 +141,16 @@ export default function StudentDashboard() {
                                     {profile?.id && (
                                         <p className="text-xs text-[#9a734c]/70 font-mono mb-3">ID: DS-{profile.id.slice(-6).toUpperCase()}</p>
                                     )}
-                                    {(profile?.institution || profile?.degree) && (
-                                        <p className="text-xs text-gray-500 mb-3">{[profile?.degree, profile?.institution].filter(Boolean).join(' · ')}</p>
+                                    {Array.isArray(profile?.education) && profile.education.length > 0 && (
+                                        <p className="text-xs text-gray-500 mb-3">
+                                            {(() => {
+                                                const primary = profile.education[0]
+                                                const levelLabel = primary?.level === 'Other'
+                                                    ? primary?.custom_level || 'Other'
+                                                    : primary?.level
+                                                return [levelLabel, primary?.institution].filter(Boolean).join(' · ')
+                                            })()}
+                                        </p>
                                     )}
                                 </>
                             )}

@@ -8,13 +8,6 @@ export interface StudentRegisterRequest {
     dob?: string;
     gender?: 'male' | 'female' | 'other';
     institution?: string;
-    degree?: string;
-    graduation_year?: number;
-    branch?: string;
-    tenth_grade_percentage?: number;
-    twelfth_grade_percentage?: number;
-    btech_cgpa?: number;
-    major?: string;
     technical_skills?: string;
     preferred_industry?: string;
     job_roles_of_interest?: string;
