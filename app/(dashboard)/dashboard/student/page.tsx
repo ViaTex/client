@@ -630,6 +630,18 @@ export default function StudentDashboard() {
                                 <p className="text-gray-500 text-sm leading-relaxed mb-6">
                                     {profile?.bio || 'Profile bio not available.'}
                                 </p>
+                                <div className="flex justify-center md:justify-start">
+                                    <Button
+                                        type="button"
+                                        size="xl"
+                                        onClick={() => setDashboardView('intro')}
+                                        className="rounded-2xl bg-black hover:bg-neutral-900 text-white font-bold flex items-center gap-2"
+                                    >
+                                        <Star className="w-4 h-4" />
+                                        <Star className="w-4 h-4" />
+                                        Score sudhare
+                                    </Button>
+                                </div>
                             </div>
                         </div>
 
@@ -650,22 +662,6 @@ export default function StudentDashboard() {
                                 <p className="text-sm font-semibold">{coreSkills[0] || 'Not available'}</p>
                             </div>
                         </div>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.15 }}
-                        className="-mt-2"
-                    >
-                        <Button
-                            type="button"
-                            size="xl"
-                            onClick={() => setDashboardView('intro')}
-                            className="w-full md:w-auto rounded-2xl bg-[#ee8c2b] hover:bg-[#df7f1f] text-white font-bold"
-                        >
-                            Score Sudharein
-                        </Button>
                     </motion.div>
 
                     {/* Recent Activity */}
