@@ -165,6 +165,30 @@ function normalizeEducation(value: unknown): StudentEducation[] {
     }))
 }
 
+function normalizeCommaList(value: unknown): string[] {
+    if (Array.isArray(value)) return normalizeStringArray(value)
+    if (typeof value !== 'string') return []
+    return value
+        .split(',')
+        .map((v) => v.trim())
+        .filter(Boolean)
+}
+
+function normalizeUrl(value?: string) {
+    const trimmed = value?.trim()
+    if (!trimmed) return ''
+    if (/^https?:\/\//i.test(trimmed)) return trimmed
+    return `https://${trimmed}`
+}
+
+function formatLabel(value?: string) {
+    if (!value) return ''
+    return value
+        .split('_')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ')
+}
+
 function normalizeExperienceEntry(value: any, type: ExperienceType): ExperienceEntry {
     return {
         id: typeof value?.id === 'string' ? value.id : generateId(),
@@ -454,6 +478,7 @@ export default function StudentProfile() {
     const achievements: CustomAchievement[] = normalizeAchievements(profileData?.custom_achievements)
     const educationEntries: StudentEducation[] = normalizeEducation(profileData?.education)
     const experienceGroups: ExperienceGroups = normalizeExperienceGroups(profileData?.experience)
+    const languageTags = normalizeCommaList(profileData?.language_proficiency)
 
     const setProjects = (next: StudentProject[]) => {
         setProfileData((prev: any) => ({ ...prev, projects: next }))
@@ -461,6 +486,10 @@ export default function StudentProfile() {
 
     const setAchievements = (next: CustomAchievement[]) => {
         setProfileData((prev: any) => ({ ...prev, custom_achievements: next }))
+    }
+
+    const setLanguageTags = (next: string[]) => {
+        setProfileData((prev: any) => ({ ...prev, language_proficiency: next.join(', ') }))
     }
 
     const setExperienceGroups = (next: ExperienceGroups) => {
@@ -693,6 +722,18 @@ export default function StudentProfile() {
             </div>
         )
     }
+
+    const genderOptions = [
+        { value: 'male', label: 'Male' },
+        { value: 'female', label: 'Female' },
+        { value: 'other', label: 'Other' },
+    ]
+
+    const locationPreferenceOptions = [
+        { value: 'onsite', label: 'Onsite' },
+        { value: 'remote', label: 'Remote' },
+        { value: 'hybrid', label: 'Hybrid' },
+    ]
 
     return (
         <div className="w-full font-sans text-[#1b140d] dark:text-gray-100">
@@ -1889,6 +1930,105 @@ export default function StudentProfile() {
 
                 {/* Right Column - Secondary Actions */}
                 <div className="lg:col-span-4 flex flex-col gap-8">
+
+                    {/* Additional Profile Details */}
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 dark:bg-[#221910] dark:border-gray-800">
+                        <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
+                            <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-xl text-orange-600">
+                                <MapPin className="w-5 h-5" />
+                            </div>
+                            Additional Details
+                        </h3>
+
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Gender</label>
+                                {isEditing ? (
+                                    <Select
+                                        value={profileData.gender || ''}
+                                        onChange={(e) => setProfileData((prev: any) => ({ ...prev, gender: e.target.value }))}
+                                        className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
+                                        options={genderOptions}
+                                    />
+                                ) : (
+                                    <ReadonlyField value={formatLabel(profileData.gender)} placeholder="Select gender" />
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Country</label>
+                                {isEditing ? (
+                                    <Input
+                                        name="country"
+                                        value={profileData.country || ''}
+                                        onChange={handleInputChange}
+                                        placeholder="Country"
+                                        className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
+                                    />
+                                ) : (
+                                    <ReadonlyField value={profileData.country} placeholder="Country" />
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">State</label>
+                                    {isEditing ? (
+                                        <Input
+                                            name="state"
+                                            value={profileData.state || ''}
+                                            onChange={handleInputChange}
+                                            placeholder="State"
+                                            className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
+                                        />
+                                    ) : (
+                                        <ReadonlyField value={profileData.state} placeholder="State" />
+                                    )}
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">City</label>
+                                    {isEditing ? (
+                                        <Input
+                                            name="city"
+                                            value={profileData.city || ''}
+                                            onChange={handleInputChange}
+                                            placeholder="City"
+                                            className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
+                                        />
+                                    ) : (
+                                        <ReadonlyField value={profileData.city} placeholder="City" />
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Location Preference</label>
+                                {isEditing ? (
+                                    <Select
+                                        value={profileData.location_preferences || ''}
+                                        onChange={(e) => setProfileData((prev: any) => ({ ...prev, location_preferences: e.target.value }))}
+                                        className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
+                                        options={locationPreferenceOptions}
+                                    />
+                                ) : (
+                                    <ReadonlyField value={formatLabel(profileData.location_preferences)} placeholder="Select preference" />
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Language Proficiency</label>
+                                {isEditing ? (
+                                    <TagInput
+                                        value={languageTags}
+                                        onChange={setLanguageTags}
+                                        placeholder="Mother Tongue, English, Hindi, Odia"
+                                    />
+                                ) : (
+                                    <ReadonlyParagraph value={languageTags.join(', ')} placeholder="Add languages" />
+                                )}
+                            </div>
+                        </div>
+                    </div>
                     
                     {/* Professional Links */}
                     <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 dark:bg-[#221910] dark:border-gray-800">
@@ -1913,7 +2053,19 @@ export default function StudentProfile() {
                                         className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
                                     />
                                 ) : (
-                                    <ReadonlyField value={profileData.linkedin_profile} placeholder="linkedin.com/in/username" />
+                                    profileData.linkedin_profile ? (
+                                        <a
+                                            href={normalizeUrl(profileData.linkedin_profile)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                                        >
+                                            <Linkedin className="w-4 h-4" />
+                                            <span>{profileData.linkedin_profile}</span>
+                                        </a>
+                                    ) : (
+                                        <ReadonlyField value="" placeholder="linkedin.com/in/username" />
+                                    )
                                 )}
                             </div>
                             <div className="space-y-1">
@@ -1929,7 +2081,19 @@ export default function StudentProfile() {
                                         className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
                                     />
                                 ) : (
-                                    <ReadonlyField value={profileData.github_profile} placeholder="github.com/username" />
+                                    profileData.github_profile ? (
+                                        <a
+                                            href={normalizeUrl(profileData.github_profile)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                                        >
+                                            <Github className="w-4 h-4" />
+                                            <span>{profileData.github_profile}</span>
+                                        </a>
+                                    ) : (
+                                        <ReadonlyField value="" placeholder="github.com/username" />
+                                    )
                                 )}
                             </div>
                             <div className="space-y-1">
@@ -1945,7 +2109,19 @@ export default function StudentProfile() {
                                         className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
                                     />
                                 ) : (
-                                    <ReadonlyField value={profileData.personal_website} placeholder="yourwebsite.com" />
+                                    profileData.personal_website ? (
+                                        <a
+                                            href={normalizeUrl(profileData.personal_website)}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
+                                        >
+                                            <Globe className="w-4 h-4" />
+                                            <span>{profileData.personal_website}</span>
+                                        </a>
+                                    ) : (
+                                        <ReadonlyField value="" placeholder="yourwebsite.com" />
+                                    )
                                 )}
                             </div>
                         </div>
