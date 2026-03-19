@@ -75,6 +75,27 @@ type StudentEducation = {
     description: string
 }
 
+type WorkMode = 'onsite' | 'hybrid' | 'remote'
+type ExperienceType = 'internship' | 'full_time' | 'other'
+
+type ExperienceEntry = {
+    id: string
+    company_name: string
+    role: string
+    skills: string[]
+    major_project: string
+    start_date: string
+    end_date: string
+    work_mode: WorkMode
+    experience_type: ExperienceType
+}
+
+type ExperienceGroups = {
+    internship: ExperienceEntry[]
+    full_time: ExperienceEntry[]
+    other: ExperienceEntry[]
+}
+
 function generateId() {
     if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -144,12 +165,79 @@ function normalizeEducation(value: unknown): StudentEducation[] {
     }))
 }
 
+function normalizeExperienceEntry(value: any, type: ExperienceType): ExperienceEntry {
+    return {
+        id: typeof value?.id === 'string' ? value.id : generateId(),
+        company_name: typeof value?.company_name === 'string' ? value.company_name : '',
+        role: typeof value?.role === 'string' ? value.role : '',
+        skills: normalizeStringArray(value?.skills),
+        major_project: typeof value?.major_project === 'string' ? value.major_project : '',
+        start_date: typeof value?.start_date === 'string' ? value.start_date : '',
+        end_date: typeof value?.end_date === 'string' ? value.end_date : '',
+        work_mode: value?.work_mode === 'hybrid' || value?.work_mode === 'remote' ? value.work_mode : 'onsite',
+        experience_type: value?.experience_type === 'internship' || value?.experience_type === 'full_time' || value?.experience_type === 'other'
+            ? value.experience_type
+            : type,
+    }
+}
+
+function normalizeExperienceGroups(value: any): ExperienceGroups {
+    const groups: ExperienceGroups = { internship: [], full_time: [], other: [] }
+
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+        if (Array.isArray(value.internship)) {
+            groups.internship = value.internship.map((entry: any) => normalizeExperienceEntry(entry, 'internship'))
+        }
+        if (Array.isArray(value.full_time)) {
+            groups.full_time = value.full_time.map((entry: any) => normalizeExperienceEntry(entry, 'full_time'))
+        }
+        if (Array.isArray(value.other)) {
+            groups.other = value.other.map((entry: any) => normalizeExperienceEntry(entry, 'other'))
+        }
+
+        if (groups.internship.length || groups.full_time.length || groups.other.length) {
+            return groups
+        }
+    }
+
+    if (Array.isArray(value)) {
+        value.forEach((entry) => {
+            const type: ExperienceType = entry?.experience_type === 'internship' || entry?.experience_type === 'full_time' || entry?.experience_type === 'other'
+                ? entry.experience_type
+                : 'other'
+            groups[type].push(normalizeExperienceEntry(entry, type))
+        })
+    }
+
+    return groups
+}
+
+function hasExperienceContent(entry: ExperienceEntry) {
+    return Boolean(
+        entry.company_name.trim() ||
+        entry.role.trim() ||
+        entry.skills.length ||
+        entry.major_project.trim() ||
+        entry.start_date.trim() ||
+        entry.end_date.trim()
+    )
+}
+
+function flattenExperienceGroups(groups: ExperienceGroups): ExperienceEntry[] {
+    return [
+        ...groups.internship.map((entry) => ({ ...entry, experience_type: 'internship' as const })),
+        ...groups.full_time.map((entry) => ({ ...entry, experience_type: 'full_time' as const })),
+        ...groups.other.map((entry) => ({ ...entry, experience_type: 'other' as const })),
+    ].filter(hasExperienceContent)
+}
+
 function hydrateDynamicSections(data: any) {
     return {
         ...(data ?? {}),
         education: normalizeEducation(data?.education),
         projects: normalizeProjects(data?.projects),
         custom_achievements: normalizeAchievements(data?.custom_achievements),
+        experience: normalizeExperienceGroups(data?.experience),
     }
 }
 
@@ -228,10 +316,29 @@ function TagInput({
     )
 }
 
+function ReadonlyField({ value, placeholder }: { value?: string; placeholder?: string }) {
+    const text = value?.trim()
+    return (
+        <div className="min-h-[44px] rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-black/20 dark:text-gray-200">
+            {text ? text : <span className="text-gray-400">{placeholder || 'Not set'}</span>}
+        </div>
+    )
+}
+
+function ReadonlyParagraph({ value, placeholder }: { value?: string; placeholder?: string }) {
+    const text = value?.trim()
+    return (
+        <div className="rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-700 dark:border-gray-700 dark:bg-black/20 dark:text-gray-200 whitespace-pre-wrap">
+            {text ? text : <span className="text-gray-400">{placeholder || 'Not set'}</span>}
+        </div>
+    )
+}
+
 export default function StudentProfile() {
     const { user } = useAuth()
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
+    const [isEditing, setIsEditing] = useState(false)
     const [profileData, setProfileData] = useState<any>({})
     const [showNudge, setShowNudge] = useState(false)
     const [educationDraft, setEducationDraft] = useState<StudentEducation | null>(null)
@@ -282,10 +389,13 @@ export default function StudentProfile() {
     const handleSaveProfile = async () => {
         try {
             setIsSaving(true)
-            const { education, ...payload } = profileData || {}
-            await apiClient.updateStudentProfile(payload)
+            const { education, experience, ...payload } = profileData || {}
+            const experiencePayload = flattenExperienceGroups(normalizeExperienceGroups(experience))
+            const updated = await apiClient.updateStudentProfile({ ...payload, experience: experiencePayload })
+            setProfileData(hydrateDynamicSections(updated ?? { ...payload, education, experience: experiencePayload }))
             toast.success("Profile updated successfully!")
             setShowNudge(false)
+            setIsEditing(false)
         } catch (error) {
             console.error("Error updating profile:", error)
             toast.error("Failed to update profile")
@@ -343,6 +453,7 @@ export default function StudentProfile() {
     const projects: StudentProject[] = normalizeProjects(profileData?.projects)
     const achievements: CustomAchievement[] = normalizeAchievements(profileData?.custom_achievements)
     const educationEntries: StudentEducation[] = normalizeEducation(profileData?.education)
+    const experienceGroups: ExperienceGroups = normalizeExperienceGroups(profileData?.experience)
 
     const setProjects = (next: StudentProject[]) => {
         setProfileData((prev: any) => ({ ...prev, projects: next }))
@@ -350,6 +461,42 @@ export default function StudentProfile() {
 
     const setAchievements = (next: CustomAchievement[]) => {
         setProfileData((prev: any) => ({ ...prev, custom_achievements: next }))
+    }
+
+    const setExperienceGroups = (next: ExperienceGroups) => {
+        setProfileData((prev: any) => ({ ...prev, experience: next }))
+    }
+
+    const addExperience = (type: ExperienceType) => {
+        const nextEntry: ExperienceEntry = {
+            id: generateId(),
+            company_name: '',
+            role: '',
+            skills: [],
+            major_project: '',
+            start_date: '',
+            end_date: '',
+            work_mode: 'onsite',
+            experience_type: type,
+        }
+        setExperienceGroups({
+            ...experienceGroups,
+            [type]: [nextEntry, ...experienceGroups[type]],
+        })
+    }
+
+    const updateExperience = (type: ExperienceType, id: string, patch: Partial<ExperienceEntry>) => {
+        setExperienceGroups({
+            ...experienceGroups,
+            [type]: experienceGroups[type].map((entry) => (entry.id === id ? { ...entry, ...patch } : entry)),
+        })
+    }
+
+    const removeExperience = (type: ExperienceType, id: string) => {
+        setExperienceGroups({
+            ...experienceGroups,
+            [type]: experienceGroups[type].filter((entry) => entry.id !== id),
+        })
     }
 
 
@@ -501,6 +648,52 @@ export default function StudentProfile() {
         setEducationDraft((prev) => (prev ? { ...prev, ...patch } : prev))
     }
 
+    const renderExperienceList = (entries: ExperienceEntry[]) => {
+        if (!entries.length) {
+            return (
+                <p className="text-sm text-gray-500 dark:text-gray-400">No experience added yet.</p>
+            )
+        }
+
+        return (
+            <div className="space-y-4">
+                {entries.map((entry) => {
+                    const dates = [entry.start_date, entry.end_date].filter(Boolean).join(' - ')
+                    return (
+                        <div key={entry.id} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-black/20 p-4">
+                            <div className="flex items-start justify-between gap-3">
+                                <div>
+                                    <p className="text-sm font-bold text-gray-700 dark:text-gray-200">
+                                        {entry.role?.trim() || 'Role'}
+                                    </p>
+                                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                                        {entry.company_name?.trim() || 'Company'}
+                                    </p>
+                                </div>
+                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                                    {entry.work_mode}
+                                </span>
+                            </div>
+                            {dates && (
+                                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">{dates}</p>
+                            )}
+                            {entry.skills.length > 0 && (
+                                <p className="mt-2 text-xs text-gray-600 dark:text-gray-300">
+                                    Skills: {entry.skills.join(', ')}
+                                </p>
+                            )}
+                            {entry.major_project?.trim() && (
+                                <p className="mt-2 text-xs text-gray-600 dark:text-gray-300">
+                                    Major Project: {entry.major_project}
+                                </p>
+                            )}
+                        </div>
+                    )
+                })}
+            </div>
+        )
+    }
+
     return (
         <div className="w-full font-sans text-[#1b140d] dark:text-gray-100">
             {/* Profile Completeness Nudge */}
@@ -535,14 +728,24 @@ export default function StudentProfile() {
                     <h1 className="text-3xl font-extrabold tracking-tight">Student Profile</h1>
                     <p className="text-gray-500 dark:text-gray-400 mt-1">Manage your details and professional information</p>
                 </div>
-                <Button 
-                    onClick={handleSaveProfile} 
-                    loading={isSaving}
-                    className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-8 h-12 font-bold shadow-lg shadow-[#ee8c2b]/20 flex items-center gap-2"
-                >
-                    <Save className="w-5 h-5" />
-                    Save Changes
-                </Button>
+                {isEditing ? (
+                    <Button 
+                        onClick={handleSaveProfile} 
+                        loading={isSaving}
+                        className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-8 h-12 font-bold shadow-lg shadow-[#ee8c2b]/20 flex items-center gap-2"
+                    >
+                        <Save className="w-5 h-5" />
+                        Save Changes
+                    </Button>
+                ) : (
+                    <Button
+                        onClick={() => setIsEditing(true)}
+                        className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-8 h-12 font-bold shadow-lg shadow-[#ee8c2b]/20 flex items-center gap-2"
+                    >
+                        <Pencil className="w-5 h-5" />
+                        Edit Profile
+                    </Button>
+                )}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -563,55 +766,75 @@ export default function StudentProfile() {
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Full Name</label>
                                 <div className="relative">
-                                    <Input 
-                                        name="name"
-                                        value={profileData.name || ''}
-                                        onChange={handleInputChange}
-                                        className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
-                                        placeholder="Enter full name"
-                                    />
+                                    {isEditing ? (
+                                        <Input 
+                                            name="name"
+                                            value={profileData.name || ''}
+                                            onChange={handleInputChange}
+                                            className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
+                                            placeholder="Enter full name"
+                                        />
+                                    ) : (
+                                        <ReadonlyField value={profileData.name} placeholder="Enter full name" />
+                                    )}
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Email Address (Read-only)</label>
-                                <Input 
-                                    value={profileData.email || ''}
-                                    readOnly
-                                    className="pl-4 rounded-xl border-gray-200 bg-gray-100 dark:bg-black/40 text-gray-400 cursor-not-allowed"
-                                />
+                                {isEditing ? (
+                                    <Input 
+                                        value={profileData.email || ''}
+                                        readOnly
+                                        className="pl-4 rounded-xl border-gray-200 bg-gray-100 dark:bg-black/40 text-gray-400 cursor-not-allowed"
+                                    />
+                                ) : (
+                                    <ReadonlyField value={profileData.email} placeholder="Email not set" />
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Phone Number</label>
-                                <Input 
-                                    name="phone"
-                                    value={profileData.phone || ''}
-                                    onChange={handleInputChange}
-                                    className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
-                                    placeholder="+91 XXXXX XXXXX"
-                                />
+                                {isEditing ? (
+                                    <Input 
+                                        name="phone"
+                                        value={profileData.phone || ''}
+                                        onChange={handleInputChange}
+                                        className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
+                                        placeholder="+91 XXXXX XXXXX"
+                                    />
+                                ) : (
+                                    <ReadonlyField value={profileData.phone} placeholder="+91 XXXXX XXXXX" />
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Date of Birth</label>
-                                <Input 
-                                    type="date"
-                                    name="dob"
-                                    value={profileData.dob || ''}
-                                    onChange={handleInputChange}
-                                    className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
-                                />
+                                {isEditing ? (
+                                    <Input 
+                                        type="date"
+                                        name="dob"
+                                        value={profileData.dob || ''}
+                                        onChange={handleInputChange}
+                                        className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
+                                    />
+                                ) : (
+                                    <ReadonlyField value={profileData.dob} placeholder="Date of birth" />
+                                )}
                             </div>
                         </div>
 
                         <div className="mt-6 space-y-2">
                             <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Short Bio</label>
-                            <textarea 
-                                name="bio"
-                                value={profileData.bio || ''}
-                                onChange={handleInputChange}
-                                rows={3}
-                                className="w-full p-4 rounded-xl border border-gray-200 bg-gray-50 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
-                                placeholder="Tell us about yourself..."
-                            />
+                            {isEditing ? (
+                                <textarea 
+                                    name="bio"
+                                    value={profileData.bio || ''}
+                                    onChange={handleInputChange}
+                                    rows={3}
+                                    className="w-full p-4 rounded-xl border border-gray-200 bg-gray-50 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
+                                    placeholder="Tell us about yourself..."
+                                />
+                            ) : (
+                                <ReadonlyParagraph value={profileData.bio} placeholder="Tell us about yourself..." />
+                            )}
                         </div>
                     </div>
 
@@ -624,17 +847,19 @@ export default function StudentProfile() {
                                 </div>
                                 Education
                             </h3>
-                            <Button
-                                type="button"
-                                onClick={startAddEducation}
-                                className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#ee8c2b]/20"
-                            >
-                                <Plus className="w-4 h-4" />
-                                Add Education
-                            </Button>
+                            {isEditing && (
+                                <Button
+                                    type="button"
+                                    onClick={startAddEducation}
+                                    className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#ee8c2b]/20"
+                                >
+                                    <Plus className="w-4 h-4" />
+                                    Add Education
+                                </Button>
+                            )}
                         </div>
 
-                        {isAddingEducation && educationDraft && (
+                        {isEditing && isAddingEducation && educationDraft && (
                             <div className="mb-6 rounded-3xl border border-emerald-100 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-900/10 p-6">
                                 <div className="flex items-center justify-between gap-3 mb-5">
                                     <p className="text-sm font-extrabold text-emerald-700 dark:text-emerald-200">New Education</p>
@@ -775,24 +1000,26 @@ export default function StudentProfile() {
                                                             <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{meta}</p>
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center gap-2">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => startEditEducation(entry)}
-                                                            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-[#ee8c2b] transition-colors"
-                                                        >
-                                                            <Pencil className="w-3.5 h-3.5" />
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => deleteEducation(entry.id)}
-                                                            className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
-                                                        >
-                                                            <Trash2 className="w-3.5 h-3.5" />
-                                                            Delete
-                                                        </button>
-                                                    </div>
+                                                    {isEditing && (
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => startEditEducation(entry)}
+                                                                className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-[#ee8c2b] transition-colors"
+                                                            >
+                                                                <Pencil className="w-3.5 h-3.5" />
+                                                                Edit
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => deleteEducation(entry.id)}
+                                                                className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
+                                                            >
+                                                                <Trash2 className="w-3.5 h-3.5" />
+                                                                Delete
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {entry.description && (
@@ -928,58 +1155,377 @@ export default function StudentProfile() {
                         <div className="space-y-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Technical Skills</label>
-                                <textarea 
-                                    name="technical_skills"
-                                    value={profileData.technical_skills || ''}
-                                    onChange={handleInputChange}
-                                    rows={2}
-                                    className="w-full p-4 rounded-xl border border-gray-200 bg-gray-50 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
-                                    placeholder="React, Node.js, Python, SQL..."
-                                />
+                                {isEditing ? (
+                                    <textarea 
+                                        name="technical_skills"
+                                        value={profileData.technical_skills || ''}
+                                        onChange={handleInputChange}
+                                        rows={2}
+                                        className="w-full p-4 rounded-xl border border-gray-200 bg-gray-50 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
+                                        placeholder="React, Node.js, Python, SQL..."
+                                    />
+                                ) : (
+                                    <ReadonlyParagraph value={profileData.technical_skills} placeholder="React, Node.js, Python, SQL..." />
+                                )}
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Soft Skills</label>
-                                <textarea 
-                                    name="soft_skills"
-                                    value={profileData.soft_skills || ''}
-                                    onChange={handleInputChange}
-                                    rows={2}
-                                    className="w-full p-4 rounded-xl border border-gray-200 bg-gray-50 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
-                                    placeholder="Communication, Leadership, Teamwork..."
-                                />
+                                {isEditing ? (
+                                    <textarea 
+                                        name="soft_skills"
+                                        value={profileData.soft_skills || ''}
+                                        onChange={handleInputChange}
+                                        rows={2}
+                                        className="w-full p-4 rounded-xl border border-gray-200 bg-gray-50 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
+                                        placeholder="Communication, Leadership, Teamwork..."
+                                    />
+                                ) : (
+                                    <ReadonlyParagraph value={profileData.soft_skills} placeholder="Communication, Leadership, Teamwork..." />
+                                )}
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Preferred Industry</label>
-                                    <Input 
-                                        name="preferred_industry"
-                                        value={profileData.preferred_industry || ''}
-                                        onChange={handleInputChange}
-                                        className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
-                                        placeholder="e.g. Fintech, Healthcare"
-                                    />
+                                    {isEditing ? (
+                                        <Input 
+                                            name="preferred_industry"
+                                            value={profileData.preferred_industry || ''}
+                                            onChange={handleInputChange}
+                                            className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
+                                            placeholder="e.g. Fintech, Healthcare"
+                                        />
+                                    ) : (
+                                        <ReadonlyField value={profileData.preferred_industry} placeholder="e.g. Fintech, Healthcare" />
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Roles of Interest</label>
-                                    <Input 
-                                        name="job_roles_of_interest"
-                                        value={profileData.job_roles_of_interest || ''}
-                                        onChange={handleInputChange}
-                                        className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
-                                        placeholder="e.g. SDE, Data Analyst"
-                                    />
+                                    {isEditing ? (
+                                        <Input 
+                                            name="job_roles_of_interest"
+                                            value={profileData.job_roles_of_interest || ''}
+                                            onChange={handleInputChange}
+                                            className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:bg-black/20"
+                                            placeholder="e.g. SDE, Data Analyst"
+                                        />
+                                    ) : (
+                                        <ReadonlyField value={profileData.job_roles_of_interest} placeholder="e.g. SDE, Data Analyst" />
+                                    )}
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Internship Experience</label>
-                                <textarea 
-                                    name="internship_experience"
-                                    value={profileData.internship_experience || ''}
-                                    onChange={handleInputChange}
-                                    rows={3}
-                                    className="w-full p-4 rounded-xl border border-gray-200 bg-gray-50 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
-                                    placeholder="Describe your past internships..."
-                                />
+                                <div className="flex items-center justify-between gap-3">
+                                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Internship Experience</label>
+                                    {isEditing && (
+                                        <Button
+                                            type="button"
+                                            onClick={() => addExperience('internship')}
+                                            className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-9 text-xs font-bold shadow-lg shadow-[#ee8c2b]/20"
+                                        >
+                                            <Plus className="w-3.5 h-3.5" />
+                                            Add Internship
+                                        </Button>
+                                    )}
+                                </div>
+                                {!isEditing && renderExperienceList(experienceGroups.internship)}
+                                {isEditing && (
+                                    <div className="space-y-5">
+                                        {experienceGroups.internship.map((entry) => (
+                                            <div key={entry.id} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-black/20 p-5">
+                                                <div className="flex items-center justify-between gap-3 mb-4">
+                                                    <p className="text-sm font-bold text-gray-700 dark:text-gray-200">Internship</p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeExperience('internship', entry.id)}
+                                                        className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                        Remove
+                                                    </button>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Company</label>
+                                                        <Input
+                                                            value={entry.company_name}
+                                                            onChange={(e) => updateExperience('internship', entry.id, { company_name: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            placeholder="Company name"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Role</label>
+                                                        <Input
+                                                            value={entry.role}
+                                                            onChange={(e) => updateExperience('internship', entry.id, { role: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            placeholder="Role / Title"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Start Date</label>
+                                                        <Input
+                                                            type="date"
+                                                            value={entry.start_date}
+                                                            onChange={(e) => updateExperience('internship', entry.id, { start_date: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">End Date</label>
+                                                        <Input
+                                                            type="date"
+                                                            value={entry.end_date}
+                                                            onChange={(e) => updateExperience('internship', entry.id, { end_date: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Work Mode</label>
+                                                        <Select
+                                                            value={entry.work_mode}
+                                                            onChange={(e) => updateExperience('internship', entry.id, { work_mode: e.target.value as WorkMode })}
+                                                            className="rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            options={[
+                                                                { value: 'onsite', label: 'Onsite' },
+                                                                { value: 'hybrid', label: 'Hybrid' },
+                                                                { value: 'remote', label: 'Remote' },
+                                                            ]}
+                                                        />
+                                                    </div>
+                                                    <div className="md:col-span-2 space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Major Project</label>
+                                                        <Input
+                                                            value={entry.major_project}
+                                                            onChange={(e) => updateExperience('internship', entry.id, { major_project: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            placeholder="Key project or achievement"
+                                                        />
+                                                    </div>
+                                                    <div className="md:col-span-2 space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Skills Used</label>
+                                                        <TagInput
+                                                            value={entry.skills}
+                                                            onChange={(next) => updateExperience('internship', entry.id, { skills: next })}
+                                                            placeholder="e.g. React, APIs, Communication"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between gap-3">
+                                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Full-time Experience</label>
+                                    {isEditing && (
+                                        <Button
+                                            type="button"
+                                            onClick={() => addExperience('full_time')}
+                                            className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-9 text-xs font-bold shadow-lg shadow-[#ee8c2b]/20"
+                                        >
+                                            <Plus className="w-3.5 h-3.5" />
+                                            Add Full-time
+                                        </Button>
+                                    )}
+                                </div>
+                                {!isEditing && renderExperienceList(experienceGroups.full_time)}
+                                {isEditing && (
+                                    <div className="space-y-5">
+                                        {experienceGroups.full_time.map((entry) => (
+                                            <div key={entry.id} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-black/20 p-5">
+                                                <div className="flex items-center justify-between gap-3 mb-4">
+                                                    <p className="text-sm font-bold text-gray-700 dark:text-gray-200">Full-time</p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeExperience('full_time', entry.id)}
+                                                        className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                        Remove
+                                                    </button>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Company</label>
+                                                        <Input
+                                                            value={entry.company_name}
+                                                            onChange={(e) => updateExperience('full_time', entry.id, { company_name: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            placeholder="Company name"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Role</label>
+                                                        <Input
+                                                            value={entry.role}
+                                                            onChange={(e) => updateExperience('full_time', entry.id, { role: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            placeholder="Role / Title"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Start Date</label>
+                                                        <Input
+                                                            type="date"
+                                                            value={entry.start_date}
+                                                            onChange={(e) => updateExperience('full_time', entry.id, { start_date: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">End Date</label>
+                                                        <Input
+                                                            type="date"
+                                                            value={entry.end_date}
+                                                            onChange={(e) => updateExperience('full_time', entry.id, { end_date: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Work Mode</label>
+                                                        <Select
+                                                            value={entry.work_mode}
+                                                            onChange={(e) => updateExperience('full_time', entry.id, { work_mode: e.target.value as WorkMode })}
+                                                            className="rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            options={[
+                                                                { value: 'onsite', label: 'Onsite' },
+                                                                { value: 'hybrid', label: 'Hybrid' },
+                                                                { value: 'remote', label: 'Remote' },
+                                                            ]}
+                                                        />
+                                                    </div>
+                                                    <div className="md:col-span-2 space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Major Project</label>
+                                                        <Input
+                                                            value={entry.major_project}
+                                                            onChange={(e) => updateExperience('full_time', entry.id, { major_project: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            placeholder="Key project or achievement"
+                                                        />
+                                                    </div>
+                                                    <div className="md:col-span-2 space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Skills Used</label>
+                                                        <TagInput
+                                                            value={entry.skills}
+                                                            onChange={(next) => updateExperience('full_time', entry.id, { skills: next })}
+                                                            placeholder="e.g. React, APIs, Communication"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between gap-3">
+                                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Other Experience</label>
+                                    {isEditing && (
+                                        <Button
+                                            type="button"
+                                            onClick={() => addExperience('other')}
+                                            className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-9 text-xs font-bold shadow-lg shadow-[#ee8c2b]/20"
+                                        >
+                                            <Plus className="w-3.5 h-3.5" />
+                                            Add Other
+                                        </Button>
+                                    )}
+                                </div>
+                                {!isEditing && renderExperienceList(experienceGroups.other)}
+                                {isEditing && (
+                                    <div className="space-y-5">
+                                        {experienceGroups.other.map((entry) => (
+                                            <div key={entry.id} className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-black/20 p-5">
+                                                <div className="flex items-center justify-between gap-3 mb-4">
+                                                    <p className="text-sm font-bold text-gray-700 dark:text-gray-200">Other</p>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeExperience('other', entry.id)}
+                                                        className="inline-flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                        Remove
+                                                    </button>
+                                                </div>
+
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Company</label>
+                                                        <Input
+                                                            value={entry.company_name}
+                                                            onChange={(e) => updateExperience('other', entry.id, { company_name: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            placeholder="Company name"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Role</label>
+                                                        <Input
+                                                            value={entry.role}
+                                                            onChange={(e) => updateExperience('other', entry.id, { role: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            placeholder="Role / Title"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Start Date</label>
+                                                        <Input
+                                                            type="date"
+                                                            value={entry.start_date}
+                                                            onChange={(e) => updateExperience('other', entry.id, { start_date: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">End Date</label>
+                                                        <Input
+                                                            type="date"
+                                                            value={entry.end_date}
+                                                            onChange={(e) => updateExperience('other', entry.id, { end_date: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Work Mode</label>
+                                                        <Select
+                                                            value={entry.work_mode}
+                                                            onChange={(e) => updateExperience('other', entry.id, { work_mode: e.target.value as WorkMode })}
+                                                            className="rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            options={[
+                                                                { value: 'onsite', label: 'Onsite' },
+                                                                { value: 'hybrid', label: 'Hybrid' },
+                                                                { value: 'remote', label: 'Remote' },
+                                                            ]}
+                                                        />
+                                                    </div>
+                                                    <div className="md:col-span-2 space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Major Project</label>
+                                                        <Input
+                                                            value={entry.major_project}
+                                                            onChange={(e) => updateExperience('other', entry.id, { major_project: e.target.value })}
+                                                            className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                            placeholder="Key project or achievement"
+                                                        />
+                                                    </div>
+                                                    <div className="md:col-span-2 space-y-2">
+                                                        <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Skills Used</label>
+                                                        <TagInput
+                                                            value={entry.skills}
+                                                            onChange={(next) => updateExperience('other', entry.id, { skills: next })}
+                                                            placeholder="e.g. React, APIs, Communication"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -993,164 +1539,197 @@ export default function StudentProfile() {
                                 </div>
                                 Projects
                             </h3>
-                            <Button
-                                type="button"
-                                onClick={addProject}
-                                className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#ee8c2b]/20"
-                            >
-                                Add Project
-                            </Button>
-                        </div>
-
-                        <div className="space-y-6">
-                            {projects.length === 0 && (
-                                <div className="p-5 rounded-2xl bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400">
-                                    Add your best projects to stand out. You can add multiple projects.
-                                </div>
-                            )}
-
-                            {projects.map((project, idx) => (
-                                <div
-                                    key={project.id}
-                                    className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-black/20 p-6"
+                            {isEditing && (
+                                <Button
+                                    type="button"
+                                    onClick={addProject}
+                                    className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#ee8c2b]/20"
                                 >
-                                    <div className="flex items-center justify-between gap-4 mb-5">
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-extrabold text-gray-700 dark:text-gray-200 truncate">
+                                    Add Project
+                                </Button>
+                            )}
+                        </div>
+                        {!isEditing && (
+                            <div className="space-y-4">
+                                {projects.length === 0 && (
+                                    <div className="p-5 rounded-2xl bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400">
+                                        Add your best projects to stand out. You can add multiple projects.
+                                    </div>
+                                )}
+
+                                {projects.map((project, idx) => {
+                                    const timeline = [project.start_date, project.end_date].filter(Boolean).join(' - ')
+                                    return (
+                                        <div key={project.id} className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-black/20 p-6">
+                                            <p className="text-sm font-extrabold text-gray-700 dark:text-gray-200">
                                                 {project.title?.trim() ? project.title : `Project ${idx + 1}`}
                                             </p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                Keep it concise, include impact and links.
-                                            </p>
+                                            {project.description && (
+                                                <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">{project.description}</p>
+                                            )}
+                                            <div className="mt-3 text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                                                {timeline && <p>{timeline}</p>}
+                                                <p>Status: {project.status === 'completed' ? 'Completed' : 'In Progress'}</p>
+                                                {project.skills_used.length > 0 && <p>Skills: {project.skills_used.join(', ')}</p>}
+                                                {project.technologies_used.length > 0 && <p>Tech: {project.technologies_used.join(', ')}</p>}
+                                            </div>
                                         </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => removeProject(project.id)}
-                                            className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
-                                        >
-                                            <X className="w-4 h-4" />
-                                            Remove
-                                        </button>
+                                    )
+                                })}
+                            </div>
+                        )}
+
+                        {isEditing && (
+                            <div className="space-y-6">
+                                {projects.length === 0 && (
+                                    <div className="p-5 rounded-2xl bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400">
+                                        Add your best projects to stand out. You can add multiple projects.
                                     </div>
+                                )}
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="md:col-span-2 space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Project Title</label>
-                                            <Input
-                                                value={project.title}
-                                                onChange={(e) => updateProject(project.id, { title: e.target.value })}
-                                                className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
-                                                placeholder="e.g. Campus Placement Portal"
-                                            />
+                                {projects.map((project, idx) => (
+                                    <div
+                                        key={project.id}
+                                        className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-black/20 p-6"
+                                    >
+                                        <div className="flex items-center justify-between gap-4 mb-5">
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-extrabold text-gray-700 dark:text-gray-200 truncate">
+                                                    {project.title?.trim() ? project.title : `Project ${idx + 1}`}
+                                                </p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                    Keep it concise, include impact and links.
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeProject(project.id)}
+                                                className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                                Remove
+                                            </button>
                                         </div>
 
-                                        <div className="md:col-span-2 space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Project Description</label>
-                                            <textarea
-                                                value={project.description}
-                                                onChange={(e) => updateProject(project.id, { description: e.target.value })}
-                                                rows={3}
-                                                className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
-                                                placeholder="What you built, what problem it solved, and the impact."
-                                            />
-                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Project Title</label>
+                                                <Input
+                                                    value={project.title}
+                                                    onChange={(e) => updateProject(project.id, { title: e.target.value })}
+                                                    className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                    placeholder="e.g. Campus Placement Portal"
+                                                />
+                                            </div>
 
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Start Date</label>
-                                            <Input
-                                                type="date"
-                                                value={project.start_date}
-                                                onChange={(e) => updateProject(project.id, { start_date: e.target.value })}
-                                                className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
-                                            />
-                                        </div>
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Project Description</label>
+                                                <textarea
+                                                    value={project.description}
+                                                    onChange={(e) => updateProject(project.id, { description: e.target.value })}
+                                                    rows={3}
+                                                    className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
+                                                    placeholder="What you built, what problem it solved, and the impact."
+                                                />
+                                            </div>
 
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">End Date</label>
-                                            <Input
-                                                type="date"
-                                                value={project.end_date}
-                                                onChange={(e) => updateProject(project.id, { end_date: e.target.value })}
-                                                className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
-                                            />
-                                        </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Start Date</label>
+                                                <Input
+                                                    type="date"
+                                                    value={project.start_date}
+                                                    onChange={(e) => updateProject(project.id, { start_date: e.target.value })}
+                                                    className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                />
+                                            </div>
 
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Status</label>
-                                            <Select
-                                                value={project.status}
-                                                onChange={(e) => updateProject(project.id, { status: e.target.value as ProjectStatus })}
-                                                className="rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
-                                                options={[
-                                                    { value: 'in_progress', label: 'In Progress' },
-                                                    { value: 'completed', label: 'Completed' },
-                                                ]}
-                                            />
-                                        </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">End Date</label>
+                                                <Input
+                                                    type="date"
+                                                    value={project.end_date}
+                                                    onChange={(e) => updateProject(project.id, { end_date: e.target.value })}
+                                                    className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                />
+                                            </div>
 
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Project URL (optional)</label>
-                                            <Input
-                                                type="url"
-                                                value={project.project_url || ''}
-                                                onChange={(e) => updateProject(project.id, { project_url: e.target.value })}
-                                                className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
-                                                placeholder="https://yourproject.com"
-                                            />
-                                        </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Status</label>
+                                                <Select
+                                                    value={project.status}
+                                                    onChange={(e) => updateProject(project.id, { status: e.target.value as ProjectStatus })}
+                                                    className="rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                    options={[
+                                                        { value: 'in_progress', label: 'In Progress' },
+                                                        { value: 'completed', label: 'Completed' },
+                                                    ]}
+                                                />
+                                            </div>
 
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">GitHub URL (optional)</label>
-                                            <Input
-                                                type="url"
-                                                value={project.github_url || ''}
-                                                onChange={(e) => updateProject(project.id, { github_url: e.target.value })}
-                                                className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
-                                                placeholder="https://github.com/username/repo"
-                                            />
-                                        </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Project URL (optional)</label>
+                                                <Input
+                                                    type="url"
+                                                    value={project.project_url || ''}
+                                                    onChange={(e) => updateProject(project.id, { project_url: e.target.value })}
+                                                    className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                    placeholder="https://yourproject.com"
+                                                />
+                                            </div>
 
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Demo URL (optional)</label>
-                                            <Input
-                                                type="url"
-                                                value={project.demo_url || ''}
-                                                onChange={(e) => updateProject(project.id, { demo_url: e.target.value })}
-                                                className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
-                                                placeholder="https://youtube.com/..."
-                                            />
-                                        </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">GitHub URL (optional)</label>
+                                                <Input
+                                                    type="url"
+                                                    value={project.github_url || ''}
+                                                    onChange={(e) => updateProject(project.id, { github_url: e.target.value })}
+                                                    className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                    placeholder="https://github.com/username/repo"
+                                                />
+                                            </div>
 
-                                        <div className="md:col-span-2 space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Skills Used (tags)</label>
-                                            <TagInput
-                                                value={project.skills_used}
-                                                onChange={(next) => updateProject(project.id, { skills_used: next })}
-                                                placeholder="e.g. Problem solving, Communication"
-                                            />
-                                        </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Demo URL (optional)</label>
+                                                <Input
+                                                    type="url"
+                                                    value={project.demo_url || ''}
+                                                    onChange={(e) => updateProject(project.id, { demo_url: e.target.value })}
+                                                    className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                    placeholder="https://youtube.com/..."
+                                                />
+                                            </div>
 
-                                        <div className="md:col-span-2 space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Technologies Used (tags)</label>
-                                            <TagInput
-                                                value={project.technologies_used}
-                                                onChange={(next) => updateProject(project.id, { technologies_used: next })}
-                                                placeholder="e.g. Next.js, FastAPI, PostgreSQL"
-                                            />
-                                        </div>
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Skills Used (tags)</label>
+                                                <TagInput
+                                                    value={project.skills_used}
+                                                    onChange={(next) => updateProject(project.id, { skills_used: next })}
+                                                    placeholder="e.g. Problem solving, Communication"
+                                                />
+                                            </div>
 
-                                        <div className="md:col-span-2 space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Project Images (optional)</label>
-                                            <TagInput
-                                                value={project.images}
-                                                onChange={(next) => updateProject(project.id, { images: next })}
-                                                placeholder="Paste image URLs (comma separated)"
-                                            />
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Technologies Used (tags)</label>
+                                                <TagInput
+                                                    value={project.technologies_used}
+                                                    onChange={(next) => updateProject(project.id, { technologies_used: next })}
+                                                    placeholder="e.g. Next.js, FastAPI, PostgreSQL"
+                                                />
+                                            </div>
+
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Project Images (optional)</label>
+                                                <TagInput
+                                                    value={project.images}
+                                                    onChange={(next) => updateProject(project.id, { images: next })}
+                                                    placeholder="Paste image URLs (comma separated)"
+                                                />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Custom Achievements */}
@@ -1162,116 +1741,149 @@ export default function StudentProfile() {
                                 </div>
                                 Custom Achievements
                             </h3>
-                            <Button
-                                type="button"
-                                onClick={addAchievement}
-                                className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#ee8c2b]/20"
-                            >
-                                Add Entry
-                            </Button>
-                        </div>
-
-                        <div className="space-y-6">
-                            {achievements.length === 0 && (
-                                <div className="p-5 rounded-2xl bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400">
-                                    Add certifications, blogs, research, hackathons, open-source contributions, or any other professional achievement.
-                                </div>
-                            )}
-
-                            {achievements.map((achievement, idx) => (
-                                <div
-                                    key={achievement.id}
-                                    className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-black/20 p-6"
+                            {isEditing && (
+                                <Button
+                                    type="button"
+                                    onClick={addAchievement}
+                                    className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#ee8c2b]/20"
                                 >
-                                    <div className="flex items-center justify-between gap-4 mb-5">
-                                        <div className="min-w-0">
-                                            <p className="text-sm font-extrabold text-gray-700 dark:text-gray-200 truncate">
-                                                {achievement.title?.trim() ? achievement.title : `Achievement ${idx + 1}`}
-                                            </p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                Category: <span className="font-bold">{achievement.category}</span>
-                                            </p>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => removeAchievement(achievement.id)}
-                                            className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
-                                        >
-                                            <X className="w-4 h-4" />
-                                            Remove
-                                        </button>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="md:col-span-2 space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Title</label>
-                                            <Input
-                                                value={achievement.title}
-                                                onChange={(e) => updateAchievement(achievement.id, { title: e.target.value })}
-                                                className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
-                                                placeholder="e.g. AWS Cloud Practitioner"
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Category</label>
-                                            <Select
-                                                value={achievement.category}
-                                                onChange={(e) => updateAchievement(achievement.id, { category: e.target.value as AchievementCategory })}
-                                                className="rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
-                                                options={[
-                                                    { value: 'Certification', label: 'Certification' },
-                                                    { value: 'Blog', label: 'Blog / Article' },
-                                                    { value: 'Research', label: 'Research Paper' },
-                                                    { value: 'Other', label: 'Other' },
-                                                ]}
-                                            />
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Date</label>
-                                            <Input
-                                                type="date"
-                                                value={achievement.date}
-                                                onChange={(e) => updateAchievement(achievement.id, { date: e.target.value })}
-                                                className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
-                                            />
-                                        </div>
-
-                                        <div className="md:col-span-2 space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Description</label>
-                                            <textarea
-                                                value={achievement.description}
-                                                onChange={(e) => updateAchievement(achievement.id, { description: e.target.value })}
-                                                rows={3}
-                                                className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
-                                                placeholder="What you achieved and why it matters."
-                                            />
-                                        </div>
-
-                                        <div className="md:col-span-2 space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Tags</label>
-                                            <TagInput
-                                                value={achievement.tags}
-                                                onChange={(next) => updateAchievement(achievement.id, { tags: next })}
-                                                placeholder="e.g. Cloud, DevOps, Writing"
-                                            />
-                                        </div>
-
-                                        <div className="md:col-span-2 space-y-2">
-                                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">URL (optional)</label>
-                                            <Input
-                                                type="url"
-                                                value={achievement.url || ''}
-                                                onChange={(e) => updateAchievement(achievement.id, { url: e.target.value })}
-                                                className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
-                                                placeholder="https://..."
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
+                                    Add Entry
+                                </Button>
+                            )}
                         </div>
+                        {!isEditing && (
+                            <div className="space-y-4">
+                                {achievements.length === 0 && (
+                                    <div className="p-5 rounded-2xl bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400">
+                                        Add certifications, blogs, research, hackathons, open-source contributions, or any other professional achievement.
+                                    </div>
+                                )}
+
+                                {achievements.map((achievement, idx) => (
+                                    <div
+                                        key={achievement.id}
+                                        className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-black/20 p-6"
+                                    >
+                                        <p className="text-sm font-extrabold text-gray-700 dark:text-gray-200">
+                                            {achievement.title?.trim() ? achievement.title : `Achievement ${idx + 1}`}
+                                        </p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            Category: <span className="font-bold">{achievement.category}</span>
+                                        </p>
+                                        {achievement.description && (
+                                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-2">{achievement.description}</p>
+                                        )}
+                                        {achievement.tags.length > 0 && (
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Tags: {achievement.tags.join(', ')}</p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {isEditing && (
+                            <div className="space-y-6">
+                                {achievements.length === 0 && (
+                                    <div className="p-5 rounded-2xl bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-gray-800 text-sm text-gray-500 dark:text-gray-400">
+                                        Add certifications, blogs, research, hackathons, open-source contributions, or any other professional achievement.
+                                    </div>
+                                )}
+
+                                {achievements.map((achievement, idx) => (
+                                    <div
+                                        key={achievement.id}
+                                        className="rounded-3xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-black/20 p-6"
+                                    >
+                                        <div className="flex items-center justify-between gap-4 mb-5">
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-extrabold text-gray-700 dark:text-gray-200 truncate">
+                                                    {achievement.title?.trim() ? achievement.title : `Achievement ${idx + 1}`}
+                                                </p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                    Category: <span className="font-bold">{achievement.category}</span>
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => removeAchievement(achievement.id)}
+                                                className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
+                                            >
+                                                <X className="w-4 h-4" />
+                                                Remove
+                                            </button>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Title</label>
+                                                <Input
+                                                    value={achievement.title}
+                                                    onChange={(e) => updateAchievement(achievement.id, { title: e.target.value })}
+                                                    className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                    placeholder="e.g. AWS Cloud Practitioner"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Category</label>
+                                                <Select
+                                                    value={achievement.category}
+                                                    onChange={(e) => updateAchievement(achievement.id, { category: e.target.value as AchievementCategory })}
+                                                    className="rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                    options={[
+                                                        { value: 'Certification', label: 'Certification' },
+                                                        { value: 'Blog', label: 'Blog / Article' },
+                                                        { value: 'Research', label: 'Research Paper' },
+                                                        { value: 'Other', label: 'Other' },
+                                                    ]}
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Date</label>
+                                                <Input
+                                                    type="date"
+                                                    value={achievement.date}
+                                                    onChange={(e) => updateAchievement(achievement.id, { date: e.target.value })}
+                                                    className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                />
+                                            </div>
+
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Description</label>
+                                                <textarea
+                                                    value={achievement.description}
+                                                    onChange={(e) => updateAchievement(achievement.id, { description: e.target.value })}
+                                                    rows={3}
+                                                    className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
+                                                    placeholder="What you achieved and why it matters."
+                                                />
+                                            </div>
+
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Tags</label>
+                                                <TagInput
+                                                    value={achievement.tags}
+                                                    onChange={(next) => updateAchievement(achievement.id, { tags: next })}
+                                                    placeholder="e.g. Cloud, DevOps, Writing"
+                                                />
+                                            </div>
+
+                                            <div className="md:col-span-2 space-y-2">
+                                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">URL (optional)</label>
+                                                <Input
+                                                    type="url"
+                                                    value={achievement.url || ''}
+                                                    onChange={(e) => updateAchievement(achievement.id, { url: e.target.value })}
+                                                    className="pl-4 rounded-xl border-gray-200 bg-white/80 dark:bg-black/20"
+                                                    placeholder="https://..."
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -1292,37 +1904,49 @@ export default function StudentProfile() {
                                 <div className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">
                                     <Linkedin className="w-4 h-4 text-[#0077b5]" /> LinkedIn
                                 </div>
-                                <Input 
-                                    name="linkedin_profile"
-                                    value={profileData.linkedin_profile || ''}
-                                    onChange={handleInputChange}
-                                    placeholder="linkedin.com/in/username"
-                                    className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
-                                />
+                                {isEditing ? (
+                                    <Input 
+                                        name="linkedin_profile"
+                                        value={profileData.linkedin_profile || ''}
+                                        onChange={handleInputChange}
+                                        placeholder="linkedin.com/in/username"
+                                        className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
+                                    />
+                                ) : (
+                                    <ReadonlyField value={profileData.linkedin_profile} placeholder="linkedin.com/in/username" />
+                                )}
                             </div>
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">
                                     <Github className="w-4 h-4 text-black dark:text-white" /> GitHub
                                 </div>
-                                <Input 
-                                    name="github_profile"
-                                    value={profileData.github_profile || ''}
-                                    onChange={handleInputChange}
-                                    placeholder="github.com/username"
-                                    className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
-                                />
+                                {isEditing ? (
+                                    <Input 
+                                        name="github_profile"
+                                        value={profileData.github_profile || ''}
+                                        onChange={handleInputChange}
+                                        placeholder="github.com/username"
+                                        className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
+                                    />
+                                ) : (
+                                    <ReadonlyField value={profileData.github_profile} placeholder="github.com/username" />
+                                )}
                             </div>
                             <div className="space-y-1">
                                 <div className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-400 mb-1">
                                     <Globe className="w-4 h-4 text-emerald-500" /> Portfolio Website
                                 </div>
-                                <Input 
-                                    name="personal_website"
-                                    value={profileData.personal_website || ''}
-                                    onChange={handleInputChange}
-                                    placeholder="yourwebsite.com"
-                                    className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
-                                />
+                                {isEditing ? (
+                                    <Input 
+                                        name="personal_website"
+                                        value={profileData.personal_website || ''}
+                                        onChange={handleInputChange}
+                                        placeholder="yourwebsite.com"
+                                        className="rounded-xl border-gray-100 bg-gray-50 dark:bg-black/20"
+                                    />
+                                ) : (
+                                    <ReadonlyField value={profileData.personal_website} placeholder="yourwebsite.com" />
+                                )}
                             </div>
                         </div>
                     </div>
@@ -1404,15 +2028,17 @@ export default function StudentProfile() {
             </div>
 
             {/* Float save button for mobile */}
-            <div className="fixed bottom-6 right-6 md:hidden z-50">
-                <Button 
-                    onClick={handleSaveProfile}
-                    loading={isSaving}
-                    className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-full h-14 w-14 p-0 shadow-2xl flex items-center justify-center"
-                >
-                    <Save className="w-6 h-6" />
-                </Button>
-            </div>
+            {isEditing && (
+                <div className="fixed bottom-6 right-6 md:hidden z-50">
+                    <Button 
+                        onClick={handleSaveProfile}
+                        loading={isSaving}
+                        className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-full h-14 w-14 p-0 shadow-2xl flex items-center justify-center"
+                    >
+                        <Save className="w-6 h-6" />
+                    </Button>
+                </div>
+            )}
         </div>
     )
 }
