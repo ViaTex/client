@@ -111,8 +111,8 @@ export const apiClient = {
         return response.data
     },
 
-    uploadSectionIntro: async (formData: FormData) => {
-        const response = await axiosInstance.post('/exams/section-intro', formData, {
+    uploadSectionA: async (formData: FormData) => {
+        const response = await axiosInstance.post('/exams/section-a', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
@@ -120,13 +120,59 @@ export const apiClient = {
         return response.data
     },
 
-    endExamSession: async (data: {
-        student_id: string
-        exam_session_id?: string
-        status: 'aborted'
-        increment_attempt: boolean
-    }) => {
-        const response = await axiosInstance.post('/exams/end', data)
+    getExamSessionStatus: async (sessionId: string) => {
+        const response = await axiosInstance.get(`/exams/sessions/${sessionId}`)
+        return response.data
+    },
+
+    getSectionBQuestion: async (sessionId: string) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/section-b/question`)
+        return response.data
+    },
+
+    submitSectionBResponse: async (sessionId: string, payload: { response_id: string; user_response: string }) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/section-b/response`, payload)
+        return response.data
+    },
+
+    getSectionCQuestion: async (sessionId: string) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/section-c/question`)
+        return response.data
+    },
+
+    submitSectionCResponse: async (sessionId: string, payload: { response_id: string; user_response: string }) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/section-c/response`, payload)
+        return response.data
+    },
+
+    getSectionDQuestion: async (sessionId: string) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/section-d/question`)
+        return response.data
+    },
+
+    submitSectionDResponse: async (sessionId: string, formData: FormData) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/section-d/response`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        })
+        return response.data
+    },
+
+    requestHint: async (
+        sessionId: string,
+        responseId: string,
+        payload: { question_text: string; student_current_answer: string }
+    ) => {
+        const response = await axiosInstance.post(
+            `/exams/sessions/${sessionId}/responses/${responseId}/hint`,
+            payload
+        )
+        return response.data
+    },
+
+    abandonExam: async (sessionId: string) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/abandon`)
         return response.data
     },
 
