@@ -116,6 +116,7 @@ export const apiClient = {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
+            timeout: 120000,
         })
         return response.data
     },
@@ -130,7 +131,14 @@ export const apiClient = {
         return response.data
     },
 
-    submitSectionBResponse: async (sessionId: string, payload: { response_id: string; user_response: string }) => {
+    submitSectionBResponse: async (
+        sessionId: string,
+        payload: {
+            response_id: string
+            mcq_answers: { id: string; selected_option: string }[]
+            long_answers: { id: string; answer: string }[]
+        }
+    ) => {
         const response = await axiosInstance.post(`/exams/sessions/${sessionId}/section-b/response`, payload)
         return response.data
     },

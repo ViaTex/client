@@ -106,6 +106,9 @@ export default function SectionAPage() {
     }
 
     const handleSubmit = async () => {
+        if (isSubmitting) {
+            return
+        }
         const studentId = user?.id || ''
         if (!studentId) {
             setActionError('Student identity is missing. Please refresh and try again.')
