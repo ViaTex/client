@@ -7,13 +7,11 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
-import { Eye, EyeOff, Mail, Lock, User, Building2, GraduationCap, Shield, Phone, Globe, RotateCcw } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Building2, GraduationCap, Phone, Globe, RotateCcw } from 'lucide-react'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
-import { Navbar } from '@/components/ui/navbar'
 import { apiClient } from '@/lib/api'
 import { UserType } from '@/types/auth'
 import { useAuth } from '@/hooks/useAuth'
@@ -143,20 +141,42 @@ function RegisterContent() {
         }
     }
 
+    const labelClassName = "block text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-300 mb-2"
+    const inputClassName = "h-12 rounded-xl border-transparent bg-[#f6efe6] text-gray-900 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-[#8a4a14]/20 dark:bg-gray-800"
+
     const renderStudentForm = () => (
         <div className="space-y-4">
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Full Name *</label>
-                <Input id="name" placeholder="Enter your full name" leftIcon={<User className="w-4 h-4" />} {...register('name', { required: 'Name is required' })} />
+                <label className={labelClassName}>Full Name *</label>
+                <Input
+                    id="name"
+                    placeholder="Enter your full name"
+                    leftIcon={<User className="w-4 h-4" />}
+                    className={inputClassName}
+                    {...register('name', { required: 'Name is required' })}
+                />
                 {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message as string}</p>}
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
-                <Input id="phone" type="tel" placeholder="Enter phone number" leftIcon={<Phone className="w-4 h-4" />} {...register('phone')} />
+                <label className={labelClassName}>Phone Number</label>
+                <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="Enter phone number"
+                    leftIcon={<Phone className="w-4 h-4" />}
+                    className={inputClassName}
+                    {...register('phone')}
+                />
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Institution</label>
-                <Input id="institution" placeholder="Your college or institution" leftIcon={<GraduationCap className="w-4 h-4" />} {...register('institution')} />
+                <label className={labelClassName}>Institution</label>
+                <Input
+                    id="institution"
+                    placeholder="Your college or institution"
+                    leftIcon={<GraduationCap className="w-4 h-4" />}
+                    className={inputClassName}
+                    {...register('institution')}
+                />
             </div>
         </div>
     )
@@ -164,17 +184,35 @@ function RegisterContent() {
     const renderCorporateForm = () => (
         <div className="space-y-4">
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Company Name *</label>
-                <Input id="company_name" placeholder="Enter company name" leftIcon={<Building2 className="w-4 h-4" />} {...register('company_name', { required: 'Company name is required' })} />
+                <label className={labelClassName}>Company Name *</label>
+                <Input
+                    id="company_name"
+                    placeholder="Enter company name"
+                    leftIcon={<Building2 className="w-4 h-4" />}
+                    className={inputClassName}
+                    {...register('company_name', { required: 'Company name is required' })}
+                />
                 {errors.company_name && <p className="mt-1 text-sm text-red-600">{errors.company_name.message as string}</p>}
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Website URL</label>
-                <Input id="website_url" placeholder="https://company.com" leftIcon={<Globe className="w-4 h-4" />} {...register('website_url')} />
+                <label className={labelClassName}>Website URL</label>
+                <Input
+                    id="website_url"
+                    placeholder="https://company.com"
+                    leftIcon={<Globe className="w-4 h-4" />}
+                    className={inputClassName}
+                    {...register('website_url')}
+                />
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contact Person</label>
-                <Input id="contact_person" placeholder="Contact person name" leftIcon={<User className="w-4 h-4" />} {...register('contact_person')} />
+                <label className={labelClassName}>Contact Person</label>
+                <Input
+                    id="contact_person"
+                    placeholder="Contact person name"
+                    leftIcon={<User className="w-4 h-4" />}
+                    className={inputClassName}
+                    {...register('contact_person')}
+                />
             </div>
         </div>
     )
@@ -182,21 +220,46 @@ function RegisterContent() {
     const renderCollegeForm = () => (
         <div className="space-y-4">
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">College Name *</label>
-                <Input id="college_name" placeholder="Enter college name" leftIcon={<GraduationCap className="w-4 h-4" />} {...register('college_name', { required: 'College name is required' })} />
+                <label className={labelClassName}>College Name *</label>
+                <Input
+                    id="college_name"
+                    placeholder="Enter college name"
+                    leftIcon={<GraduationCap className="w-4 h-4" />}
+                    className={inputClassName}
+                    {...register('college_name', { required: 'College name is required' })}
+                />
                 {errors.college_name && <p className="mt-1 text-sm text-red-600">{errors.college_name.message as string}</p>}
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Website URL</label>
-                <Input id="website_url" placeholder="https://college.edu" leftIcon={<Globe className="w-4 h-4" />} {...register('website_url')} />
+                <label className={labelClassName}>Website URL</label>
+                <Input
+                    id="website_url"
+                    placeholder="https://college.edu"
+                    leftIcon={<Globe className="w-4 h-4" />}
+                    className={inputClassName}
+                    {...register('website_url')}
+                />
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Contact Person Name</label>
-                <Input id="contact_person_name" placeholder="Authorized contact person" leftIcon={<User className="w-4 h-4" />} {...register('contact_person_name')} />
+                <label className={labelClassName}>Contact Person Name</label>
+                <Input
+                    id="contact_person_name"
+                    placeholder="Authorized contact person"
+                    leftIcon={<User className="w-4 h-4" />}
+                    className={inputClassName}
+                    {...register('contact_person_name')}
+                />
             </div>
             <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Phone Number</label>
-                <Input id="phone" type="tel" placeholder="Enter phone number" leftIcon={<Phone className="w-4 h-4" />} {...register('phone')} />
+                <label className={labelClassName}>Phone Number</label>
+                <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="Enter phone number"
+                    leftIcon={<Phone className="w-4 h-4" />}
+                    className={inputClassName}
+                    {...register('phone')}
+                />
             </div>
         </div>
     )
@@ -212,143 +275,188 @@ function RegisterContent() {
 
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-            <Navbar variant="solid" />
-
-            <div className="container mx-auto px-4 py-12 pt-24">
+        <div className="min-h-screen bg-[#f6f1ea] dark:bg-gray-950">
+            <div className="container mx-auto px-4 py-12">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
-                    className="max-w-2xl mx-auto"
+                    className="max-w-6xl mx-auto"
                 >
-                    {/* Header */}
-                    <div className="text-center mb-8">
-                        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl mb-6">
-                            {(() => {
-                                const option = userTypeOptions.find(o => o.value === selectedUserType)
-                                const Icon = option?.icon || User
-                                return <Icon className="w-10 h-10 text-white" />
-                            })()}
-                        </div>
-                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-                            Create Your {selectedUserType.charAt(0).toUpperCase() + selectedUserType.slice(1)} Account
-                        </h1>
-                        <p className="text-lg text-gray-600 dark:text-gray-400">
-                            Join DishaSetu and start your journey today
-                        </p>
-                    </div>
-
-                    {/* User Type Selector */}
-                    <div className="mb-8">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">I am a</label>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            {userTypeOptions.map((option) => {
-                                const Icon = option.icon
-                                const isSelected = selectedUserType === option.value
-                                return (
-                                    <button
-                                        key={option.value}
-                                        type="button"
-                                        onClick={() => handleUserTypeChange(option.value)}
-                                        className={`p-4 rounded-lg border-2 transition-all duration-200 flex flex-col items-center space-y-2 ${isSelected
-                                            ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
-                                            : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 text-gray-600 dark:text-gray-400'
-                                            }`}
-                                    >
-                                        <Icon className={`w-6 h-6 ${isSelected ? 'text-blue-600 dark:text-blue-400' : ''}`} />
-                                        <span className="text-sm font-medium">{option.label}</span>
-                                    </button>
-                                )
-                            })}
-                        </div>
-                    </div>
-
-                    {/* Registration Form */}
-                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-8">
-                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-                            {/* Dynamic Form Fields */}
-                            <motion.div
-                                key={selectedUserType}
-                                initial={{ opacity: 0, x: 20 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ duration: 0.3 }}
-                            >
-                                {renderFormFields()}
-                            </motion.div>
-
-                            {/* Email & Password */}
-                            <div className="border-t border-gray-200 dark:border-gray-700 pt-6 space-y-4">
+                    <div className="overflow-hidden rounded-3xl border border-amber-100 bg-white shadow-[0_25px_60px_rgba(71,45,16,0.12)] dark:border-gray-800 dark:bg-gray-900">
+                        <div className="grid grid-cols-1 lg:grid-cols-2">
+                            {/* Left Panel */}
+                            <div className="relative flex flex-col justify-between bg-[#f4ede4] px-8 py-10 sm:px-12 sm:py-12 dark:bg-gray-900">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Email Address *</label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        placeholder="Enter your email address"
-                                        leftIcon={<Mail className="w-4 h-4" />}
-                                        error={!!errors.email}
-                                        {...register('email', { required: 'Email is required' })}
-                                    />
-                                    {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message as string}</p>}
+                                    <span className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-700/80">Elevate your career</span>
+                                    <h1 className="mt-4 text-4xl font-bold leading-tight text-[#4b2a12] sm:text-5xl">
+                                        UNLOCK YOUR<br />POTENTIAL
+                                    </h1>
+                                    <p className="mt-5 max-w-sm text-base text-[#6b4b36]">
+                                        Your journey to career success starts here. Join our community of builders and innovators.
+                                    </p>
                                 </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password *</label>
-                                    <Input
-                                        id="password"
-                                        type={showPassword ? 'text' : 'password'}
-                                        placeholder="Create a strong password"
-                                        leftIcon={<Lock className="w-4 h-4" />}
-                                        rightIcon={
-                                            <button type="button" onClick={() => setShowPassword(!showPassword)}>
-                                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                            </button>
-                                        }
-                                        error={!!errors.password}
-                                        {...register('password', { required: 'Password is required', minLength: { value: 8, message: 'Min 8 characters' } })}
+                                <div className="relative mt-10">
+                                    <div className="absolute inset-x-0 -bottom-6 h-20 bg-gradient-to-t from-[#f4ede4] to-transparent dark:from-gray-900" />
+                                    <img
+                                        alt="Students collaborating in a modern workspace"
+                                        className="h-80 w-full rounded-2xl object-cover shadow-xl"
+                                        src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1200&auto=format&fit=crop"
                                     />
-                                    {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message as string}</p>}
-                                    <p className="mt-1 text-xs text-gray-500">Min 8 chars, uppercase, digit, and special character</p>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password *</label>
-                                    <Input
-                                        id="confirmPassword"
-                                        type={showConfirmPassword ? 'text' : 'password'}
-                                        placeholder="Confirm your password"
-                                        leftIcon={<Lock className="w-4 h-4" />}
-                                        rightIcon={
-                                            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                                                {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                            </button>
-                                        }
-                                        error={!!errors.confirmPassword}
-                                        {...register('confirmPassword', { required: 'Please confirm your password' })}
-                                    />
-                                    {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message as string}</p>}
+                                    <div className="absolute -top-4 -right-4 rounded-2xl bg-[#8a4a14] p-3 shadow-lg">
+                                        <RotateCcw className="h-6 w-6 text-white" />
+                                    </div>
                                 </div>
                             </div>
 
-                            <Button
-                                type="submit"
-                                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white"
-                                loading={isLoading}
-                            >
-                                Sign Up
-                            </Button>
-                        </form>
+                            {/* Right Panel */}
+                            <div className="bg-white px-8 py-10 sm:px-12 sm:py-12 dark:bg-gray-900">
+                                <div className="mx-auto w-full max-w-md">
+                                    <div className="mb-8">
+                                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Create your account</h2>
+                                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                            Fill in your details to start your professional transformation.
+                                        </p>
+                                    </div>
 
-                        <div className="mt-6 text-center">
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                Already have an account?{' '}
-                                <Link
-                                    href={`/auth/login?type=${selectedUserType}`}
-                                    className="text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium"
-                                >
-                                    Sign in
-                                </Link>
-                            </p>
+                                    {/* User Type Selector */}
+                                    <div className="mb-6">
+                                        <label className="block text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-300 mb-3">I am a</label>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                            {userTypeOptions.map((option) => {
+                                                const Icon = option.icon
+                                                const isSelected = selectedUserType === option.value
+                                                return (
+                                                    <button
+                                                        key={option.value}
+                                                        type="button"
+                                                        onClick={() => handleUserTypeChange(option.value)}
+                                                        className={`rounded-xl border px-3 py-3 transition-all duration-200 flex flex-col items-center space-y-2 ${isSelected
+                                                            ? 'border-[#8a4a14] bg-[#f6efe6] text-[#6b3b16]'
+                                                            : 'border-amber-100 hover:border-[#8a4a14]/40 text-gray-600 dark:text-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
+                                                            }`}
+                                                    >
+                                                        <Icon className={`w-5 h-5 ${isSelected ? 'text-[#8a4a14]' : ''}`} />
+                                                        <span className="text-xs font-semibold uppercase tracking-widest">{option.label}</span>
+                                                    </button>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                                        {/* Dynamic Form Fields */}
+                                        <motion.div
+                                            key={selectedUserType}
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ duration: 0.3 }}
+                                        >
+                                            {renderFormFields()}
+                                        </motion.div>
+
+                                        {/* Email & Password */}
+                                        <div className="border-t border-amber-100 pt-6 space-y-4 dark:border-gray-700">
+                                            <div>
+                                                <label className={labelClassName}>Email Address *</label>
+                                                <Input
+                                                    id="email"
+                                                    type="email"
+                                                    placeholder="Enter your email address"
+                                                    leftIcon={<Mail className="w-4 h-4" />}
+                                                    error={!!errors.email}
+                                                    className={inputClassName}
+                                                    {...register('email', { required: 'Email is required' })}
+                                                />
+                                                {errors.email && <p className="mt-1 text-sm text-red-600">{errors.email.message as string}</p>}
+                                            </div>
+
+                                            <div>
+                                                <label className={labelClassName}>Password *</label>
+                                                <Input
+                                                    id="password"
+                                                    type={showPassword ? 'text' : 'password'}
+                                                    placeholder="Create a strong password"
+                                                    leftIcon={<Lock className="w-4 h-4" />}
+                                                    rightIcon={
+                                                        <button type="button" onClick={() => setShowPassword(!showPassword)}>
+                                                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                        </button>
+                                                    }
+                                                    error={!!errors.password}
+                                                    className={inputClassName}
+                                                    {...register('password', { required: 'Password is required', minLength: { value: 8, message: 'Min 8 characters' } })}
+                                                />
+                                                {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message as string}</p>}
+                                                <p className="mt-1 text-xs text-gray-500">Min 8 chars, uppercase, digit, and special character</p>
+                                            </div>
+
+                                            <div>
+                                                <label className={labelClassName}>Confirm Password *</label>
+                                                <Input
+                                                    id="confirmPassword"
+                                                    type={showConfirmPassword ? 'text' : 'password'}
+                                                    placeholder="Confirm your password"
+                                                    leftIcon={<Lock className="w-4 h-4" />}
+                                                    rightIcon={
+                                                        <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                                                            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                        </button>
+                                                    }
+                                                    error={!!errors.confirmPassword}
+                                                    className={inputClassName}
+                                                    {...register('confirmPassword', { required: 'Please confirm your password' })}
+                                                />
+                                                {errors.confirmPassword && <p className="mt-1 text-sm text-red-600">{errors.confirmPassword.message as string}</p>}
+                                            </div>
+                                        </div>
+
+                                        <Button
+                                            type="submit"
+                                            className="w-full h-12 rounded-xl bg-neutral-900 text-white hover:bg-black"
+                                            loading={isLoading}
+                                        >
+                                            CREATE ACCOUNT
+                                        </Button>
+                                    </form>
+
+                                    <div className="mt-6 text-center">
+                                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                                            Already have an account?{' '}
+                                            <Link
+                                                href={`/auth/login?type=${selectedUserType}`}
+                                                className="text-[#8a4a14] hover:text-[#6b3b16] font-semibold"
+                                            >
+                                                Log in
+                                            </Link>
+                                        </p>
+                                    </div>
+
+                                    <div className="relative my-8">
+                                        <div className="absolute inset-0 flex items-center">
+                                            <div className="w-full border-t border-amber-100 dark:border-gray-700" />
+                                        </div>
+                                        <div className="relative flex justify-center text-xs uppercase">
+                                            <span className="bg-white px-4 font-semibold tracking-[0.2em] text-gray-500 dark:bg-gray-900 dark:text-gray-400">
+                                                Or sign up with
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {['Google', 'GitHub', 'LinkedIn'].map((label) => (
+                                            <button
+                                                key={label}
+                                                type="button"
+                                                className="flex items-center justify-center rounded-xl border border-amber-100 py-3 text-xs font-semibold text-gray-700 transition-colors hover:bg-[#f6efe6] dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
+                                            >
+                                                {label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </motion.div>

@@ -46,12 +46,13 @@ export const apiClient = {
     login: async (data: { email: string; password: string; user_type: string }) => {
         const response = await axiosInstance.post('/auth/login', data)
         const res = response.data
+        const payload = res?.data || {}
         return {
-            access_token: res.data?.access_token,
-            refresh_token: res.data?.refresh_token,
-            user_id: res.data?.user?.id,
-            user_type: res.data?.user?.user_type,
-            name: res.data?.user?.name,
+            access_token: payload.access_token,
+            refresh_token: payload.refresh_token,
+            user_id: payload.user?.id,
+            user_type: payload.user?.user_type,
+            name: payload.user?.name,
         }
     },
 
