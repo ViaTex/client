@@ -93,7 +93,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
             {/* Mobile toggle button */}
             <button
                 type="button"
-                className="lg:hidden fixed z-50 bottom-4 right-4 p-3 rounded-full bg-blue-600 text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
+                className="student-mobile-nav lg:hidden fixed z-50 bottom-4 right-4 p-3 rounded-full bg-blue-600 text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
                 onClick={() => setIsMobileOpen(!isMobileOpen)}
             >
                 {isMobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -109,7 +109,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
 
             {/* Sidebar */}
             <aside
-                className={`fixed top-0 left-0 z-50 h-screen shrink-0 bg-white dark:bg-gray-900 border-r border-[#E3DED1] dark:border-gray-800 flex flex-col transition-transform duration-300 ease-in-out ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+                className={`student-sidebar fixed top-0 left-0 z-50 h-screen shrink-0 bg-white dark:bg-gray-900 border-r border-[#E3DED1] dark:border-gray-800 flex flex-col transition-transform duration-300 ease-in-out ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
                     }`}
                 style={{ width: isCollapsed ? 72 : 270 }}
             >

@@ -19,6 +19,7 @@ import {
     ArrowRight,
     User
 } from 'lucide-react'
+import { RiGeminiLine } from "react-icons/ri"
 import { useState, useEffect } from 'react'
 import { apiClient } from '@/lib/api'
 import Link from 'next/link'
@@ -96,28 +97,6 @@ export default function StudentDashboard() {
 
     return (
         <div className="w-full font-sans text-[#1b140d] dark:text-gray-100 relative">
-
-            <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="mb-6 bg-white rounded-[1.5rem] border border-white/40 dark:bg-[#221910] dark:border-gray-800 p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)]"
-            >
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div>
-                        <h2 className="text-2xl font-extrabold tracking-tight">Smart Talent Evaluator</h2>
-                        <p className="text-sm text-[#9a734c] dark:text-gray-400">
-                            Complete the new Skill Verification exam to unlock your verified profile.
-                        </p>
-                    </div>
-                    <Button
-                        className="bg-[#ee8c2b] hover:bg-[#df7f1f] text-white rounded-xl"
-                        onClick={() => router.push('/dashboard/skill-verification/exam/section-a')}
-                    >
-                        Start Skill Verification
-                    </Button>
-                </div>
-            </motion.div>
-            
             {/* Profile Incomplete Toast/Badge */}
             <AnimatePresence>
                 {showToast && (
@@ -301,9 +280,10 @@ export default function StudentDashboard() {
                                     <Button
                                         type="button"
                                         size="xl"
-                                        onClick={() => setDashboardView('intro')}
+                                        onClick={() => router.push('/dashboard/skill-verification')}
                                         className="rounded-2xl bg-black hover:bg-neutral-900 text-white font-bold flex items-center gap-2"
                                     >
+                                        <RiGeminiLine className="w-4 h-4" />
                                         <Star className="w-4 h-4" />
                                         <Star className="w-4 h-4" />
                                         Score sudhare

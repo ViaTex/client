@@ -61,7 +61,7 @@ export function TopNav({ isSidebarCollapsed }: TopNavProps) {
 
     return (
         <header
-            className="fixed top-0 right-0 z-40 flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e5e3df] dark:border-gray-800 w-full px-4 lg:px-8 py-4 bg-white/95 dark:bg-[#221910]/95 backdrop-blur-md"
+            className="main-navbar fixed top-0 right-0 z-40 flex items-center justify-between whitespace-nowrap border-b border-solid border-[#e5e3df] dark:border-gray-800 w-full px-4 lg:px-8 py-4 bg-white/95 dark:bg-[#221910]/95 backdrop-blur-md"
             style={{
                 left: sidebarWidth,
                 width: `calc(100% - ${sidebarWidth}px)`,
