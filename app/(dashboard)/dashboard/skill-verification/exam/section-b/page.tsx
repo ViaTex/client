@@ -167,8 +167,8 @@ export default function SectionBPage() {
     }
 
     return (
-        <div className="min-h-screen px-6 py-8">
-            <div className="max-w-4xl mx-auto bg-white rounded-[1.5rem] border border-white/40 dark:bg-[#221910] dark:border-gray-800 p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)]">
+        <div className="min-h-screen w-full max-w-none box-border px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+            <div className="w-full max-w-none bg-white rounded-[1.5rem] border border-white/40 dark:bg-[#221910] dark:border-gray-800 p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)]">
                 <h2 className="text-2xl font-extrabold tracking-tight">Section B: Fundamentals</h2>
                 <p className="text-sm text-[#9a734c] dark:text-gray-400 mt-2">
                     Answer all questions below before submitting this section.

@@ -175,9 +175,9 @@ export default function SectionDPage() {
     }
 
     return (
-        <div className="min-h-screen px-6 py-8">
-            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-                <div className="xl:col-span-5 bg-white rounded-[1.5rem] border border-white/40 dark:bg-[#221910] dark:border-gray-800 p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)]">
+        <div className="flex min-h-0 flex-1 flex-col w-full max-w-none box-border px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+            <div className="grid w-full min-h-0 flex-1 grid-cols-1 lg:grid-cols-12 lg:grid-rows-1 gap-4 lg:gap-6 items-stretch lg:h-full">
+                <div className="lg:col-span-5 min-w-0 min-h-0 lg:h-full flex flex-col bg-white rounded-[1.5rem] border border-white/40 dark:bg-[#221910] dark:border-gray-800 p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)]">
                     <div className="flex items-center gap-3 mb-5">
                         <div className="w-10 h-10 rounded-2xl bg-[#ee8c2b]/15 text-[#ee8c2b] flex items-center justify-center">
                             <Video className="w-5 h-5" />
@@ -224,8 +224,8 @@ export default function SectionDPage() {
                     )}
                 </div>
 
-                <div className="xl:col-span-7 bg-white rounded-[1.5rem] border border-white/40 dark:bg-[#221910] dark:border-gray-800 p-4 md:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)]">
-                    <div className="h-full min-h-[420px] rounded-2xl bg-[#1b140d] overflow-hidden relative border border-black/10">
+                <div className="lg:col-span-7 min-w-0 min-h-0 lg:h-full flex flex-col bg-white rounded-[1.5rem] border border-white/40 dark:bg-[#221910] dark:border-gray-800 p-4 md:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)]">
+                    <div className="min-h-[min(420px,40vh)] flex-1 lg:min-h-0 rounded-2xl bg-[#1b140d] overflow-hidden relative border border-black/10">
                         <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
 
                         <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white bg-black/45 px-3 py-1.5 rounded-full">

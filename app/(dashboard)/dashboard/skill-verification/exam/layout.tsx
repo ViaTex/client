@@ -17,7 +17,6 @@ export default function SkillVerificationExamLayout({
 
     useEffect(() => {
         if (typeof window === 'undefined') return
-        document.body.classList.add('hide-sidebar')
 
         const requestFullscreen = async () => {
             try {
@@ -48,7 +47,6 @@ export default function SkillVerificationExamLayout({
         document.addEventListener('keydown', handleKeyDown)
 
         return () => {
-            document.body.classList.remove('hide-sidebar')
             document.removeEventListener('fullscreenchange', handleFullscreenChange)
             document.removeEventListener('keydown', handleKeyDown)
         }
@@ -82,7 +80,7 @@ export default function SkillVerificationExamLayout({
     }
 
     return (
-        <div className="min-h-screen bg-[#fdf9f4] dark:bg-[#1b140d]">
+        <div className="flex min-h-0 flex-1 flex-col overflow-auto w-full max-w-none bg-[#fdf9f4] dark:bg-[#1b140d]">
             {children}
             <Modal
                 isOpen={showExitModal}

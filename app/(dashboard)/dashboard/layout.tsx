@@ -36,7 +36,14 @@ export default function DashboardLayout({
         setIsMobileSidebarOpen(false)
     }, [pathname])
 
-    const sidebarWidthPx = isSidebarCollapsed ? SIDEBAR_COLLAPSED_PX : SIDEBAR_EXPANDED_PX
+    /** Skill verification exam sections — fullscreen focus, no dashboard chrome */
+    const isSkillExamMode = pathname.startsWith('/dashboard/skill-verification/exam')
+
+    const sidebarWidthPx = isSkillExamMode
+        ? 0
+        : isSidebarCollapsed
+          ? SIDEBAR_COLLAPSED_PX
+          : SIDEBAR_EXPANDED_PX
 
     // Show nothing while checking auth or if not authenticated (during redirect)
     if (isLoading || !isAuthenticated) {
@@ -52,33 +59,45 @@ export default function DashboardLayout({
 
     return (
         <div
-            className="min-h-screen bg-[#E3DED1] dark:bg-[#1b140d] font-sans overflow-hidden"
+            className={`min-h-screen bg-[#E3DED1] dark:bg-[#1b140d] font-sans overflow-hidden ${
+                isSkillExamMode ? 'flex h-[100dvh] min-h-0 flex-col' : ''
+            }`}
             style={
                 {
                     ['--sidebar-w' as string]: `${sidebarWidthPx}px`,
                 } as React.CSSProperties
             }
         >
-            {/* Fixed sidebar occupying full viewport height on the left */}
-            <Sidebar
-                isCollapsed={isSidebarCollapsed}
-                isMobileOpen={isMobileSidebarOpen}
-                setIsMobileOpen={setIsMobileSidebarOpen}
-            />
+            {!isSkillExamMode && (
+                <>
+                    <Sidebar
+                        isCollapsed={isSidebarCollapsed}
+                        isMobileOpen={isMobileSidebarOpen}
+                        setIsMobileOpen={setIsMobileSidebarOpen}
+                    />
+                    <TopNav
+                        isSidebarCollapsed={isSidebarCollapsed}
+                        setIsSidebarCollapsed={setIsSidebarCollapsed}
+                        isMobileSidebarOpen={isMobileSidebarOpen}
+                        setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+                    />
+                </>
+            )}
 
-            {/* Fixed top navigation, aligned to start after sidebar */}
-            <TopNav
-                isSidebarCollapsed={isSidebarCollapsed}
-                setIsSidebarCollapsed={setIsSidebarCollapsed}
-                isMobileSidebarOpen={isMobileSidebarOpen}
-                setIsMobileSidebarOpen={setIsMobileSidebarOpen}
-            />
-
-            {/* Scrollable content area, padded so it starts below nav and to the right of sidebar */}
             <main
-                className={`pt-16 lg:pt-20 pl-0 lg:pl-[var(--sidebar-w)] ${layoutTransitionClass}`}
+                className={
+                    isSkillExamMode
+                        ? 'flex min-h-0 flex-1 flex-col overflow-hidden pt-0 pl-0'
+                        : `pt-16 lg:pt-20 pl-0 lg:pl-[var(--sidebar-w)] ${layoutTransitionClass}`
+                }
             >
-                <div className="px-3 py-4 md:px-5 md:py-5 lg:px-6 lg:py-6 max-w-[1440px] mx-auto w-full">
+                <div
+                    className={
+                        isSkillExamMode
+                            ? 'flex min-h-0 flex-1 flex-col overflow-auto w-full max-w-none'
+                            : 'px-3 py-4 md:px-5 md:py-5 lg:px-6 lg:py-6 max-w-[1440px] mx-auto w-full'
+                    }
+                >
                     {children}
                 </div>
             </main>
