@@ -301,7 +301,7 @@ export default function StudentDashboard() {
                                     <Button
                                         type="button"
                                         size="xl"
-                                        onClick={() => setDashboardView('intro')}
+                                        onClick={() => router.push('/dashboard/skill-verification/exam/section-a')}
                                         className="rounded-2xl bg-black hover:bg-neutral-900 text-white font-bold flex items-center gap-2"
                                     >
                                         <Star className="w-4 h-4" />
