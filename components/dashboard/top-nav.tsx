@@ -1,9 +1,10 @@
 "use client"
 
-import { useEffect, useState } from 'react'
-import { Bell, Search, Rocket } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { Bell, Search } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -20,8 +21,31 @@ type TopNavProps = {
 
 export function TopNav({ isSidebarCollapsed }: TopNavProps) {
     const { logout } = useAuth()
+    const pathname = usePathname()
 
     const [isDesktop, setIsDesktop] = useState(false)
+    const [customTitle, setCustomTitle] = useState<string | undefined>(undefined)
+
+    const defaultTitle = useMemo(() => {
+        if (pathname.startsWith('/dashboard/student/profile')) return 'Student Profile'
+        if (pathname.startsWith('/dashboard/student')) return 'Student Dashboard'
+        if (pathname.startsWith('/dashboard/corporate')) return 'Corporate Dashboard'
+        if (pathname.startsWith('/dashboard/college')) return 'College Dashboard'
+        if (pathname.startsWith('/dashboard/admin')) return 'Admin Dashboard'
+        return 'Dashboard'
+    }, [pathname])
+
+    const title = customTitle || defaultTitle
+
+    useEffect(() => {
+        const onTitleChange = (event: Event) => {
+            const customEvent = event as CustomEvent<{ title?: string }>
+            setCustomTitle(customEvent.detail?.title || undefined)
+        }
+
+        window.addEventListener('dashboard:title-change', onTitleChange as EventListener)
+        return () => window.removeEventListener('dashboard:title-change', onTitleChange as EventListener)
+    }, [])
 
     useEffect(() => {
         if (typeof window === 'undefined') return
@@ -44,18 +68,7 @@ export function TopNav({ isSidebarCollapsed }: TopNavProps) {
             }}
         >
             <div className="flex items-center gap-8">
-                {/* <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-[#ee8c2b] rounded-xl flex items-center justify-center text-white">
-                        <Rocket className="w-6 h-6" />
-                    </div>
-                    <h2 className="text-[#1b140d] dark:text-white text-xl font-bold leading-tight tracking-[-0.015em]">Dishasetu</h2>
-                </div> */}
-                <nav className="hidden md:flex items-center gap-8">
-                    <Link className="text-[#1b140d] dark:text-gray-100 text-sm font-semibold border-b-2 border-[#ee8c2b] pb-1" href="/dashboard/student">Dashboard</Link>
-                    <Link className="text-[#1b140d]/60 dark:text-gray-400 text-sm font-medium hover:text-[#ee8c2b] transition-colors" href="/dashboard/learning">Learning</Link>
-                    <Link className="text-[#1b140d]/60 dark:text-gray-400 text-sm font-medium hover:text-[#ee8c2b] transition-colors" href="/dashboard/internships">Internships</Link>
-                    <Link className="text-[#1b140d]/60 dark:text-gray-400 text-sm font-medium hover:text-[#ee8c2b] transition-colors" href="/dashboard/community">Community</Link>
-                </nav>
+                <h1 className="text-xl lg:text-2xl font-extrabold text-[#1b140d] dark:text-white tracking-tight">{title}</h1>
             </div>
             <div className="flex items-center gap-6">
                 <label className="hidden lg:flex flex-col min-w-64 h-10">

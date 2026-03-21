@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button'
 
 const studentNavigation = [
     { name: 'Dashboard', href: '/dashboard/student', icon: LayoutDashboard },
+    { name: 'Skill Verification', href: '/dashboard/skill-verification', icon: FileSpreadsheet },
     { name: 'My Profile', href: '/dashboard/student/profile', icon: User },
     { name: 'Resume', href: '/dashboard/student/resume', icon: FileText },
     { name: 'Jobs & Internships', href: '/dashboard/student/jobs', icon: Briefcase },

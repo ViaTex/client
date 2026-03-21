@@ -46,12 +46,13 @@ export const apiClient = {
     login: async (data: { email: string; password: string; user_type: string }) => {
         const response = await axiosInstance.post('/auth/login', data)
         const res = response.data
+        const payload = res?.data || {}
         return {
-            access_token: res.data?.access_token,
-            refresh_token: res.data?.refresh_token,
-            user_id: res.data?.user?.id,
-            user_type: res.data?.user?.user_type,
-            name: res.data?.user?.name,
+            access_token: payload.access_token,
+            refresh_token: payload.refresh_token,
+            user_id: payload.user?.id,
+            user_type: payload.user?.user_type,
+            name: payload.user?.name,
         }
     },
 
@@ -65,17 +66,17 @@ export const apiClient = {
         return response.data
     },
 
-    registerStudent: async (data: any) => {
+    registerStudent: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.post(`/auth/register/student`, data)
         return response.data
     },
 
-    registerCorporate: async (data: any) => {
+    registerCorporate: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.post(`/auth/register/corporate`, data)
         return response.data
     },
 
-    registerCollege: async (data: any) => {
+    registerCollege: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.post(`/auth/register/college`, data)
         return response.data
     },
@@ -86,7 +87,7 @@ export const apiClient = {
         return response.data
     },
 
-    updateStudentProfile: async (data: any) => {
+    updateStudentProfile: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.patch('/student/profile', data)
         return response.data
     },
@@ -96,18 +97,103 @@ export const apiClient = {
         return response.data
     },
 
-    addStudentEducation: async (data: any) => {
+    addStudentEducation: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.post('/student/education', data)
         return response.data
     },
 
-    updateStudentEducation: async (educationId: string, data: any) => {
+    updateStudentEducation: async (educationId: string, data: Record<string, unknown>) => {
         const response = await axiosInstance.patch(`/student/education/${educationId}`, data)
         return response.data
     },
 
     deleteStudentEducation: async (educationId: string) => {
         const response = await axiosInstance.delete(`/student/education/${educationId}`)
+        return response.data
+    },
+
+    uploadSectionA: async (formData: FormData) => {
+        const response = await axiosInstance.post('/exams/section-a', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+            timeout: 120000,
+        })
+        return response.data
+    },
+
+    getExamSessionStatus: async (sessionId: string) => {
+        const response = await axiosInstance.get(`/exams/sessions/${sessionId}`)
+        return response.data
+    },
+
+    getSectionBQuestion: async (sessionId: string) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/section-b/question`)
+        return response.data
+    },
+
+    submitSectionBResponse: async (
+        sessionId: string,
+        payload: {
+            response_id: string
+            mcq_answers: { id: string; selected_option: string }[]
+            long_answers: { id: string; answer: string }[]
+        }
+    ) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/section-b/response`, payload)
+        return response.data
+    },
+
+    getSectionCQuestion: async (sessionId: string) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/section-c/question`)
+        return response.data
+    },
+
+    submitSectionCResponse: async (sessionId: string, payload: { response_id: string; user_response: string }) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/section-c/response`, payload)
+        return response.data
+    },
+
+    getSectionDQuestion: async (sessionId: string) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/section-d/question`)
+        return response.data
+    },
+
+    submitSectionDResponse: async (sessionId: string, formData: FormData) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/section-d/response`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        })
+        return response.data
+    },
+
+    requestHint: async (
+        sessionId: string,
+        responseId: string,
+        payload: { question_text: string; student_current_answer: string }
+    ) => {
+        const response = await axiosInstance.post(
+            `/exams/sessions/${sessionId}/responses/${responseId}/hint`,
+            payload
+        )
+        return response.data
+    },
+
+    chatExamResponse: async (
+        sessionId: string,
+        responseId: string,
+        payload: { user_message: string; current_user_code_or_text: string }
+    ) => {
+        const response = await axiosInstance.post(
+            `/exams/${sessionId}/responses/${responseId}/chat`,
+            payload
+        )
+        return response.data
+    },
+
+    abandonExam: async (sessionId: string) => {
+        const response = await axiosInstance.post(`/exams/sessions/${sessionId}/abandon`)
         return response.data
     },
 
