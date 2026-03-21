@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { motion } from 'framer-motion'
@@ -17,15 +16,13 @@ import {
     GraduationCap,
     Shield,
     Settings,
-    Menu,
-    X,
     Rocket,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { Button } from '@/components/ui/button'
 
 const studentNavigation = [
     { name: 'Dashboard', href: '/dashboard/student', icon: LayoutDashboard },
+    { name: 'Skill Verification', href: '/dashboard/skill-verification', icon: FileSpreadsheet },
     { name: 'My Profile', href: '/dashboard/student/profile', icon: User },
     { name: 'Resume', href: '/dashboard/student/resume', icon: FileText },
     { name: 'Jobs & Internships', href: '/dashboard/student/jobs', icon: Briefcase },
@@ -61,13 +58,13 @@ const adminNavigation = [
 
 type SidebarProps = {
     isCollapsed: boolean
-    setIsCollapsed: (value: boolean | ((prev: boolean) => boolean)) => void
+    isMobileOpen: boolean
+    setIsMobileOpen: (value: boolean | ((prev: boolean) => boolean)) => void
 }
 
-export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
+export function Sidebar({ isCollapsed, isMobileOpen, setIsMobileOpen }: SidebarProps) {
     const pathname = usePathname()
     const { user, logout } = useAuth()
-    const [isMobileOpen, setIsMobileOpen] = useState(false)
     const isCorporate = user?.user_type === 'corporate'
 
     // Select navigation based on user type, defaulting to student
@@ -89,39 +86,33 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
 
     return (
         <>
-            {/* Mobile toggle button */}
-            <button
-                type="button"
-                className="lg:hidden fixed z-50 bottom-4 right-4 p-3 rounded-full bg-blue-600 text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600"
-                onClick={() => setIsMobileOpen(!isMobileOpen)}
-            >
-                {isMobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-
             {/* Mobile Sidebar Overlay */}
             {isMobileOpen && (
                 <div
-                    className="lg:hidden fixed inset-0 z-40 bg-gray-900/50 backdrop-blur-sm"
+                    className="lg:hidden fixed inset-x-0 top-16 bottom-0 z-40 bg-gray-900/50 backdrop-blur-sm"
                     onClick={() => setIsMobileOpen(false)}
+                    aria-hidden
                 />
             )}
 
-            {/* Sidebar */}
+            {/* Sidebar — below fixed header on mobile so navbar menu stays usable */}
             <aside
-                className={`fixed top-0 left-0 z-50 h-screen shrink-0 bg-white dark:bg-gray-900 border-r border-[#E3DED1] dark:border-gray-800 flex flex-col transition-transform duration-300 ease-in-out ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+                className={`fixed left-0 z-50 flex flex-col border border-[#E3DED1]/80 dark:border-gray-800/80 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md shadow-[8px_0_32px_-8px_rgba(27,20,13,0.12)] dark:shadow-[8px_0_32px_-8px_rgba(0,0,0,0.45)] transition-[width,transform] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none top-16 bottom-0 h-auto lg:top-0 lg:h-screen lg:bottom-auto shrink-0 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
                     }`}
-                style={{ width: isCollapsed ? 72 : 270 }}
+                style={{ width: 'var(--sidebar-w)' }}
             >
                 {/* Top section: logo + collapse + navigation */}
                 <div className={`flex-1 overflow-y-auto ${isCollapsed ? 'px-2' : 'px-5'} py-4 flex flex-col gap-6 items-center lg:items-stretch`}>
-                    {/* Logo + collapse toggle */}
-                    <div className="w-full flex items-center justify-between gap-2">
-                        <Link href="/" className={`flex items-center gap-3 ${isCollapsed ? 'justify-center flex-1' : ''}`}>
-                        <div className="w-10 h-10 bg-[#ee8c2b] rounded-xl flex items-center justify-center text-white">
-                        <Rocket className="w-6 h-6" />
-                    </div>
+                    {/* Brand — collapse/expand lives in TopNav */}
+                    <div
+                        className={`w-full flex items-center ${isCollapsed ? 'justify-center' : 'justify-start'}`}
+                    >
+                        <Link href="/" className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
+                            <div className="w-10 h-10 bg-[#ee8c2b] rounded-xl flex items-center justify-center text-white shrink-0">
+                                <Rocket className="w-6 h-6" />
+                            </div>
                             {!isCollapsed && (
-                                <div className="flex flex-col">
+                                <div className="flex flex-col min-w-0">
                                     <span className="text-base font-bold text-[#1b140d] dark:text-white leading-tight">
                                         DishaSetu
                                     </span>
@@ -131,15 +122,6 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                                 </div>
                             )}
                         </Link>
-                        {/* Collapse / expand button always visible at top */}
-                        <button
-                            type="button"
-                            onClick={() => setIsCollapsed((v) => !v)}
-                            className="inline-flex items-center justify-center rounded-full border border-stone-200 dark:border-gray-700 w-8 h-8 text-[11px] font-semibold text-stone-600 hover:bg-stone-100 dark:hover:bg-gray-800"
-                            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-                        >
-                            {isCollapsed ? '»' : '«'}
-                        </button>
                     </div>
 
                     {/* Navigation Links */}
@@ -152,7 +134,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                                     key={item.name}
                                     href={item.href}
                                     onClick={() => setIsMobileOpen(false)}
-                                    className={`relative flex items-center gap-3 px-4 py-3 rounded-full text-sm font-medium transition-all duration-200 group ${isActive
+                                    className={`relative flex items-center gap-3 px-4 py-3 rounded-full text-sm font-medium transition-[background-color,color,box-shadow,transform] duration-200 ease-out group ${isActive
                                         ? 'bg-[#ee8c2b] text-white shadow-md shadow-[#ee8c2b]/25'
                                         : 'text-stone-700 hover:bg-stone-100 hover:text-stone-900 dark:text-gray-300 dark:hover:bg-gray-800'
                                         }`}
@@ -167,7 +149,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                                     {isActive && (
                                         <motion.div
                                             layoutId="sidebar-active"
-                                            className="absolute -left-1 w-1.5 h-7 bg-[#ee8c2b] rounded-r-full"
+                                            className="absolute  h-7 bg-[#ee8c2b] rounded-r-full"
                                         />
                                     )}
                                 </Link>
@@ -179,7 +161,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                 {/* Bottom section: plan + profile + logout (styled like design) */}
                 <div className="shrink-0 px-2 pb-6 pt-4 space-y-3">
                     {/* Plan card, hidden when collapsed */}
-                    {!isCollapsed && (
+                    {/* {!isCollapsed && (
                         <div className="rounded-2xl bg-stone-50 border border-stone-100 px-4 py-3">
                             <p className="text-[11px] text-stone-500 mb-2 uppercase tracking-[0.18em] font-bold">
                                 Plan
@@ -196,7 +178,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed }: SidebarProps) {
                                 <div className="h-full w-[80%] bg-[#ee8c2b]" />
                             </div>
                         </div>
-                    )}
+                    )} */}
 
                     {/* User + logout */}
                     <div className="flex items-center justify-between gap-2">

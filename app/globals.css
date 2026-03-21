@@ -1,9 +1,4 @@
-/* Hide sidebar and mobile nav in fullscreen exam mode */
-body.hide-sidebar .student-sidebar,
-body.hide-sidebar .student-mobile-nav,
-body.hide-sidebar .main-navbar {
-  display: none !important;
-}
+/* Skill verification exam chrome is hidden via dashboard/layout.tsx (pathname) */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -219,6 +214,15 @@ body.hide-sidebar .main-navbar {
 /* Prevent horizontal scrolling on mobile */
 html, body {
   overflow-x: hidden;
+  width: 100%;
+  height: 100%;
+}
+
+/* Fullscreen API: use the full viewport without default browser inset/centering quirks */
+html:fullscreen,
+html:fullscreen body {
+  margin: 0;
+  padding: 0;
   width: 100%;
   height: 100%;
 }
