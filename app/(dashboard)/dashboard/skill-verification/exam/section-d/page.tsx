@@ -17,6 +17,7 @@ const stepToRoute: Record<string, string> = {
 
 export default function SectionDPage() {
     const router = useRouter()
+    const didFetchRef = useRef(false)
     const videoRef = useRef<HTMLVideoElement | null>(null)
     const streamRef = useRef<MediaStream | null>(null)
     const mediaRecorderRef = useRef<MediaRecorder | null>(null)
@@ -33,6 +34,8 @@ export default function SectionDPage() {
 
     useEffect(() => {
         const init = async () => {
+            if (didFetchRef.current) return
+            didFetchRef.current = true
             if (typeof window === 'undefined') return
             const sessionId = localStorage.getItem('active_exam_session_id')
             if (!sessionId) {

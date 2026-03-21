@@ -179,6 +179,18 @@ export const apiClient = {
         return response.data
     },
 
+    chatExamResponse: async (
+        sessionId: string,
+        responseId: string,
+        payload: { user_message: string; current_user_code_or_text: string }
+    ) => {
+        const response = await axiosInstance.post(
+            `/exams/${sessionId}/responses/${responseId}/chat`,
+            payload
+        )
+        return response.data
+    },
+
     abandonExam: async (sessionId: string) => {
         const response = await axiosInstance.post(`/exams/sessions/${sessionId}/abandon`)
         return response.data

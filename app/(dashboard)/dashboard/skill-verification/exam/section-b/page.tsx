@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { apiClient } from '@/lib/api'
+import { Sparkles, X } from 'lucide-react'
 
 const stepToRoute: Record<string, string> = {
     SECTION_A: '/dashboard/skill-verification/exam/section-a',
@@ -27,6 +28,11 @@ export default function SectionBPage() {
     const [isLoading, setIsLoading] = useState(true)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [isChatOpen, setIsChatOpen] = useState(false)
+    const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
+    const [chatInput, setChatInput] = useState('')
+    const [isChatLoading, setIsChatLoading] = useState(false)
+    const [showChatPenalty, setShowChatPenalty] = useState(false)
 
     useEffect(() => {
         const init = async () => {
@@ -105,6 +111,57 @@ export default function SectionBPage() {
         }
     }
 
+    const handleOpenChat = () => {
+        if (!responseId) {
+            return
+        }
+        const penaltyKey = `exam_chat_penalty_${responseId}`
+        const hasPenalty = typeof window !== 'undefined' && localStorage.getItem(penaltyKey)
+        if (!hasPenalty) {
+            setShowChatPenalty(true)
+            if (typeof window !== 'undefined') {
+                localStorage.setItem(penaltyKey, '1')
+            }
+        }
+        setIsChatOpen(true)
+    }
+
+    const handleSendChat = async () => {
+        const trimmed = chatInput.trim()
+        if (!trimmed || !responseId || isChatLoading) {
+            return
+        }
+
+        const currentWork = JSON.stringify({
+            mcq_answers: mcqAnswers,
+            long_answers: longAnswers,
+        })
+
+        setChatInput('')
+        setChatMessages((prev) => [...prev, { role: 'user', content: trimmed }])
+        setIsChatLoading(true)
+
+        try {
+            const result = await apiClient.chatExamResponse(
+                localStorage.getItem('active_exam_session_id') || '',
+                responseId,
+                {
+                    user_message: trimmed,
+                    current_user_code_or_text: currentWork,
+                }
+            )
+            const reply = result?.reply || 'I could not generate a response. Try a smaller question.'
+            setChatMessages((prev) => [...prev, { role: 'assistant', content: reply }])
+        } catch {
+            setChatMessages((prev) => [
+                ...prev,
+                { role: 'assistant', content: 'Unable to reach the assistant right now.' },
+            ])
+        } finally {
+            setIsChatLoading(false)
+        }
+    }
+
     if (isLoading) {
         return <div className="p-8 text-sm text-[#9a734c]">Loading Section B...</div>
     }
@@ -178,6 +235,74 @@ export default function SectionBPage() {
                     </Button>
                 </div>
             </div>
+
+            <div className="fixed bottom-6 right-6 z-50">
+                <button
+                    type="button"
+                    onClick={handleOpenChat}
+                    className="h-14 w-14 rounded-full bg-[#ee8c2b] text-white shadow-lg flex items-center justify-center hover:bg-[#df7f1f]"
+                    aria-label="Open AI assistant"
+                >
+                    <Sparkles className="w-6 h-6" />
+                </button>
+            </div>
+
+            {isChatOpen && (
+                <div className="fixed bottom-24 right-6 z-50 w-[320px] max-w-[90vw] rounded-2xl border border-[#efe8df] bg-white shadow-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-[#efe8df]">
+                        <p className="text-sm font-semibold text-[#1b140d]">AI Assistant</p>
+                        <button type="button" onClick={() => setIsChatOpen(false)} aria-label="Close chat">
+                            <X className="w-4 h-4 text-[#1b140d]" />
+                        </button>
+                    </div>
+
+                    {showChatPenalty && (
+                        <div className="px-4 py-2 text-xs text-[#7b4b1c] bg-[#fff3e8] border-b border-[#f1d4b8]">
+                            Starting a conversation will deduct 0.5 marks from this question's score.
+                        </div>
+                    )}
+
+                    <div className="max-h-64 overflow-y-auto px-4 py-3 space-y-3 text-sm">
+                        {chatMessages.length === 0 && (
+                            <p className="text-xs text-[#9a734c]">Ask for guidance on a specific part you are stuck on.</p>
+                        )}
+                        {chatMessages.map((message, index) => (
+                            <div
+                                key={`${message.role}-${index}`}
+                                className={
+                                    message.role === 'user'
+                                        ? 'bg-[#1b140d] text-white px-3 py-2 rounded-2xl ml-auto max-w-[85%]'
+                                        : 'bg-[#fcfaf8] text-[#1b140d] px-3 py-2 rounded-2xl mr-auto max-w-[85%]'
+                                }
+                            >
+                                {message.content}
+                            </div>
+                        ))}
+                        {isChatLoading && (
+                            <div className="bg-[#fcfaf8] text-[#1b140d] px-3 py-2 rounded-2xl mr-auto max-w-[85%]">
+                                Typing...
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="border-t border-[#efe8df] p-3 flex items-center gap-2">
+                        <input
+                            value={chatInput}
+                            onChange={(event) => setChatInput(event.target.value)}
+                            placeholder="Ask for a hint..."
+                            className="flex-1 rounded-xl border border-[#efe8df] px-3 py-2 text-sm focus:outline-none"
+                        />
+                        <button
+                            type="button"
+                            onClick={handleSendChat}
+                            className="rounded-xl bg-[#1b140d] text-white px-3 py-2 text-sm"
+                            disabled={isChatLoading}
+                        >
+                            Send
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
