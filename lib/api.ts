@@ -64,6 +64,7 @@ export interface JobItem extends JobPayload {
     max_applications: number
     current_applications: number
     created_at: string
+    is_public?: boolean
 }
 
 export interface CorporateProfile {
@@ -195,6 +196,21 @@ export const apiClient = {
     getJobs: async (mine: boolean = false) => {
         const response = await axiosInstance.get('/jobs', { params: { mine } })
         return response.data as JobItem[]
+    },
+
+    getJobById: async (jobId: string) => {
+        const response = await axiosInstance.get(`/jobs/${jobId}`)
+        return response.data as JobItem
+    },
+
+    updateJob: async (jobId: string, data: Partial<JobPayload>) => {
+        const response = await axiosInstance.put(`/jobs/${jobId}`, data)
+        return response.data as JobItem
+    },
+
+    approveJob: async (jobId: string) => {
+        const response = await axiosInstance.patch(`/jobs/${jobId}/approve`)
+        return response.data as JobItem
     },
 
     getCorporateProfile: async () => {

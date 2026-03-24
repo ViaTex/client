@@ -51,6 +51,7 @@ const adminNavigation = [
     { name: 'Dashboard', href: '/dashboard/admin', icon: LayoutDashboard },
     { name: 'Manage Users', href: '/dashboard/admin/users', icon: Users },
     { name: 'Institutions', href: '/dashboard/admin/institutions', icon: Building },
+    { name: 'Job Management', href: '/dashboard/admin/jobs', icon: Briefcase },
     { name: 'System Logs', href: '/dashboard/admin/logs', icon: Shield },
     { name: 'Analytics', href: '/dashboard/admin/analytics', icon: FileSpreadsheet },
     { name: 'Settings', href: '/dashboard/admin/settings', icon: Settings },
