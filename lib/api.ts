@@ -10,6 +10,80 @@ const axiosInstance = axios.create({
     },
 })
 
+export interface JobPayload {
+    title: string
+    description: string
+    requirements?: string
+    responsibilities?: string
+    job_type: 'full_time' | 'part_time' | 'contract' | 'internship' | 'freelance'
+    location: string
+    remote_work?: boolean
+    travel_required?: boolean
+    mode_of_work?: 'onsite' | 'remote' | 'hybrid'
+    salary_min?: number
+    salary_max?: number
+    salary_currency?: string
+    ctc_with_probation?: string
+    ctc_after_probation?: string
+    experience_min?: number
+    experience_max?: number
+    education_level?: string[]
+    education_degree?: string[]
+    education_branch?: string[]
+    skills_required?: string[]
+    certifications_required?: string
+    application_deadline?: string
+    max_applications?: number
+    number_of_openings?: number
+    industry?: string
+    selection_process?: string
+    campus_drive_date?: string
+    service_agreement_details?: string
+    expiration_date?: string
+    perks_and_benefits?: string
+    eligibility_criteria?: string
+    company_name?: string
+    company_logo?: string
+    company_website?: string
+    company_address?: string
+    company_size?: string
+    company_type?: string
+    company_founded?: number
+    company_description?: string
+    contact_person?: string
+    contact_designation?: string
+    min_des_score?: number
+    max_des_score?: number
+    ongoing_project_title?: string
+    ongoing_project_description?: string
+}
+
+export interface JobItem extends JobPayload {
+    id: string
+    status: string
+    max_applications: number
+    current_applications: number
+    created_at: string
+}
+
+export interface CorporateProfile {
+    id: string
+    email: string
+    name?: string
+    bio?: string
+    company_name?: string
+    phone?: string
+    contact_person?: string
+    contact_designation?: string
+    website_url?: string
+    industry?: string
+    company_size?: string
+    founded_year?: number
+    company_type?: string
+    description?: string
+    address?: string
+}
+
 // Request interceptor to add auth token
 axiosInstance.interceptors.request.use((config) => {
     if (typeof window !== 'undefined') {
@@ -110,6 +184,27 @@ export const apiClient = {
     deleteStudentEducation: async (educationId: string) => {
         const response = await axiosInstance.delete(`/student/education/${educationId}`)
         return response.data
+    },
+
+    // Jobs
+    createJob: async (data: JobPayload) => {
+        const response = await axiosInstance.post('/jobs', data)
+        return response.data as JobItem
+    },
+
+    getJobs: async (mine: boolean = false) => {
+        const response = await axiosInstance.get('/jobs', { params: { mine } })
+        return response.data as JobItem[]
+    },
+
+    getCorporateProfile: async () => {
+        const response = await axiosInstance.get('/corporate/profile')
+        return response.data as CorporateProfile
+    },
+
+    updateCorporateProfile: async (data: Partial<CorporateProfile>) => {
+        const response = await axiosInstance.patch('/corporate/profile', data)
+        return response.data as CorporateProfile
     },
 
     uploadSectionA: async (formData: FormData) => {
