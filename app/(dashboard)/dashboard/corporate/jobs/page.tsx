@@ -1,9 +1,11 @@
 "use client"
 
-import { FormEvent, useEffect, useMemo, useState } from "react"
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react"
+import { useRouter } from "next/navigation"
 import { apiClient, JobItem } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Filter, MoreVertical, Plus } from "lucide-react"
 
 type JobType = "full_time" | "part_time" | "contract" | "internship" | "freelance"
 type StepId = "job_basics" | "candidate_eligibility" | "compensation_company" | "hiring_process"
@@ -16,6 +18,8 @@ const STEPS: { id: StepId; label: string }[] = [
 ]
 
 export default function CorporateJobsPage() {
+    const router = useRouter()
+    const menuRef = useRef<HTMLDivElement | null>(null)
     const [jobs, setJobs] = useState<JobItem[]>([])
     const [loading, setLoading] = useState(false)
     const [submitting, setSubmitting] = useState(false)
@@ -68,6 +72,9 @@ export default function CorporateJobsPage() {
     const [ongoingProjectTitle, setOngoingProjectTitle] = useState("")
     const [ongoingProjectDescription, setOngoingProjectDescription] = useState("")
     const [currentStep, setCurrentStep] = useState(0)
+    const [openMenuJobId, setOpenMenuJobId] = useState<string | null>(null)
+    const [searchTerm, setSearchTerm] = useState("")
+    const [showCreateForm, setShowCreateForm] = useState(false)
     const currentStepId = STEPS[currentStep].id
     const canGoNext = useMemo(() => {
         if (currentStepId === "job_basics") {
@@ -75,6 +82,17 @@ export default function CorporateJobsPage() {
         }
         return true
     }, [currentStepId, title, description, location, jobType])
+    const filteredJobs = useMemo(() => {
+        const query = searchTerm.trim().toLowerCase()
+        if (!query) return jobs
+        return jobs.filter((job) => {
+            return (
+                job.title.toLowerCase().includes(query) ||
+                job.description.toLowerCase().includes(query) ||
+                job.location.toLowerCase().includes(query)
+            )
+        })
+    }, [jobs, searchTerm])
 
     const loadJobs = async () => {
         setLoading(true)
@@ -101,6 +119,17 @@ export default function CorporateJobsPage() {
                 setIndustry(profile.industry || "")
             })
             .catch(() => {})
+    }, [])
+
+    useEffect(() => {
+        const onDocumentClick = (event: MouseEvent) => {
+            if (!menuRef.current) return
+            if (!menuRef.current.contains(event.target as Node)) {
+                setOpenMenuJobId(null)
+            }
+        }
+        document.addEventListener("mousedown", onDocumentClick)
+        return () => document.removeEventListener("mousedown", onDocumentClick)
     }, [])
 
     const onSubmit = async (event: FormEvent) => {
@@ -172,6 +201,7 @@ export default function CorporateJobsPage() {
             setEducationBranch("")
             setSkillsRequired("")
             setCurrentStep(0)
+            setShowCreateForm(false)
             await loadJobs()
         } catch (e: any) {
             setError(e?.response?.data?.detail || "Failed to create job")
@@ -182,7 +212,90 @@ export default function CorporateJobsPage() {
 
     return (
         <div className="space-y-6">
-            <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-6">
+            <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-4 md:p-6">
+                <div className="flex flex-col md:flex-row md:items-center gap-3 md:justify-between mb-5">
+                    <Input
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search jobs by title, description, or location..."
+                        className="md:max-w-lg"
+                    />
+                    <div className="flex items-center gap-2">
+                        <Button type="button" onClick={() => setShowCreateForm((v) => !v)} className="bg-blue-600 hover:bg-blue-700 text-white">
+                            <Plus className="w-4 h-4 mr-2" />
+                            {showCreateForm ? "Close Form" : "Create Job"}
+                        </Button>
+                        <Button type="button" variant="outline">
+                            <Filter className="w-4 h-4 mr-2" />
+                            Filters
+                        </Button>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-300 mb-4 px-1">
+                    <p>Showing 1 to {filteredJobs.length} of {jobs.length} jobs</p>
+                    <p>Page 1 of 1 • {filteredJobs.length} jobs per page</p>
+                </div>
+
+                {loading ? <p className="text-sm text-gray-500">Loading jobs...</p> : null}
+                {!loading && filteredJobs.length === 0 ? <p className="text-sm text-gray-500">No jobs found.</p> : null}
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                    {filteredJobs.map((job) => (
+                        <div key={job.id} className="rounded-xl border border-emerald-200/70 bg-emerald-50/40 dark:bg-gray-900 dark:border-gray-700">
+                            <div className="p-4 border-b border-emerald-100 dark:border-gray-700">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div>
+                                        <h3 className="font-semibold text-gray-900 dark:text-white">{job.title}</h3>
+                                        <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">
+                                            {job.job_type.replace("_", " ")} • {job.status}
+                                        </p>
+                                    </div>
+                                    <div className="relative" ref={openMenuJobId === job.id ? menuRef : null}>
+                                        <button
+                                            type="button"
+                                            onClick={() => setOpenMenuJobId((prev) => (prev === job.id ? null : job.id))}
+                                            className="h-8 w-8 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 inline-flex items-center justify-center"
+                                            aria-label={`Open actions for ${job.title}`}
+                                        >
+                                            <MoreVertical className="w-4 h-4" />
+                                        </button>
+
+                                        {openMenuJobId === job.id ? (
+                                            <div className="absolute right-0 top-10 z-20 w-44 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-lg p-1">
+                                                <button
+                                                    type="button"
+                                                    className="w-full text-left px-3 py-2 text-sm rounded-md text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                    onClick={() => {
+                                                        setOpenMenuJobId(null)
+                                                        setCurrentStep(0)
+                                                        setShowCreateForm(true)
+                                                        router.push("/dashboard/corporate/jobs#create-job-form")
+                                                    }}
+                                                >
+                                                    Go to Create Job
+                                                </button>
+                                            </div>
+                                        ) : null}
+                                    </div>
+                                </div>
+                                <p className="text-sm text-gray-700 dark:text-gray-200 mt-3 line-clamp-3">{job.description}</p>
+                            </div>
+                            <div className="p-4">
+                                <p className="text-xs text-gray-500">
+                                    {job.location} • applications {job.current_applications}/{job.max_applications}
+                                </p>
+                                <Button type="button" variant="outline" className="w-full mt-3">
+                                    View JD
+                                </Button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+
+            {showCreateForm ? (
+                <div id="create-job-form" className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-6">
                 <div className="mb-5">
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Create New Job</h1>
                     <p className="text-sm text-gray-500 mt-1">Follow the structured flow to publish your job.</p>
@@ -407,26 +520,7 @@ export default function CorporateJobsPage() {
                     </div>
                 </form>
             </div>
-
-            <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-6">
-                <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-white">My Jobs</h2>
-                {loading ? <p className="text-sm text-gray-500">Loading jobs...</p> : null}
-                {!loading && jobs.length === 0 ? <p className="text-sm text-gray-500">No jobs yet.</p> : null}
-                <div className="space-y-3">
-                    {jobs.map((job) => (
-                        <div key={job.id} className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
-                            <div className="flex items-center justify-between gap-3">
-                                <h3 className="font-semibold text-gray-900 dark:text-white">{job.title}</h3>
-                                <span className="text-xs px-2 py-1 rounded bg-orange-100 text-orange-700">{job.status}</span>
-                            </div>
-                            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{job.description}</p>
-                            <p className="text-xs text-gray-500 mt-2">
-                                {job.location} • {job.job_type} • applications {job.current_applications}/{job.max_applications}
-                            </p>
-                        </div>
-                    ))}
-                </div>
-            </div>
+            ) : null}
         </div>
     )
 }
