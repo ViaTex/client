@@ -12,8 +12,6 @@ import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Modal, TermsModalContent } from '@/components/ui/modal'
 import { apiClient } from '@/lib/api'
 import { UserType } from '@/types/auth'
 import { useAuth } from '@/hooks/useAuth'
@@ -46,8 +44,6 @@ function LoginContent() {
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [selectedUserType, setSelectedUserType] = useState<UserType>('student')
-    const [termsAndPrivacyAccepted, setTermsAndPrivacyAccepted] = useState(false)
-    const [showTermsModal, setShowTermsModal] = useState(false)
     const [registerLink, setRegisterLink] = useState(`/auth/register?type=student`)
 
     useEffect(() => {
@@ -98,11 +94,6 @@ function LoginContent() {
     }, [searchParams, selectedUserType])
 
     const onSubmit = async (data: LoginFormData) => {
-        if (!termsAndPrivacyAccepted) {
-            toast.error('Please accept Terms and Conditions to continue')
-            return
-        }
-
         setIsLoading(true)
         try {
             const response = await apiClient.login(data)
@@ -183,11 +174,6 @@ function LoginContent() {
         setTimeout(() => {
             setValue('user_type', userType)
         }, 0)
-    }
-
-    const handleTermsAndPrivacyAccept = () => {
-        setTermsAndPrivacyAccepted(true)
-        setShowTermsModal(false)
     }
 
     const labelClassName = "block text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-300 mb-2"
@@ -318,35 +304,17 @@ function LoginContent() {
                                             )}
                                         </div>
 
-                                        {/* Terms and Forgot Password */}
-                                        <div className="flex items-center justify-between">
-                                            <div
-                                                className="cursor-pointer flex-1"
-                                                onClick={() => setShowTermsModal(true)}
-                                            >
-                                                <Checkbox
-                                                    id="terms-privacy"
-                                                    checked={termsAndPrivacyAccepted}
-                                                    onChange={() => setShowTermsModal(true)}
-                                                    label={
-                                                        <span className="text-sm text-gray-700 dark:text-gray-300">
-                                                            <span className="text-[#8a4a14] font-medium">
-                                                                Accept Terms & Conditions
-                                                            </span>
-                                                            {!termsAndPrivacyAccepted && <span className="text-red-500 ml-1">*</span>}
-                                                        </span>
-                                                    }
-                                                />
-                                            </div>
-                                            {selectedUserType !== 'admin' && (
+                                        {/* Forgot Password */}
+                                        {selectedUserType !== 'admin' && (
+                                            <div className="flex items-center justify-end">
                                                 <Link
                                                     href={`/auth/forgot-password?type=${selectedUserType}`}
                                                     className="text-sm text-[#8a4a14] hover:text-[#6b3b16] font-medium transition-colors whitespace-nowrap"
                                                 >
                                                     Forgot Password?
                                                 </Link>
-                                            )}
-                                        </div>
+                                            </div>
+                                        )}
 
                                         <Button
                                             type="submit"
@@ -385,20 +353,6 @@ function LoginContent() {
                 </motion.div>
             </div>
 
-            {/* Terms and Conditions Modal */}
-            <Modal
-                isOpen={showTermsModal}
-                onClose={() => setShowTermsModal(false)}
-                title="Terms and Conditions"
-                maxWidth="2xl"
-            >
-                <TermsModalContent />
-                <div className="mt-6 flex justify-end">
-                    <Button onClick={handleTermsAndPrivacyAccept} className="bg-neutral-900 text-white hover:bg-black">
-                        Accept Terms and Conditions and Privacy Policy
-                    </Button>
-                </div>
-            </Modal>
         </div>
     )
 }
