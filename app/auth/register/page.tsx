@@ -12,6 +12,8 @@ import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Modal, TermsModalContent } from '@/components/ui/modal'
 import { apiClient } from '@/lib/api'
 import { UserType } from '@/types/auth'
 import { useAuth } from '@/hooks/useAuth'
@@ -46,6 +48,10 @@ function RegisterContent() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [selectedUserType, setSelectedUserType] = useState<UserType>('student')
+    const [termsAccepted, setTermsAccepted] = useState(false)
+    const [showTermsModal, setShowTermsModal] = useState(false)
+
+    const termsVersion = 'v1'
 
     useEffect(() => {
         const hasRedirectUrl = searchParams.get('redirect')
@@ -79,10 +85,16 @@ function RegisterContent() {
             toast.error("Passwords don't match")
             return
         }
+        if (!termsAccepted) {
+            toast.error('Please accept Terms & Policies to continue')
+            return
+        }
         setIsLoading(true)
         try {
             let response: any
             const { confirmPassword, ...registerData } = data
+            registerData.has_accepted_terms = true
+            registerData.accepted_terms_version = termsVersion
 
             switch (selectedUserType) {
                 case 'student':
@@ -412,6 +424,34 @@ function RegisterContent() {
                                             </div>
                                         </div>
 
+                                        <div className="flex items-center justify-between">
+                                            <div
+                                                className="cursor-pointer flex-1"
+                                                onClick={() => setShowTermsModal(true)}
+                                            >
+                                                <Checkbox
+                                                    id="terms-policies"
+                                                    checked={termsAccepted}
+                                                    onChange={() => setShowTermsModal(true)}
+                                                    label={
+                                                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                                                            <span className="text-[#8a4a14] font-medium">
+                                                                I agree to Terms & Policies
+                                                            </span>
+                                                            {!termsAccepted && <span className="text-red-500 ml-1">*</span>}
+                                                        </span>
+                                                    }
+                                                />
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowTermsModal(true)}
+                                                className="text-xs text-[#8a4a14] hover:text-[#6b3b16] font-semibold uppercase tracking-widest"
+                                            >
+                                                View
+                                            </button>
+                                        </div>
+
                                         <Button
                                             type="submit"
                                             className="w-full h-12 rounded-xl bg-neutral-900 text-white hover:bg-black"
@@ -461,6 +501,26 @@ function RegisterContent() {
                     </div>
                 </motion.div>
             </div>
+
+            <Modal
+                isOpen={showTermsModal}
+                onClose={() => setShowTermsModal(false)}
+                title="Terms and Policies"
+                maxWidth="2xl"
+            >
+                <TermsModalContent />
+                <div className="mt-6 flex justify-end">
+                    <Button
+                        onClick={() => {
+                            setTermsAccepted(true)
+                            setShowTermsModal(false)
+                        }}
+                        className="bg-neutral-900 text-white hover:bg-black"
+                    >
+                        Accept Terms & Policies
+                    </Button>
+                </div>
+            </Modal>
         </div>
     )
 }
