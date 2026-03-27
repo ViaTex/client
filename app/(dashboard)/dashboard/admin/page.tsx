@@ -30,13 +30,13 @@ export default function AdminDashboard() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-rose-600 to-red-600 rounded-2xl p-6 md:p-8 text-white shadow-xl"
+                className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-gradient-to-r from-[#7C3AED] to-[#A855F7] rounded-xl p-6 md:p-8 text-white shadow-xl"
             >
                 <div>
                     <h1 className="text-3xl font-bold mb-2">
                         System Overview, {user?.name?.split(' ')[0] || 'Admin'} 🛡️
                     </h1>
-                    <p className="text-rose-100 max-w-xl">
+                    <p className="text-purple-100 max-w-xl">
                         Monitor platform health, verify new institutional accounts, and oversee global analytics for the DishaSetu ecosystem.
                     </p>
                 </div>
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
                     <Button variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white" onClick={() => window.location.href = '/dashboard/admin/users'}>
                         Manage Users
                     </Button>
-                    <Button className="bg-white text-rose-700 hover:bg-rose-50">
+                    <Button className="bg-white text-[#7C3AED] hover:bg-purple-50">
                         View Logs
                     </Button>
                 </div>
@@ -60,7 +60,7 @@ export default function AdminDashboard() {
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ delay: i * 0.1 }}
-                            className="bg-white dark:bg-gray-800/80 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow"
+                            className="bg-white dark:bg-[#0B1739] rounded-xl p-6 border border-gray-200 dark:border-white/10 shadow-[0_4px_8px_rgba(0,0,0,0.04)] hover:shadow-md transition-shadow"
                         >
                             <div className="flex items-center gap-4">
                                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${stat.bg} ${stat.color}`}>
@@ -86,14 +86,14 @@ export default function AdminDashboard() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="lg:col-span-2 bg-white dark:bg-gray-800/80 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden"
+                    className="lg:col-span-2 bg-white dark:bg-[#0B1739] rounded-xl border border-gray-200 dark:border-white/10 shadow-[0_4px_8px_rgba(0,0,0,0.04)] overflow-hidden"
                 >
                     <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
                         <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            <ShieldCheck className="w-5 h-5 text-rose-500" />
+                            <ShieldCheck className="w-5 h-5 text-[#7C3AED]" />
                             Pending Institutional Approvals
                         </h2>
-                        <Button variant="ghost" size="sm" className="text-rose-600 dark:text-rose-400">
+                        <Button variant="ghost" size="sm" className="text-[#7C3AED] dark:text-purple-400">
                             See Queue
                         </Button>
                     </div>
@@ -131,7 +131,7 @@ export default function AdminDashboard() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4 }}
-                    className="bg-white dark:bg-gray-800/80 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6"
+                    className="bg-white dark:bg-[#0B1739] rounded-xl border border-gray-200 dark:border-white/10 shadow-[0_4px_8px_rgba(0,0,0,0.04)] p-6"
                 >
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
