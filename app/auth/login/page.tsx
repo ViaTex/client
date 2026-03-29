@@ -7,7 +7,12 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
-import { Eye, EyeOff, Mail, Lock, User, Building2, GraduationCap, Shield, RotateCcw } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Building2, GraduationCap, Shield } from 'lucide-react'
+import { PiCompassRoseFill } from "react-icons/pi";
+import { FaUsers } from "react-icons/fa";
+import { HiUserGroup } from "react-icons/hi";
+import { BsPeopleFill } from "react-icons/bs";
+import { FaLinkedin,FaGoogle } from "react-icons/fa";
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
@@ -180,179 +185,181 @@ function LoginContent() {
     const inputClassName = "h-12 rounded-xl border-transparent bg-[#f6efe6] text-gray-900 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-[#8a4a14]/20 dark:bg-gray-800"
 
     return (
-        <div className="min-h-screen bg-[#f6f1ea] dark:bg-gray-950">
-            <div className="container mx-auto px-4 py-12">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="max-w-6xl mx-auto"
-                >
-                    <div className="overflow-hidden rounded-3xl border border-amber-100 bg-white shadow-[0_25px_60px_rgba(71,45,16,0.12)] dark:border-gray-800 dark:bg-gray-900">
-                        <div className="grid grid-cols-1 lg:grid-cols-2">
-                            {/* Left Panel */}
-                            <div className="relative flex flex-col justify-between bg-[#f4ede4] px-8 py-10 sm:px-12 sm:py-12 dark:bg-gray-900">
-                                <div>
-                                    <span className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-700/80">Elevate your career</span>
-                                    <h1 className="mt-4 text-4xl font-bold leading-tight text-[#4b2a12] sm:text-5xl">
-                                        UNLOCK YOUR<br />POTENTIAL
-                                    </h1>
-                                    <p className="mt-5 max-w-sm text-base text-[#6b4b36]">
-                                        Your journey to career success starts here. Join our community of builders and innovators.
-                                    </p>
-                                </div>
+        <div className="min-h-screen flex items-center justify-center bg-[#f3f3f3] px-4">
+            <div className="w-full max-w-6xl rounded-2xl overflow-hidden shadow-xl bg-white grid lg:grid-cols-2">
 
-                                <div className="relative mt-10">
-                                    <div className="absolute inset-x-0 -bottom-6 h-20 bg-gradient-to-t from-[#f4ede4] to-transparent dark:from-gray-900" />
-                                    <img
-                                        alt="Students collaborating in a modern workspace"
-                                        className="h-80 w-full rounded-2xl object-cover shadow-xl"
-                                        src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?q=80&w=1200&auto=format&fit=crop"
-                                    />
-                                    <div className="absolute -top-4 -right-4 rounded-2xl bg-[#8a4a14] p-3 shadow-lg">
-                                        <RotateCcw className="h-6 w-6 text-white" />
-                                    </div>
-                                </div>
+                {/* LEFT SIDE (BLUE PANEL) */}
+                <div className="hidden lg:flex bg-[#2536B8] text-white p-10 flex-col justify-between">
+                    <div>
+                        <h2 className="text-xl font-semibold flex items-center gap-2">
+                            <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                <PiCompassRoseFill />
+                            </span>
+                            Dishasetu
+                        </h2>
+
+                        <h1 className="mt-10 text-4xl font-bold leading-tight">
+                            Aapka Career,<br />Aapka Setu
+                        </h1>
+
+                        <p className="mt-5 text-white/80 max-w-sm">
+                            Your bridge to a premium career ecosystem.
+                            Empowering talent through technology.
+                        </p>
+                    </div>
+
+                    <div>
+                        <div className="flex items-center -space-x-3 mb-2">
+                            <div className="w-8 h-8 rounded-full bg-white/20 border-2 border-white flex items-center justify-center">
+                                <FaUsers className="text-white text-sm" />
                             </div>
 
-                            {/* Right Panel */}
-                            <div className="bg-white px-8 py-10 sm:px-12 sm:py-12 dark:bg-gray-900">
-                                <div className="mx-auto w-full max-w-md">
-                                    <div className="mb-8">
-                                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Welcome back</h2>
-                                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                            Sign in to your account to continue.
-                                        </p>
-                                    </div>
+                            <div className="w-8 h-8 rounded-full bg-white/20 border-2 border-white flex items-center justify-center">
+                                <HiUserGroup className="text-white text-sm" />
+                            </div>
 
-                                    {/* User Type Selection */}
-                                    <div className="mb-6">
-                                        <label className={labelClassName}>I am a</label>
-                                        <div className="grid sm:grid-cols-3 grid-cols-1 gap-3 w-full">
-                                            {userTypeOptions.map((option) => {
-                                                const Icon = userTypeIcons[option.value as UserType]
-                                                const isSelected = selectedUserType === option.value
-
-                                                return (
-                                                    <button
-                                                        key={option.value}
-                                                        type="button"
-                                                        onClick={() => handleUserTypeChange(option.value)}
-                                                        className={`rounded-xl border px-3 py-3 transition-all duration-200 flex flex-col items-center space-y-2 ${isSelected
-                                                            ? 'border-[#8a4a14] bg-[#f6efe6] text-[#6b3b16]'
-                                                            : 'border-amber-100 hover:border-[#8a4a14]/40 text-gray-600 dark:text-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
-                                                            }`}
-                                                    >
-                                                        <Icon className={`w-5 h-5 ${isSelected ? 'text-[#8a4a14]' : ''}`} />
-                                                        <span className="text-xs font-semibold uppercase tracking-widest">{option.label}</span>
-                                                    </button>
-                                                )
-                                            })}
-                                        </div>
-                                    </div>
-
-                                    {/* Login Form */}
-                                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                                        <input type="hidden" {...register('user_type')} />
-
-                                        <div>
-                                            <label htmlFor="email" className={labelClassName}>
-                                                Email Address
-                                            </label>
-                                            <Input
-                                                id="email"
-                                                type="email"
-                                                placeholder="Enter your email address"
-                                                leftIcon={<Mail className="w-4 h-4" />}
-                                                error={!!errors.email}
-                                                className={inputClassName}
-                                                {...register('email')}
-                                            />
-                                            {errors.email && (
-                                                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                                                    {errors.email.message}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <label htmlFor="password" className={labelClassName}>
-                                                Password
-                                            </label>
-                                            <Input
-                                                id="password"
-                                                type={showPassword ? 'text' : 'password'}
-                                                placeholder="Enter your password"
-                                                leftIcon={<Lock className="w-4 h-4" />}
-                                                rightIcon={
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setShowPassword(!showPassword)}
-                                                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                                                    >
-                                                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                                    </button>
-                                                }
-                                                error={!!errors.password}
-                                                className={inputClassName}
-                                                {...register('password')}
-                                            />
-                                            {errors.password && (
-                                                <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                                                    {errors.password.message}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        {/* Forgot Password */}
-                                        {selectedUserType !== 'admin' && (
-                                            <div className="flex items-center justify-end">
-                                                <Link
-                                                    href={`/auth/forgot-password?type=${selectedUserType}`}
-                                                    className="text-sm text-[#8a4a14] hover:text-[#6b3b16] font-medium transition-colors whitespace-nowrap"
-                                                >
-                                                    Forgot Password?
-                                                </Link>
-                                            </div>
-                                        )}
-
-                                        <Button
-                                            type="submit"
-                                            className="w-full h-12 rounded-xl bg-neutral-900 text-white hover:bg-black"
-                                            loading={isLoading}
-                                        >
-                                            SIGN IN
-                                        </Button>
-                                    </form>
-
-                                    {selectedUserType !== 'admin' && (
-                                        <div className="mt-6 text-center">
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                Don&apos;t have an account?{' '}
-                                                <Link
-                                                    href={registerLink}
-                                                    className="text-[#8a4a14] hover:text-[#6b3b16] font-semibold transition-colors"
-                                                >
-                                                    Create one
-                                                </Link>
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    {selectedUserType === 'admin' && (
-                                        <div className="mt-6 text-center">
-                                            <p className="text-sm text-gray-500 dark:text-gray-500 italic">
-                                                Admin accounts are created by authorized personnel only
-                                            </p>
-                                        </div>
-                                    )}
-                                </div>
+                            <div className="w-8 h-8 rounded-full bg-white/20 border-2 border-white flex items-center justify-center">
+                                <BsPeopleFill className="text-white text-sm" />
                             </div>
                         </div>
-                    </div>
-                </motion.div>
-            </div>
 
+                        <p className="text-sm text-white/70">
+                            Joined by 10k+ professionals
+                        </p>
+                    </div>
+                </div>
+
+                {/* RIGHT SIDE (LOGIN FORM) */}
+                <div className="p-10 flex flex-col justify-center">
+                    <div className="max-w-md mx-auto w-full">
+
+                        <h2 className="text-3xl font-bold text-gray-900">
+                            Welcome Back
+                        </h2>
+
+                        <p className="text-gray-500 mt-1 mb-8">
+                            Log in to manage your career journey.
+                        </p>
+
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+
+                            <input type="hidden" {...register("user_type")} />
+
+                            {/* EMAIL */}
+                            <div>
+                                <label className="text-sm font-medium text-gray-600">
+                                    Phone Number/Email
+                                </label>
+
+                                <Input
+                                    type="email"
+                                    placeholder="Enter your phone or email"
+                                    className="mt-2 h-12 rounded-xl bg-gray-100 border-0"
+                                    {...register("email")}
+                                />
+
+                                {errors.email && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                        {errors.email.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* PASSWORD */}
+                            <div>
+                                <div className="flex justify-between items-center">
+                                    <label className="text-sm font-medium text-gray-600">
+                                        Password
+                                    </label>
+
+                                    {selectedUserType !== "admin" && (
+                                        <Link
+                                            href={`/auth/forgot-password?type=${selectedUserType}`}
+                                            className="text-sm text-[#2536B8] font-medium"
+                                        >
+                                            Forgot?
+                                        </Link>
+                                    )}
+                                </div>
+
+                                <Input
+                                    type={showPassword ? "text" : "password"}
+                                    placeholder="Enter your password"
+                                    className="mt-2 h-12 rounded-xl bg-gray-100 border-0"
+                                    rightIcon={
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                        >
+                                            {showPassword ? (
+                                                <EyeOff className="w-4 h-4" />
+                                            ) : (
+                                                <Eye className="w-4 h-4" />
+                                            )}
+                                        </button>
+                                    }
+                                    {...register("password")}
+                                />
+
+                                {errors.password && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                        {errors.password.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* LOGIN BUTTON */}
+                            <Button
+                                type="submit"
+                                loading={isLoading}
+                                className="w-full h-12 rounded-full bg-black text-white hover:bg-neutral-800"
+                            >
+                                Aage Badhein →
+                            </Button>
+                        </form>
+
+                        {/* SOCIAL LOGIN */}
+                        <div className="my-6 flex items-center gap-3">
+                            <div className="flex-1 h-px bg-gray-200" />
+                            <span className="text-xs text-gray-400">
+                                OR CONTINUE WITH
+                            </span>
+                            <div className="flex-1 h-px bg-gray-200" />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <button className="border rounded-xl h-12 flex items-center justify-center gap-2 hover:bg-gray-100">
+                            <FaGoogle />
+                                Google
+                            </button>
+
+                            <button className="border rounded-xl h-12 flex items-center justify-center gap-2 hover:bg-gray-100">
+                            <FaLinkedin />
+                                LinkedIn
+                            </button>
+                        </div>
+
+                        {/* REGISTER */}
+                        {selectedUserType !== "admin" && (
+                            <p className="text-center text-sm text-gray-500 mt-6">
+                                Naya account chahiye?{" "}
+                                <Link
+                                    href={registerLink}
+                                    className="text-[#2536B8] font-semibold"
+                                >
+                                    Naya Account Banayein
+                                </Link>
+                            </p>
+                        )}
+
+                        {selectedUserType === "admin" && (
+                            <p className="text-center text-sm text-gray-400 italic mt-6">
+                                Admin accounts are created by authorized personnel only
+                            </p>
+                        )}
+                    </div>
+                </div>
+            </div>
         </div>
     )
 }
