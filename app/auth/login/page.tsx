@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
-import { Eye, EyeOff, Mail, Lock, User, Building2, GraduationCap, Shield } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { PiCompassRoseFill } from "react-icons/pi";
 import { FaUsers } from "react-icons/fa";
 import { HiUserGroup } from "react-icons/hi";
@@ -23,24 +23,10 @@ import { useAuth } from '@/hooks/useAuth'
 
 const loginSchema = z.object({
     email: z.string().email('Please enter a valid email address'),
-    password: z.string().min(1, 'Password is required'),
-    user_type: z.enum(['student', 'corporate', 'college', 'admin'] as const)
+    password: z.string().min(1, 'Password is required')
 })
 
 type LoginFormData = z.infer<typeof loginSchema>
-
-const userTypeOptions = [
-    { value: 'student', label: 'Student' },
-    { value: 'corporate', label: 'Corporate' },
-    { value: 'college', label: 'College' },
-]
-
-const userTypeIcons = {
-    student: User,
-    corporate: Building2,
-    college: GraduationCap,
-    admin: Shield
-}
 
 function LoginContent() {
     const router = useRouter()
@@ -48,8 +34,6 @@ function LoginContent() {
     const { redirectIfAuthenticated, login } = useAuth()
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
-    const [selectedUserType, setSelectedUserType] = useState<UserType>('student')
-    const [registerLink, setRegisterLink] = useState(`/auth/register?type=student`)
 
     useEffect(() => {
         const hasRedirectUrl = searchParams.get('redirect') || (typeof window !== 'undefined' && localStorage.getItem('redirect_after_login'))
@@ -61,42 +45,18 @@ function LoginContent() {
     const {
         register,
         handleSubmit,
-        setValue,
         formState: { errors }
     } = useForm<LoginFormData>({
-        resolver: zodResolver(loginSchema),
-        defaultValues: {
-            user_type: 'student'
-        }
+        resolver: zodResolver(loginSchema)
     })
 
     useEffect(() => {
-        const type = searchParams.get('type') as UserType
         const registered = searchParams.get('registered')
-
-        if (type && ['student', 'corporate', 'college', 'admin'].includes(type)) {
-            setSelectedUserType(type)
-            setValue('user_type', type)
-        }
 
         if (registered === 'true') {
             toast.success('Registration successful! Please log in to continue.')
         }
-    }, [searchParams, setValue])
-
-    useEffect(() => {
-        setValue('user_type', selectedUserType)
-    }, [selectedUserType, setValue])
-
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const redirectUrl = searchParams.get('redirect') || localStorage.getItem('redirect_after_login')
-            const link = redirectUrl
-                ? `/auth/register?type=${selectedUserType}&redirect=${encodeURIComponent(redirectUrl)}`
-                : `/auth/register?type=${selectedUserType}`
-            setRegisterLink(link)
-        }
-    }, [searchParams, selectedUserType])
+    }, [searchParams])
 
     const onSubmit = async (data: LoginFormData) => {
         setIsLoading(true)
@@ -105,11 +65,14 @@ function LoginContent() {
 
             apiClient.setAuthTokens(response.access_token, response.refresh_token)
 
+            // Use user_type from backend response
+            const userType = response.user_type || 'student'
+            
             login({
                 id: response.user_id || 'temp-id',
                 email: data.email,
-                user_type: data.user_type,
-                name: data.email
+                user_type: userType,
+                name: response.name || data.email
             }, response.access_token, response.refresh_token)
 
             toast.success('Login successful!')
@@ -125,7 +88,8 @@ function LoginContent() {
                 return
             }
 
-            switch (data.user_type) {
+            // Redirect based on backend user_type response
+            switch (userType) {
                 case 'student':
                     router.push('/dashboard/student')
                     break
@@ -147,6 +111,7 @@ function LoginContent() {
             if (error.response) {
                 const status = error.response.status
                 const detail = error.response.data?.detail
+                const data = error.response.data?.data
 
                 if (status === 401) {
                     message = 'Invalid password. Please try again.'
@@ -154,6 +119,15 @@ function LoginContent() {
                     message = 'This email is not registered. Please create an account first.'
                 } else if (status === 400) {
                     message = detail || 'Invalid login request.'
+                } else if (status === 422) {
+                    // Validation error - extract meaningful message
+                    if (data && Array.isArray(data)) {
+                        message = data[0]?.msg || 'Invalid request. Please check your email and password.'
+                    } else if (detail) {
+                        message = detail
+                    } else {
+                        message = 'Invalid email or password.'
+                    }
                 } else {
                     message = detail || message
                 }
@@ -164,25 +138,6 @@ function LoginContent() {
             setIsLoading(false)
         }
     }
-
-    const handleUserTypeChange = (value: string) => {
-        const userType = value as UserType
-        setSelectedUserType(userType)
-        setValue('user_type', userType)
-
-        const redirectUrl = searchParams.get('redirect')
-        const newUrl = redirectUrl
-            ? `/auth/login?type=${userType}&redirect=${redirectUrl}`
-            : `/auth/login?type=${userType}`
-        router.replace(newUrl)
-
-        setTimeout(() => {
-            setValue('user_type', userType)
-        }, 0)
-    }
-
-    const labelClassName = "block text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-300 mb-2"
-    const inputClassName = "h-12 rounded-xl border-transparent bg-[#f6efe6] text-gray-900 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-[#8a4a14]/20 dark:bg-gray-800"
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#f3f3f3] px-4">
@@ -243,8 +198,6 @@ function LoginContent() {
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
 
-                            <input type="hidden" {...register("user_type")} />
-
                             {/* EMAIL */}
                             <div>
                                 <label className="text-sm font-medium text-gray-600">
@@ -272,14 +225,12 @@ function LoginContent() {
                                         Password
                                     </label>
 
-                                    {selectedUserType !== "admin" && (
-                                        <Link
-                                            href={`/auth/forgot-password?type=${selectedUserType}`}
-                                            className="text-sm text-[#2536B8] font-medium"
-                                        >
-                                            Forgot?
-                                        </Link>
-                                    )}
+                                    <Link
+                                        href="/auth/forgot-password"
+                                        className="text-sm text-[#2536B8] font-medium"
+                                    >
+                                        Forgot?
+                                    </Link>
                                 </div>
 
                                 <Input
@@ -290,6 +241,7 @@ function LoginContent() {
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
+                                            suppressHydrationWarning
                                         >
                                             {showPassword ? (
                                                 <EyeOff className="w-4 h-4" />
@@ -328,35 +280,33 @@ function LoginContent() {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <button className="border rounded-xl h-12 flex items-center justify-center gap-2 hover:bg-gray-100">
-                            <FaGoogle />
+                            <button 
+                                className="border rounded-xl h-12 flex items-center justify-center gap-2 hover:bg-gray-100"
+                                suppressHydrationWarning
+                            >
+                                <FaGoogle />
                                 Google
                             </button>
 
-                            <button className="border rounded-xl h-12 flex items-center justify-center gap-2 hover:bg-gray-100">
-                            <FaLinkedin />
+                            <button 
+                                className="border rounded-xl h-12 flex items-center justify-center gap-2 hover:bg-gray-100"
+                                suppressHydrationWarning
+                            >
+                                <FaLinkedin />
                                 LinkedIn
                             </button>
                         </div>
 
                         {/* REGISTER */}
-                        {selectedUserType !== "admin" && (
-                            <p className="text-center text-sm text-gray-500 mt-6">
-                                Naya account chahiye?{" "}
-                                <Link
-                                    href={registerLink}
-                                    className="text-[#2536B8] font-semibold"
-                                >
-                                    Naya Account Banayein
-                                </Link>
-                            </p>
-                        )}
-
-                        {selectedUserType === "admin" && (
-                            <p className="text-center text-sm text-gray-400 italic mt-6">
-                                Admin accounts are created by authorized personnel only
-                            </p>
-                        )}
+                        <p className="text-center text-sm text-gray-500 mt-6">
+                            Naya account chahiye?{" "}
+                            <Link
+                                href="/auth/register"
+                                className="text-[#2536B8] font-semibold"
+                            >
+                                Naya Account Banayein
+                            </Link>
+                        </p>
                     </div>
                 </div>
             </div>

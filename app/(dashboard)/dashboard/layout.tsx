@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { TopNav } from '@/components/dashboard/top-nav'
-import { Sidebar } from '@/components/dashboard/sidebar'
+import { TopNav } from '@/components/ui/top-nav'
+import { Sidebar } from '@/components/ui/sidebar'
 import { useAuth } from '@/hooks/useAuth'
 
 /** One source of truth for desktop rail width — drives sidebar, main, and top nav via CSS var */

@@ -12,8 +12,6 @@ import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Modal, TermsModalContent } from '@/components/ui/modal'
 import { apiClient } from '@/lib/api'
 import { UserType } from '@/types/auth'
 import { useAuth } from '@/hooks/useAuth'
@@ -48,10 +46,6 @@ function RegisterContent() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [selectedUserType, setSelectedUserType] = useState<UserType>('student')
-    const [termsAccepted, setTermsAccepted] = useState(false)
-    const [showTermsModal, setShowTermsModal] = useState(false)
-
-    const termsVersion = 'v1'
 
     useEffect(() => {
         const hasRedirectUrl = searchParams.get('redirect')
@@ -85,16 +79,10 @@ function RegisterContent() {
             toast.error("Passwords don't match")
             return
         }
-        if (!termsAccepted) {
-            toast.error('Please accept Terms & Policies to continue')
-            return
-        }
         setIsLoading(true)
         try {
             let response: any
             const { confirmPassword, ...registerData } = data
-            registerData.has_accepted_terms = true
-            registerData.accepted_terms_version = termsVersion
 
             switch (selectedUserType) {
                 case 'student':
@@ -143,7 +131,7 @@ function RegisterContent() {
                     default: router.push('/dashboard')
                 }
             } catch {
-                router.push(`/auth/login?type=${selectedUserType}&registered=true`)
+                router.push(`/auth/login`)
             }
         } catch (error: any) {
             const message = error.response?.data?.detail || 'Registration failed. Please try again.'
@@ -412,7 +400,7 @@ function RegisterContent() {
                                     <p className="text-sm text-gray-600 dark:text-gray-400">
                                         Already have an account?{' '}
                                         <Link
-                                            href={`/auth/login?type=${selectedUserType}`}
+                                            href={`/auth/login`}
                                             className="text-[#2536B8] hover:text-blue-700 font-semibold"
                                         >
                                             Log in
