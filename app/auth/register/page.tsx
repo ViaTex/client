@@ -3,9 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { useForm, type SubmitHandler } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 import { Eye, EyeOff, Mail, Lock, User, Building2, GraduationCap, Phone, Globe } from 'lucide-react'
 import Link from 'next/link'
@@ -16,27 +14,26 @@ import { apiClient } from '@/lib/api'
 import { UserType } from '@/types/auth'
 import { useAuth } from '@/hooks/useAuth'
 
-const passwordSchema = z
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-    .regex(/[0-9]/, 'Password must contain at least one digit')
-    .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character')
-
-const emailSchema = z.string().email('Please enter a valid email address')
-
-const baseSchema = z.object({
-    email: emailSchema,
-    password: passwordSchema,
-    confirmPassword: z.string(),
-    user_type: z.enum(['student', 'corporate', 'college'] as const),
-})
-
 const userTypeOptions = [
     { value: 'student', label: 'Student', icon: User },
     { value: 'corporate', label: 'Corporate', icon: Building2 },
     { value: 'college', label: 'College', icon: GraduationCap },
 ]
+
+type RegisterFormData = {
+    email: string
+    password: string
+    confirmPassword?: string
+    user_type?: UserType
+    name?: string
+    phone?: string
+    institution?: string
+    company_name?: string
+    website_url?: string
+    contact_person?: string
+    college_name?: string
+    contact_person_name?: string
+}
 
 function RegisterContent() {
     const router = useRouter()
@@ -59,7 +56,7 @@ function RegisterContent() {
         }
     }, [searchParams])
 
-    const { register, handleSubmit, reset, watch, formState: { errors } } = useForm<any>({
+    const { register, handleSubmit, reset, formState: { errors } } = useForm<RegisterFormData>({
         defaultValues: { user_type: selectedUserType }
     })
 
@@ -74,25 +71,25 @@ function RegisterContent() {
         router.replace(newUrl)
     }
 
-    const onSubmit = async (data: any) => {
+    const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
         if (data.password !== data.confirmPassword) {
             toast.error("Passwords don't match")
             return
         }
         setIsLoading(true)
         try {
-            let response: any
-            const { confirmPassword, ...registerData } = data
+            const registerData = { ...data }
+            delete registerData.confirmPassword
 
             switch (selectedUserType) {
                 case 'student':
-                    response = await apiClient.registerStudent(registerData)
+                    await apiClient.registerStudent(registerData)
                     break
                 case 'corporate':
-                    response = await apiClient.registerCorporate(registerData)
+                    await apiClient.registerCorporate(registerData)
                     break
                 case 'college':
-                    response = await apiClient.registerCollege(registerData)
+                    await apiClient.registerCollege(registerData)
                     break
                 default:
                     throw new Error('Invalid user type')
@@ -103,8 +100,7 @@ function RegisterContent() {
             try {
                 const loginResponse = await apiClient.login({
                     email: data.email,
-                    password: data.password,
-                    user_type: selectedUserType
+                    password: data.password
                 })
                 apiClient.setAuthTokens(loginResponse.access_token, loginResponse.refresh_token)
                 login(
@@ -118,7 +114,7 @@ function RegisterContent() {
                     loginResponse.refresh_token
                 )
 
-                let redirectUrl = searchParams.get('redirect')
+                const redirectUrl = searchParams.get('redirect')
                 if (redirectUrl) {
                     router.push(decodeURIComponent(redirectUrl))
                     return
@@ -133,8 +129,11 @@ function RegisterContent() {
             } catch {
                 router.push(`/auth/login`)
             }
-        } catch (error: any) {
-            const message = error.response?.data?.detail || 'Registration failed. Please try again.'
+        } catch (error: unknown) {
+            const response = typeof error === 'object' && error !== null && 'response' in error
+                ? (error as { response?: { data?: { detail?: string } } }).response
+                : undefined
+            const message = response?.data?.detail || 'Registration failed. Please try again.'
             toast.error(message)
         } finally {
             setIsLoading(false)

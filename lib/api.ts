@@ -118,7 +118,7 @@ axiosInstance.interceptors.response.use(
 
 export const apiClient = {
     // Auth
-    login: async (data: { email: string; password: string }) => {
+    login: async (data: { email: string; password: string; user_type?: string }) => {
         const response = await axiosInstance.post('/auth/login', data)
         const res = response.data
         const payload = res?.data || {}
