@@ -127,18 +127,18 @@ export default function StudentDashboard() {
                         exit={{ opacity: 0, scale: 0.9, y: 50 }}
                         className="fixed bottom-10 right-10 z-[100] max-w-sm w-full"
                     >
-                        <div className="bg-[#080F26] dark:bg-[#0B1739] text-white p-5 rounded-xl shadow-2xl border border-white/10 flex flex-col gap-4">
+                        <div className="flex flex-col gap-4 rounded-xl border border-[#DCE5F8] bg-[#F7F8FF] p-5 text-gray-900 shadow-2xl dark:border-white/10 dark:bg-[#0B1739] dark:text-white">
                             <div className="flex items-start justify-between">
-                                <div className="p-2 bg-[#7C3AED] rounded-lg text-white">
+                                <div className="rounded-lg bg-[#7C3AED] p-2 text-white">
                                     <AlertCircle className="w-5 h-5" />
                                 </div>
-                                <button onClick={() => setShowToast(false)} className="text-gray-400 hover:text-white">
+                                <button onClick={() => setShowToast(false)} className="text-gray-400 hover:text-gray-700 dark:hover:text-white">
                                     <X className="w-5 h-5" />
                                 </button>
                             </div>
                             <div>
                                 <h4 className="font-bold text-lg leading-tight">Setup your profile</h4>
-                                <p className="text-gray-400 text-sm mt-1">Please complete your profile to unlock all features and start applying.</p>
+                                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Please complete your profile to unlock all features and start applying.</p>
                             </div>
                             <Link 
                                 href="/dashboard/student/profile" 

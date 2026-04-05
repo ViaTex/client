@@ -12,7 +12,7 @@ import { PiCompassRoseFill } from "react-icons/pi";
 import { FaUsers } from "react-icons/fa";
 import { HiUserGroup } from "react-icons/hi";
 import { BsPeopleFill } from "react-icons/bs";
-import { FaLinkedin,FaGoogle } from "react-icons/fa";
+import { FaLinkedin } from "react-icons/fa";
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
@@ -280,19 +280,33 @@ function LoginContent() {
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
-                            <button 
-                                className="border rounded-xl h-12 flex items-center justify-center gap-2 hover:bg-gray-100"
+                            <button
+                                type="button"
+                                className="border border-gray-200 rounded-xl h-12 flex items-center justify-center gap-2 bg-white text-gray-700 hover:bg-gray-50 transition-colors"
                                 suppressHydrationWarning
                             >
-                                <FaGoogle />
+                                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-sm">
+                                    <svg
+                                        viewBox="0 0 533.5 544.3"
+                                        className="w-5 h-5"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        aria-hidden="true"
+                                    >
+                                        <path fill="#4285F4" d="M533.5 278.4c0-17.4-1.4-34.1-4-50.4H272v95.4h146.9c-6.4 34.5-25.5 63.7-54.3 83.3v69.2h87.7c51.2-47.1 81-116.7 81-197.5z" />
+                                        <path fill="#34A853" d="M272 544.3c73.5 0 135.4-24.5 180.5-66.7l-87.7-69.2c-24.5 16.5-55.7 26-92.8 26-71.4 0-132-48.2-153.6-113.1H27.7v70.9C72.6 486.7 167.7 544.3 272 544.3z" />
+                                        <path fill="#FBBC05" d="M118.4 323.3c-9.7-28.8-9.7-59.9 0-88.7V163.7H27.7c-38.6 77.3-38.6 169.3 0 246.6z" />
+                                        <path fill="#EA4335" d="M272 107.7c39.9 0 75.8 13.7 104.1 40.6l78.1-78.1C408.4 24.6 343.3 0 272 0 167.7 0 72.6 57.6 27.7 163.7l90.7 70.9C140 156 200.6 107.7 272 107.7z" />
+                                    </svg>
+                                </span>
                                 Google
                             </button>
 
-                            <button 
-                                className="border rounded-xl h-12 flex items-center justify-center gap-2 hover:bg-gray-100"
+                            <button
+                                type="button"
+                                className="rounded-xl h-12 flex items-center justify-center gap-2 bg-[#0077B5] text-white hover:bg-[#005582] transition-colors"
                                 suppressHydrationWarning
                             >
-                                <FaLinkedin />
+                                <FaLinkedin className="text-white" />
                                 LinkedIn
                             </button>
                         </div>
