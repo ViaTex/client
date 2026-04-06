@@ -327,7 +327,7 @@ function TagInput({
                             <button
                                 type="button"
                                 onClick={() => removeTag(tag)}
-                                className="text-gray-400 hover:text-[#ee8c2b] transition-colors"
+                                className="text-gray-400 hover:text-[#6D28D9] transition-colors"
                                 aria-label={`Remove ${tag}`}
                             >
                                 <X className="w-3.5 h-3.5" />
@@ -736,7 +736,7 @@ export default function StudentProfile() {
     ]
 
     return (
-        <div className="w-full font-sans text-[#1b140d] dark:text-gray-100">
+        <div className="w-full max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8 font-sans text-[#1b140d] dark:text-gray-100">
             {/* Profile Completeness Nudge */}
             <AnimatePresence>
                 {showNudge && (
@@ -746,17 +746,17 @@ export default function StudentProfile() {
                         exit={{ height: 0, opacity: 0 }}
                         className="mb-6 overflow-hidden"
                     >
-                        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
+                        <div className="bg-purple-50 dark:bg-[#1f133a] border border-purple-100 dark:border-purple-800 rounded-2xl p-4 flex items-center justify-between shadow-sm">
                             <div className="flex items-center gap-3">
-                                <div className="bg-amber-100 dark:bg-amber-900/40 p-2 rounded-xl text-amber-600 dark:text-amber-400">
+                                <div className="bg-purple-100 dark:bg-purple-900/40 p-2 rounded-xl text-purple-600 dark:text-purple-300">
                                     <AlertCircle className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-amber-800 dark:text-amber-200">Complete your profile</p>
-                                    <p className="text-sm text-amber-700/80 dark:text-amber-400/80">A complete profile increases your chances of getting hired by 3x!</p>
+                                    <p className="font-bold text-purple-700 dark:text-purple-100">Complete your profile</p>
+                                    <p className="text-sm text-purple-600/80 dark:text-purple-300/80">A complete profile increases your chances of getting hired by 3x!</p>
                                 </div>
                             </div>
-                            <button onClick={() => setShowNudge(false)} className="text-amber-400 hover:text-amber-600 transition-colors">
+                            <button onClick={() => setShowNudge(false)} className="text-purple-500 hover:text-purple-300 transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
@@ -773,7 +773,7 @@ export default function StudentProfile() {
                     <Button 
                         onClick={handleSaveProfile} 
                         loading={isSaving}
-                        className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-8 h-12 font-bold shadow-lg shadow-[#ee8c2b]/20 flex items-center gap-2"
+                        className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-8 h-12 font-bold shadow-lg shadow-[#7C3AED]/20 flex items-center gap-2"
                     >
                         <Save className="w-5 h-5" />
                         Save Changes
@@ -781,7 +781,7 @@ export default function StudentProfile() {
                 ) : (
                     <Button
                         onClick={() => setIsEditing(true)}
-                        className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-8 h-12 font-bold shadow-lg shadow-[#ee8c2b]/20 flex items-center gap-2"
+                        className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-8 h-12 font-bold shadow-lg shadow-[#7C3AED]/20 flex items-center gap-2"
                     >
                         <Pencil className="w-5 h-5" />
                         Edit Profile
@@ -795,9 +795,9 @@ export default function StudentProfile() {
                 <div className="lg:col-span-8 flex flex-col gap-8">
                     
                     {/* Personal Details */}
-                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 dark:bg-[#221910] dark:border-gray-800">
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200 dark:bg-[#0B1739] dark:border-white/10">
                         <h3 className="text-xl font-bold mb-8 flex items-center gap-3">
-                            <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-blue-600">
+                            <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl text-purple-600">
                                 <User className="w-5 h-5" />
                             </div>
                             Personal Information
@@ -880,10 +880,10 @@ export default function StudentProfile() {
                     </div>
 
                     {/* Education */}
-                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 dark:bg-[#221910] dark:border-gray-800">
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200 dark:bg-[#0B1739] dark:border-white/10">
                         <div className="flex items-start justify-between gap-4 mb-8">
                             <h3 className="text-xl font-bold flex items-center gap-3">
-                                <div className="p-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl text-emerald-600">
+                                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl text-purple-600">
                                     <GraduationCap className="w-5 h-5" />
                                 </div>
                                 Education
@@ -892,7 +892,7 @@ export default function StudentProfile() {
                                 <Button
                                     type="button"
                                     onClick={startAddEducation}
-                                    className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#ee8c2b]/20"
+                                    className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#7C3AED]/20"
                                 >
                                     <Plus className="w-4 h-4" />
                                     Add Education
@@ -907,7 +907,7 @@ export default function StudentProfile() {
                                     <button
                                         type="button"
                                         onClick={cancelEducationEdit}
-                                        className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
+                                        className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-[#6D28D9] transition-colors"
                                     >
                                         <X className="w-4 h-4" />
                                         Cancel
@@ -983,7 +983,7 @@ export default function StudentProfile() {
                                             value={educationDraft.description}
                                             onChange={(e) => updateEducationDraft({ description: e.target.value })}
                                             rows={3}
-                                            className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
+                                            className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#7C3AED] transition-all"
                                             placeholder="Optional highlights, specialization, awards"
                                         />
                                     </div>
@@ -1152,7 +1152,7 @@ export default function StudentProfile() {
                                                             value={educationDraft.description}
                                                             onChange={(e) => updateEducationDraft({ description: e.target.value })}
                                                             rows={3}
-                                                            className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
+                                                            className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#7C3AED] transition-all"
                                                             placeholder="Optional highlights, specialization, awards"
                                                         />
                                                     </div>
@@ -1185,7 +1185,7 @@ export default function StudentProfile() {
                     </div>
 
                     {/* Skills & Experience */}
-                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 dark:bg-[#221910] dark:border-gray-800">
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200 dark:bg-[#0B1739] dark:border-white/10">
                         <h3 className="text-xl font-bold mb-8 flex items-center gap-3">
                             <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl text-purple-600">
                                 <Code2 className="w-5 h-5" />
@@ -1261,7 +1261,7 @@ export default function StudentProfile() {
                                         <Button
                                             type="button"
                                             onClick={() => addExperience('internship')}
-                                            className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-9 text-xs font-bold shadow-lg shadow-[#ee8c2b]/20"
+                                            className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-4 h-9 text-xs font-bold shadow-lg shadow-[#7C3AED]/20"
                                         >
                                             <Plus className="w-3.5 h-3.5" />
                                             Add Internship
@@ -1572,10 +1572,10 @@ export default function StudentProfile() {
                     </div>
 
                     {/* Projects */}
-                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 dark:bg-[#221910] dark:border-gray-800">
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200 dark:bg-[#0B1739] dark:border-white/10">
                         <div className="flex items-start justify-between gap-4 mb-8">
                             <h3 className="text-xl font-bold flex items-center gap-3">
-                                <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-indigo-600">
+                                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl text-purple-600">
                                     <BookOpen className="w-5 h-5" />
                                 </div>
                                 Projects
@@ -1584,7 +1584,7 @@ export default function StudentProfile() {
                                 <Button
                                     type="button"
                                     onClick={addProject}
-                                    className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#ee8c2b]/20"
+                                    className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#7C3AED]/20"
                                 >
                                     Add Project
                                 </Button>
@@ -1774,10 +1774,10 @@ export default function StudentProfile() {
                     </div>
 
                     {/* Custom Achievements */}
-                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 dark:bg-[#221910] dark:border-gray-800">
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200 dark:bg-[#0B1739] dark:border-white/10">
                         <div className="flex items-start justify-between gap-4 mb-8">
                             <h3 className="text-xl font-bold flex items-center gap-3">
-                                <div className="p-2 bg-amber-50 dark:bg-amber-900/20 rounded-xl text-amber-600">
+                                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl text-purple-600">
                                     <CheckCircle2 className="w-5 h-5" />
                                 </div>
                                 Custom Achievements
@@ -1786,7 +1786,7 @@ export default function StudentProfile() {
                                 <Button
                                     type="button"
                                     onClick={addAchievement}
-                                    className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#ee8c2b]/20"
+                                    className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#7C3AED]/20"
                                 >
                                     Add Entry
                                 </Button>
@@ -1932,9 +1932,9 @@ export default function StudentProfile() {
                 <div className="lg:col-span-4 flex flex-col gap-8">
 
                     {/* Additional Profile Details */}
-                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 dark:bg-[#221910] dark:border-gray-800">
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200 dark:bg-[#0B1739] dark:border-white/10">
                         <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                            <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-xl text-orange-600">
+                            <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl text-purple-600">
                                 <MapPin className="w-5 h-5" />
                             </div>
                             Additional Details
@@ -2031,9 +2031,9 @@ export default function StudentProfile() {
                     </div>
                     
                     {/* Professional Links */}
-                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 dark:bg-[#221910] dark:border-gray-800">
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200 dark:bg-[#0B1739] dark:border-white/10">
                         <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                             <div className="p-2 bg-orange-50 dark:bg-orange-900/20 rounded-xl text-orange-600">
+                             <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl text-purple-600">
                                 <LinkIcon className="w-5 h-5" />
                             </div>
                             Professional Links
@@ -2128,9 +2128,9 @@ export default function StudentProfile() {
                     </div>
 
                     {/* Resume Section */}
-                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 dark:bg-[#221910] dark:border-gray-800">
+                    <div className="bg-white rounded-3xl p-8 shadow-sm border border-gray-200 dark:bg-[#0B1739] dark:border-white/10">
                         <h3 className="text-xl font-bold mb-4 flex items-center gap-3">
-                            <div className="p-2 bg-red-50 dark:bg-red-900/20 rounded-xl text-red-600">
+                            <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl text-purple-600">
                                 <FileText className="w-5 h-5" />
                             </div>
                             Resume
@@ -2148,18 +2148,18 @@ export default function StudentProfile() {
                                         <a href={profileData.resume_url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-500 hover:underline">View Document</a>
                                     </div>
                                 </div>
-                                <a href={profileData.resume_url} target="_blank" rel="noopener noreferrer" className="p-2 text-gray-400 hover:text-[#ee8c2b]">
+                                <a href={profileData.resume_url} target="_blank" rel="noopener noreferrer" className="p-2 text-gray-400 hover:text-[#6D28D9]">
                                     <LinkIcon className="w-4 h-4" />
                                 </a>
                             </div>
                         )}
 
-                        <label className={`relative flex flex-col items-center justify-center w-full h-40 border-2 ${uploadSuccess ? 'border-green-500 bg-green-50/20' : 'border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-black/20'} rounded-2xl cursor-pointer hover:border-[#ee8c2b] transition-all overflow-hidden group`}>
+                        <label className={`relative flex flex-col items-center justify-center w-full h-40 border-2 ${uploadSuccess ? 'border-green-500 bg-green-50/20' : 'border-dashed border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-black/20'} rounded-2xl cursor-pointer hover:border-[#7C3AED] transition-all overflow-hidden group`}>
                             <div className="flex flex-col items-center justify-center p-4 text-center">
                                 {isUploading ? (
                                     <div className="flex flex-col items-center">
-                                        <div className="w-8 h-8 border-3 border-[#ee8c2b] border-t-transparent rounded-full animate-spin mb-2"></div>
-                                        <p className="text-xs font-bold text-[#ee8c2b]">Uploading...</p>
+                                        <div className="w-8 h-8 border-3 border-[#7C3AED] border-t-transparent rounded-full animate-spin mb-2"></div>
+                                        <p className="text-xs font-bold text-[#7C3AED]">Uploading...</p>
                                     </div>
                                 ) : uploadSuccess ? (
                                     <>
@@ -2170,7 +2170,7 @@ export default function StudentProfile() {
                                     </>
                                 ) : (
                                     <>
-                                        <UploadCloud className="w-8 h-8 text-gray-400 group-hover:text-[#ee8c2b] transition-colors mb-2" />
+                                        <UploadCloud className="w-8 h-8 text-gray-400 group-hover:text-[#7C3AED] transition-colors mb-2" />
                                         <p className="text-xs font-bold text-gray-500 dark:text-gray-400">Click to upload resume</p>
                                     </>
                                 )}
@@ -2180,9 +2180,9 @@ export default function StudentProfile() {
                     </div>
 
                     {/* Quick Stats / Info */}
-                    <div className="bg-gradient-to-br from-[#1b140d] to-[#3d2e1f] rounded-3xl p-8 text-white shadow-xl">
+                    <div className="bg-gradient-to-br from-[#0B1739] via-[#2d1f59] to-[#5e3cd8] rounded-3xl p-8 text-white shadow-xl">
                         <h4 className="font-bold flex items-center gap-2 mb-4">
-                            <Briefcase className="w-5 h-5 text-[#ee8c2b]" />
+                            <Briefcase className="w-5 h-5 text-[#7C3AED]" />
                             Career Insight
                         </h4>
                         <p className="text-sm text-gray-300 mb-6">Your profile is seen by over <span className="text-[#ee8c2b] font-bold">50+ recruitment partners</span> on DishaSetu.</p>
@@ -2209,7 +2209,7 @@ export default function StudentProfile() {
                     <Button 
                         onClick={handleSaveProfile}
                         loading={isSaving}
-                        className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-full h-14 w-14 p-0 shadow-2xl flex items-center justify-center"
+                        className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-full h-14 w-14 p-0 shadow-2xl flex items-center justify-center"
                     >
                         <Save className="w-6 h-6" />
                     </Button>
