@@ -175,33 +175,33 @@ export default function SectionDPage() {
     }
 
     return (
-        <div className="flex min-h-0 flex-1 flex-col w-full max-w-none box-border px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+        <div className="flex min-h-0 flex-1 flex-col w-full max-w-none box-border px-4 py-4 text-white sm:px-6 lg:px-8 lg:py-6">
             <div className="grid w-full min-h-0 flex-1 grid-cols-1 lg:grid-cols-12 lg:grid-rows-1 gap-4 lg:gap-6 items-stretch lg:h-full">
-                <div className="lg:col-span-5 min-w-0 min-h-0 lg:h-full flex flex-col bg-white rounded-[1.5rem] border border-white/40 dark:bg-[#221910] dark:border-gray-800 p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)]">
+                <div className="lg:col-span-5 min-w-0 min-h-0 lg:h-full flex flex-col rounded-[1.5rem] border border-[#22315F] bg-[#121C46] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.28)] md:p-8">
                     <div className="flex items-center gap-3 mb-5">
-                        <div className="w-10 h-10 rounded-2xl bg-[#ee8c2b]/15 text-[#ee8c2b] flex items-center justify-center">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#7C3AED]/20 text-[#A855F7]">
                             <Video className="w-5 h-5" />
                         </div>
                         <div>
                             <h2 className="text-2xl font-extrabold tracking-tight">Section D: Debugging</h2>
-                            <p className="text-sm text-[#9a734c] dark:text-gray-400">
+                            <p className="text-sm text-[#A8B3CF]">
                                 Explain how you would debug and resolve the scenario below.
                             </p>
                         </div>
                     </div>
 
-                    <div className="rounded-2xl bg-[#fcfaf8] dark:bg-white/5 border border-[#efe8df] dark:border-gray-800 p-4 text-sm text-[#1b140d]">
+                    <div className="rounded-2xl border border-[#22315F] bg-[#1A275A] p-4 text-sm text-[#E2E8F0]">
                         {question || 'Question unavailable. Please refresh.'}
                     </div>
 
                     <div className="flex flex-wrap gap-3 mt-6">
                         {!isRecording ? (
-                            <Button onClick={startRecording} className="bg-[#ee8c2b] hover:bg-[#df7f1f] text-white rounded-xl">
+                            <Button onClick={startRecording} className="rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#A855F7] text-white hover:from-[#6D28D9] hover:to-[#9333EA]">
                                 <Circle className="w-4 h-4 mr-2" />
                                 Start Recording
                             </Button>
                         ) : (
-                            <Button onClick={stopRecording} variant="outline" className="rounded-xl border-[#ee8c2b] text-[#ee8c2b] hover:bg-[#ee8c2b]/10">
+                            <Button onClick={stopRecording} variant="outline" className="rounded-xl border-[#7C3AED] bg-transparent text-[#C4B5FD] hover:bg-[#7C3AED]/10 hover:text-white">
                                 <StopCircle className="w-4 h-4 mr-2" />
                                 Stop Recording
                             </Button>
@@ -211,29 +211,29 @@ export default function SectionDPage() {
                             onClick={handleSubmit}
                             disabled={isSubmitting || (!isRecording && !recordedBlob)}
                             loading={isSubmitting}
-                            className="bg-[#1b140d] hover:bg-[#2b2017] text-white rounded-xl"
+                            className="rounded-xl bg-[#243B85] text-white hover:bg-[#2D4AA3]"
                         >
                             Submit & Finish
                         </Button>
                     </div>
 
                     {(permissionError || actionError) && (
-                        <p className="mt-4 text-sm text-red-600 dark:text-red-400 font-medium">
+                        <p className="mt-4 text-sm font-medium text-red-300">
                             {permissionError || actionError}
                         </p>
                     )}
                 </div>
 
-                <div className="lg:col-span-7 min-w-0 min-h-0 lg:h-full flex flex-col bg-white rounded-[1.5rem] border border-white/40 dark:bg-[#221910] dark:border-gray-800 p-4 md:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)]">
-                    <div className="min-h-[min(420px,40vh)] flex-1 lg:min-h-0 rounded-2xl bg-[#1b140d] overflow-hidden relative border border-black/10">
+                <div className="lg:col-span-7 min-w-0 min-h-0 lg:h-full flex flex-col rounded-[1.5rem] border border-[#22315F] bg-[#121C46] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.28)] md:p-6">
+                    <div className="relative min-h-[min(420px,40vh)] flex-1 overflow-hidden rounded-2xl border border-[#2B3B73] bg-[#0F172A] lg:min-h-0">
                         <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
 
-                        <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white bg-black/45 px-3 py-1.5 rounded-full">
+                        <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-white/10 bg-[#111827]/75 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white">
                             <Camera className="w-3.5 h-3.5" />
                             Live Preview
                         </div>
 
-                        <div className="absolute right-4 top-4 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white bg-black/45 px-3 py-1.5 rounded-full">
+                        <div className="absolute right-4 top-4 flex items-center gap-2 rounded-full border border-white/10 bg-[#111827]/75 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white">
                             <Mic className="w-3.5 h-3.5" />
                             Audio On
                         </div>
