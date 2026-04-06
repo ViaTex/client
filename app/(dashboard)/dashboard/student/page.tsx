@@ -1,4 +1,4 @@
-﻿"use client"
+"use client"
 
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -32,7 +32,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts'
+import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts'
 import { Roboto } from 'next/font/google'
 import StatCard from '@/components/ui/statscard'
 
@@ -68,18 +68,25 @@ const robotoExtraBold = Roboto({ weight: '700', subsets: ['latin'] })
 
 // Mock Data for Charts
 const jobAppsData = [
-  { name: 'Submitted / Under Review', value: 14, color: '#3B82F6' },
-  { name: 'Shortlisted / Interview', value: 8, color: '#10B981' },
-  { name: 'Offers Received', value: 2, color: '#8B5CF6' }
+    { name: 'Shortlisted', value: 5, color: '#228af6' },
+    { name: 'Under Review', value: 4, color: '#2bce6b' },
+    { name: 'Applied', value: 2, color: '#11bdb3' },
+    { name: 'Interviews', value: 1, color: '#1d8349' }
 ]
 
 const engagementData = [
-  { name: 'May', views: 10, des: 60 },
-  { name: 'Jun', views: 25, des: 65 },
-  { name: 'Jul', views: 20, des: 70 },
-  { name: 'Aug', views: 40, des: 72 },
-  { name: 'Sep', views: 35, des: 75 },
-  { name: 'Oct', views: 50, des: 78 },
+    { name: 'May', views: 10, des: 60 },
+    { name: 'Jun', views: 25, des: 65 },
+    { name: 'Jul', views: 20, des: 70 },
+    { name: 'Aug', views: 40, des: 72 },
+    { name: 'Sep', views: 35, des: 75 },
+    { name: 'Oct', views: 50, des: 78 },
+]
+
+const analyticsBarData = [
+    { name: 'IT Services', value: 40 },
+    { name: 'Startups', value: 30 },
+    { name: 'Product-Based', value: 30 }
 ]
 
 
@@ -113,11 +120,11 @@ export default function StudentDashboard() {
 
     const desScore = Math.max(0, Math.min(100, Number(profile?.current_des_score ?? 78))) // scaling to 100 for display
     const desScoreDisplay = desScore.toFixed(0)
-    
-    
+
+
     return (
         <div className="w-full font-sans text-gray-900 dark:text-gray-100 relative max-w-7xl mx-auto">
-            
+
             {/* Header / Welcome Row */}
             <div className="sm:space-y-6 px-3 sm:px-4 md:px-6 pt-1 sm:pt-6 mb-6 lg:pt-1 lg:px-0">
                 {/* Header - Figma: 16px radius, 10px padding; dark mode #1A2C58 */}
@@ -141,7 +148,7 @@ export default function StudentDashboard() {
                     </p>
                 </div>
             </div>
-            
+
             {/* Top Highlight Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-6">
                 <StatCard
@@ -158,9 +165,9 @@ export default function StudentDashboard() {
 
                 <StatCard
                     icon={CheckCircle2}
-                    label="Active Job Applications"
-                    value="85"
-                    secondaryText="Active Job Applications"
+                    label="Mentorship Vivas"
+                    value="4"
+                    secondaryText="total mentorship vivas"
                     backgroundColor="#FFFFFF"
                     darkBackgroundColor="#0B1739"
                     iconBgColor="bg-blue-500/20"
@@ -190,47 +197,55 @@ export default function StudentDashboard() {
                     iconColor="text-purple-500"
                 />
 
-                
+
             </div>
 
             {/* Middle Section: Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-                
+
                 {/* Donut Chart (Left) */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="lg:col-span-5 bg-white rounded-xl p-6 border border-gray-200 dark:bg-[#0B1739] dark:border-white/10 shadow-sm flex flex-col">
-                    <h3 className="text-lg font-bold mb-1">Job Applications Overview</h3>
-                    <p className="text-sm text-gray-500 mb-6">Total Active Applications: 24</p>
-                    
-                    <div className="flex-1 min-h-[250px] relative">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    data={jobAppsData}
-                                    cx="50%"
-                                    cy="50%"
-                                    innerRadius={70}
-                                    outerRadius={100}
-                                    paddingAngle={2}
-                                    dataKey="value"
-                                    stroke="none"
-                                >
-                                    {jobAppsData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Pie>
-                                <RechartsTooltip 
-                                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                />
-                                <Legend verticalAlign="bottom" height={36} iconType="circle" />
-                            </PieChart>
-                        </ResponsiveContainer>
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none pb-8">
-                            <span className="text-4xl font-black text-gray-900 dark:text-white">24</span>
+                    <h3 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">Application Pipeline</h3>
+                    <p className="text-[14px] text-gray-600 dark:text-gray-400 font-medium mb-6">Total: 12 Apps</p>
+
+                    <div className="flex-1 flex flex-col sm:flex-row items-center justify-center">
+                        <div className="h-[200px] w-full sm:w-1/2 relative">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={jobAppsData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={85}
+                                        paddingAngle={2}
+                                        dataKey="value"
+                                        stroke="none"
+                                    >
+                                        {jobAppsData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <RechartsTooltip
+                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    />
+                                </PieChart>
+                            </ResponsiveContainer>
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <span className="text-4xl font-bold text-gray-900 dark:text-white mt-1">12</span>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/10 text-center text-sm font-medium text-gray-600 dark:text-gray-300">
-                        Application Success Rate: <span className="text-emerald-500 font-bold">15%</span>
+
+                        <div className="w-full sm:w-1/2 flex flex-col justify-center gap-3 mt-4 sm:mt-0 sm:pl-4">
+                            {jobAppsData.map((item, index) => (
+                                <div key={index} className="flex items-center gap-3">
+                                    <div className="w-3.5 h-3.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }}></div>
+                                    <span className="text-[15px] font-semibold text-gray-800 dark:text-gray-200">
+                                        {item.name} <span className="font-medium">({item.value})</span>
+                                    </span>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </motion.div>
 
@@ -241,7 +256,7 @@ export default function StudentDashboard() {
                             <h3 className="text-lg font-bold">Profile Engagement & Growth</h3>
                             <p className="text-sm text-gray-500 mt-1">Track your profile views and DES progression</p>
                         </div>
-                        <select 
+                        <select
                             value={chartFilter}
                             onChange={(e) => setChartFilter(e.target.value)}
                             className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-sm rounded-lg px-3 py-2 outline-none"
@@ -259,7 +274,7 @@ export default function StudentDashboard() {
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} dy={10} />
                                 <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
                                 <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} domain={[0, 100]} />
-                                <RechartsTooltip 
+                                <RechartsTooltip
                                     contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB', backgroundColor: '#fff', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                                 />
                                 <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ paddingBottom: '20px' }} />
@@ -273,50 +288,58 @@ export default function StudentDashboard() {
 
             {/* Bottom Section */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
-                {/* 6-Box Grid (Left) */}
-                <div className="lg:col-span-7 grid grid-cols-2 md:grid-cols-3 gap-4">
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.5 }} className="bg-white dark:bg-[#0B1739] p-5 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm">
-                        <BadgeCheck className="w-6 h-6 text-blue-500 mb-3" />
-                        <h4 className="text-3xl font-black mb-1">4</h4>
-                        <p className="text-sm font-medium text-gray-500">Verified Skills</p>
-                    </motion.div>
-                    
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.55 }} className="bg-white dark:bg-[#0B1739] p-5 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm">
-                        <Clock className="w-6 h-6 text-orange-500 mb-3" />
-                        <h4 className="text-3xl font-black mb-1">1</h4>
-                        <p className="text-sm font-medium text-gray-500">Pending Verifications</p>
-                    </motion.div>
-                    
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.6 }} className="bg-white dark:bg-[#0B1739] p-5 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm">
-                        <FileText className="w-6 h-6 text-[#7C3AED] mb-3" />
-                        <h4 className="text-3xl font-black mb-1">92%</h4>
-                        <p className="text-sm font-medium text-gray-500">Highest ATS Score</p>
-                    </motion.div>
-                    
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.65 }} className="bg-white dark:bg-[#0B1739] p-5 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm">
-                        <Download className="w-6 h-6 text-emerald-500 mb-3" />
-                        <h4 className="text-3xl font-black mb-1">18</h4>
-                        <p className="text-sm font-medium text-gray-500">Resume Downloads</p>
-                    </motion.div>
-                    
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.7 }} className="bg-white dark:bg-[#0B1739] p-5 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm">
-                        <Video className="w-6 h-6 text-rose-500 mb-3" />
-                        <h4 className="text-3xl font-black mb-1">3</h4>
-                        <p className="text-sm font-medium text-gray-500">Mentorship Vivas</p>
-                    </motion.div>
-                    
-                    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.75 }} className="bg-white dark:bg-[#0B1739] p-5 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm">
-                        <Trophy className="w-6 h-6 text-amber-500 mb-3" />
-                        <h4 className="text-3xl font-black mb-1">Top 10%</h4>
-                        <p className="text-sm font-medium text-gray-500">Institution Rank</p>
-                    </motion.div>
-                </div>
+
+                {/* Viewer Demographics (Left) */}
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="lg:col-span-7 bg-white dark:bg-[#0B1739] p-6 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm flex flex-col">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+                        <div>
+                            <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-1">Who is Viewing Your Profile</h3>
+                            <p className="text-[14px] text-gray-500 dark:text-gray-400 font-medium">Top Viewer Demographics Based on Market Demand.</p>
+                        </div>
+                        <div className="mt-4 sm:mt-0 flex p-1 bg-gray-50 dark:bg-[#1A2C58] rounded-lg border border-gray-100 dark:border-white/5">
+                            <button className="px-4 py-1.5 text-[14px] font-bold bg-[#1B6CFB] text-white rounded-md shadow-sm">Industry</button>
+                            <button className="px-4 py-1.5 text-[14px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">Role</button>
+                            <button className="px-4 py-1.5 text-[14px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">Location</button>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 min-h-[280px] w-full pt-4">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={analyticsBarData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" opacity={0.6} />
+                                <XAxis 
+                                    dataKey="name" 
+                                    axisLine={{ stroke: '#9CA3AF' }} 
+                                    tickLine={{ stroke: '#9CA3AF' }} 
+                                    tick={{ fontSize: 11, fill: '#6B7280' }} 
+                                    dy={10} 
+                                />
+                                <YAxis 
+                                    axisLine={{ stroke: '#9CA3AF' }} 
+                                    tickLine={{ stroke: '#9CA3AF' }} 
+                                    tick={{ fontSize: 12, fill: '#6B7280' }} 
+                                    ticks={[0, 25, 50, 75, 100]}
+                                    domain={[0, 100]}
+                                />
+                                <RechartsTooltip 
+                                    cursor={{ fill: 'rgba(0,0,0,0.04)' }}
+                                    contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB', backgroundColor: '#fff', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                />
+                                <Bar 
+                                    dataKey="value" 
+                                    fill="#1B6CFB" 
+                                    radius={[4, 4, 0, 0]} 
+                                    barSize={50}
+                                />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </motion.div>
 
                 {/* List/Feed (Right) */}
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="lg:col-span-5 bg-white rounded-xl p-6 border border-gray-200 dark:bg-[#0B1739] dark:border-white/10 shadow-sm relative overflow-hidden">
                     <h3 className="text-lg font-bold mb-6">Activity & Next Steps</h3>
-                    
+
                     <div className="space-y-4">
                         {/* Feed Item 1: Actionable */}
                         <div className="p-4 rounded-xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 flex gap-4">
@@ -355,7 +378,7 @@ export default function StudentDashboard() {
                     </div>
                 </motion.div>
             </div>
-            
+
             {/* Profile Incomplete Toast/Badge */}
             <AnimatePresence>
                 {showToast && (
@@ -378,8 +401,8 @@ export default function StudentDashboard() {
                                 <h4 className="font-bold text-lg leading-tight">Setup your profile</h4>
                                 <p className="text-gray-400 text-sm mt-1">Please complete your profile to unlock all features and start applying.</p>
                             </div>
-                            <Link 
-                                href="/dashboard/student/profile" 
+                            <Link
+                                href="/dashboard/student/profile"
                                 className="bg-[#7C3AED] text-white py-3 px-4 rounded-lg font-bold flex items-center justify-center gap-2 hover:bg-[#6D28D9] transition-all text-sm"
                             >
                                 Setup Now
