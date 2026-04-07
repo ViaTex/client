@@ -140,8 +140,8 @@ function RegisterContent() {
         }
     }
 
-    const labelClassName = "block text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-300 mb-2"
-    const inputClassName = "h-12 rounded-xl border-0 bg-gray-100 text-gray-900 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-[#2536B8]/20 dark:bg-gray-800"
+    const labelClassName = "mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-[#A8B3CF]"
+    const inputClassName = "h-12 rounded-xl border border-transparent bg-gray-100 text-gray-900 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-[#2536B8]/20 dark:border-[#31406B] dark:bg-[#24345D] dark:text-white dark:placeholder:text-[#9AA8C8] dark:focus-visible:border-[#7C3AED] dark:focus-visible:ring-[#7C3AED]/20"
 
     const renderStudentForm = () => (
         <div className="space-y-4">
@@ -272,7 +272,7 @@ function RegisterContent() {
     }
 
     return (
-        <div className="min-h-screen bg-[#f3f3f3] dark:bg-gray-950 flex items-center justify-center py-12">
+        <div className="min-h-screen bg-[#f3f3f3] dark:bg-[#0A1020] flex items-center justify-center py-12">
             <div className="container mx-auto px-4">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -280,21 +280,21 @@ function RegisterContent() {
                     transition={{ duration: 0.6 }}
                     className="max-w-2xl mx-auto"
                 >
-                    <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl dark:border-gray-800 dark:bg-gray-900">
+                    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-[#243056] dark:bg-[#121C46]">
 
                         {/* RIGHT SIDE (FORM) */}
                         <div className="px-8 py-10 sm:px-12 sm:py-12">
                             <div className="mx-auto w-full max-w-md">
                                 <div className="mb-8">
                                     <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Create your account</h2>
-                                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                    <p className="mt-2 text-sm text-gray-600 dark:text-[#A8B3CF]">
                                         Fill in your details to start your professional transformation.
                                     </p>
                                 </div>
 
                                 {/* User Type Selector */}
                                 <div className="mb-6">
-                                    <label className="block text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-gray-300 mb-3">
+                                    <label className="mb-3 block text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-[#A8B3CF]">
                                         I am a
                                     </label>
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -307,11 +307,11 @@ function RegisterContent() {
                                                     type="button"
                                                     onClick={() => handleUserTypeChange(option.value)}
                                                     className={`rounded-xl border px-3 py-3 transition-all duration-200 flex flex-col items-center space-y-2 ${isSelected
-                                                        ? 'border-[#2536B8] bg-blue-50 text-[#2536B8] shadow-sm'
-                                                        : 'border-gray-200 hover:border-[#2536B8]/40 text-gray-600 dark:text-gray-300 dark:border-gray-700 dark:hover:border-gray-600'
+                                                        ? 'border-[#2536B8] bg-blue-50 text-[#2536B8] shadow-sm dark:border-[#7C3AED] dark:bg-[#EEF2FF] dark:text-[#2536B8]'
+                                                        : 'border-gray-200 text-gray-600 hover:border-[#2536B8]/40 dark:border-[#31406B] dark:bg-[#121C46] dark:text-[#D3DCF6] dark:hover:border-[#7C3AED]'
                                                         }`}
                                                 >
-                                                    <Icon className={`w-5 h-5 ${isSelected ? 'text-[#2536B8]' : ''}`} />
+                                                    <Icon className={`w-5 h-5 ${isSelected ? 'text-[#2536B8]' : 'dark:text-[#D3DCF6]'}`} />
                                                     <span className="text-xs font-semibold uppercase tracking-widest">{option.label}</span>
                                                 </button>
                                             )
@@ -331,7 +331,7 @@ function RegisterContent() {
                                     </motion.div>
 
                                     {/* Email & Password Section */}
-                                    <div className="border-t border-gray-200 pt-6 space-y-4 dark:border-gray-700">
+                                    <div className="border-t border-gray-200 pt-6 space-y-4 dark:border-[#31406B]">
                                         <div>
                                             <label className={labelClassName}>Email Address *</label>
                                             <Input
@@ -354,7 +354,7 @@ function RegisterContent() {
                                                 placeholder="Create a strong password"
                                                 leftIcon={<Lock className="w-4 h-4" />}
                                                 rightIcon={
-                                                    <button type="button" onClick={() => setShowPassword(!showPassword)}>
+                                                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-gray-500 dark:text-[#9AA8C8] hover:text-gray-800 dark:hover:text-white">
                                                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                                     </button>
                                                 }
@@ -363,7 +363,7 @@ function RegisterContent() {
                                                 {...register('password', { required: 'Password is required' })}
                                             />
                                             {errors.password && <p className="mt-1 text-sm text-red-600">{errors.password.message as string}</p>}
-                                            <p className="mt-1 text-xs text-gray-500">Minimum 8 characters with uppercase, number & special character</p>
+                                            <p className="mt-1 text-xs text-gray-500 dark:text-[#8F9BC0]">Minimum 8 characters with uppercase, number & special character</p>
                                         </div>
 
                                         <div>
@@ -374,7 +374,7 @@ function RegisterContent() {
                                                 placeholder="Confirm your password"
                                                 leftIcon={<Lock className="w-4 h-4" />}
                                                 rightIcon={
-                                                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                                                    <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="text-gray-500 dark:text-[#9AA8C8] hover:text-gray-800 dark:hover:text-white">
                                                         {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                                     </button>
                                                 }
@@ -388,7 +388,7 @@ function RegisterContent() {
 
                                     <Button
                                         type="submit"
-                                        className="w-full h-12 rounded-xl bg-black text-white hover:bg-neutral-800 transition-colors"
+                                        className="w-full h-12 rounded-xl bg-[#2536B8] text-white hover:bg-[#1F2FA2] transition-colors dark:bg-gradient-to-r dark:from-[#7C3AED] dark:to-[#8B5CF6] dark:hover:from-[#6D28D9] dark:hover:to-[#7C3AED]"
                                         loading={isLoading}
                                     >
                                         Aage Badhein →
@@ -396,11 +396,11 @@ function RegisterContent() {
                                 </form>
 
                                 <div className="mt-6 text-center">
-                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                    <p className="text-sm text-gray-600 dark:text-[#A8B3CF]">
                                         Already have an account?{' '}
                                         <Link
                                             href={`/auth/login`}
-                                            className="text-[#2536B8] hover:text-blue-700 font-semibold"
+                                            className="font-semibold text-[#2536B8] hover:text-blue-700 dark:text-[#8B5CF6] dark:hover:text-[#A78BFA]"
                                         >
                                             Log in
                                         </Link>
