@@ -281,24 +281,24 @@ export default function SectionAPage() {
     }
 
     return (
-        <div className="flex min-h-0 flex-1 flex-col w-full max-w-none box-border px-4 sm:px-6 lg:px-8 py-4 lg:py-6">
+        <div className="flex min-h-0 flex-1 flex-col w-full max-w-none box-border px-4 py-4 text-gray-900 dark:text-white sm:px-6 lg:px-8 lg:py-6">
             <div className="grid w-full min-h-0 flex-1 grid-cols-1 lg:grid-cols-12 lg:grid-rows-1 gap-4 lg:gap-6 items-stretch lg:h-full min-h-0">
-                <div className="lg:col-span-5 min-w-0 min-h-0 lg:h-full flex flex-col bg-white rounded-[1.5rem] border border-white/40 dark:bg-[#221910] dark:border-gray-800 p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)]">
+                <div className="lg:col-span-5 min-w-0 min-h-0 lg:h-full flex flex-col rounded-[1.5rem] border border-[#E2E8F0] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:border-[#22315F] dark:bg-[#121C46] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)] md:p-8">
                     <div className="flex items-center gap-3 mb-5">
-                        <div className="w-10 h-10 rounded-2xl bg-[#ee8c2b]/15 text-[#ee8c2b] flex items-center justify-center">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#7C3AED]/20 text-[#A855F7]">
                             <Video className="w-5 h-5" />
                         </div>
                         <div>
                             <h2 className="text-2xl font-extrabold tracking-tight">Section A: Introduction</h2>
-                            <p className="text-sm text-[#9a734c] dark:text-gray-400">
+                            <p className="text-sm text-[#64748B] dark:text-[#A8B3CF]">
                                 Record a 5-10 minute self-introduction to begin the evaluator.
                             </p>
                         </div>
                     </div>
 
-                    <div className="rounded-2xl bg-[#fcfaf8] dark:bg-white/5 border border-[#efe8df] dark:border-gray-800 p-4 md:p-5">
-                        <h3 className="text-sm font-bold uppercase tracking-widest text-[#9a734c] dark:text-gray-400 mb-3">Recording Checklist</h3>
-                        <ul className="space-y-2 text-sm text-[#1b140d]/80 dark:text-gray-300">
+                    <div className="rounded-2xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 dark:border-[#22315F] dark:bg-[#1A275A] md:p-5">
+                        <h3 className="mb-3 text-sm font-bold uppercase tracking-widest text-[#A855F7]">Recording Checklist</h3>
+                        <ul className="space-y-2 text-sm text-[#334155] dark:text-[#D8E1FF]">
                             <li>Keep your face centered and clearly visible.</li>
                             <li>Cover background, skills, projects, and career goals.</li>
                             <li>Ensure your microphone captures your voice clearly.</li>
@@ -307,12 +307,12 @@ export default function SectionAPage() {
 
                     <div className="flex flex-wrap items-center gap-3 mt-6">
                         {!isRecording ? (
-                            <Button onClick={startRecording} className="bg-[#ee8c2b] hover:bg-[#df7f1f] text-white rounded-xl">
+                            <Button onClick={startRecording} className="rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#A855F7] text-white hover:from-[#6D28D9] hover:to-[#9333EA]">
                                 <Circle className="w-4 h-4 mr-2" />
                                 Start Recording
                             </Button>
                         ) : (
-                            <Button onClick={stopRecording} variant="outline" className="rounded-xl border-[#ee8c2b] text-[#ee8c2b] hover:bg-[#ee8c2b]/10">
+                            <Button onClick={stopRecording} variant="outline" className="rounded-xl border-[#7C3AED] bg-transparent text-[#6D28D9] hover:bg-[#7C3AED]/10 hover:text-[#4C1D95] dark:text-[#C4B5FD] dark:hover:text-white">
                                 <StopCircle className="w-4 h-4 mr-2" />
                                 Stop Recording
                             </Button>
@@ -320,12 +320,12 @@ export default function SectionAPage() {
 
                         {isRecording && (
                             <div
-                                className="inline-flex items-center gap-2 rounded-xl border border-[#ee8c2b]/35 bg-[#ee8c2b]/10 px-4 py-2"
+                                className="inline-flex items-center gap-2 rounded-xl border border-[#7C3AED]/40 bg-[#7C3AED]/15 px-4 py-2"
                                 aria-live="polite"
                                 aria-atomic="true"
                             >
-                                <Timer className="h-5 w-5 shrink-0 text-[#ee8c2b]" aria-hidden />
-                                <span className="font-mono text-lg font-bold tabular-nums text-[#1b140d] dark:text-white">
+                                <Timer className="h-5 w-5 shrink-0 text-[#A855F7]" aria-hidden />
+                                <span className="font-mono text-lg font-bold tabular-nums text-[#1E293B] dark:text-white">
                                     {formatElapsed(elapsedSeconds)}
                                 </span>
                             </div>
@@ -335,36 +335,36 @@ export default function SectionAPage() {
                             onClick={handleSubmit}
                             disabled={isSubmitting || (!isRecording && !recordedBlob)}
                             loading={isSubmitting}
-                            className="bg-[#1b140d] hover:bg-[#2b2017] text-white rounded-xl"
+                            className="rounded-xl bg-[#243B85] text-white hover:bg-[#2D4AA3]"
                         >
                             Continue to Section B
                         </Button>
                     </div>
 
                     {(permissionError || actionError) && (
-                        <p className="mt-4 text-sm text-red-600 dark:text-red-400 font-medium">
+                        <p className="mt-4 text-sm font-medium text-red-600 dark:text-red-300">
                             {permissionError || actionError}
                         </p>
                     )}
                 </div>
 
-                <div className="lg:col-span-7 min-w-0 min-h-0 lg:h-full flex flex-col bg-white rounded-[1.5rem] border border-white/40 dark:bg-[#221910] dark:border-gray-800 p-4 md:p-6 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)]">
-                    <div className="min-h-[min(420px,40vh)] flex-1 lg:min-h-0 rounded-2xl bg-[#1b140d] overflow-hidden relative border border-black/10">
+                <div className="lg:col-span-7 min-w-0 min-h-0 lg:h-full flex flex-col rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:border-[#22315F] dark:bg-[#121C46] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)] md:p-6">
+                    <div className="relative min-h-[min(420px,40vh)] flex-1 overflow-hidden rounded-2xl border border-[#CBD5E1] bg-[#1E293B] dark:border-[#2B3B73] dark:bg-[#0F172A] lg:min-h-0">
                         <video ref={videoRef} autoPlay muted playsInline className="w-full h-full object-cover" />
 
-                        <div className="absolute left-4 top-4 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white bg-black/45 px-3 py-1.5 rounded-full">
+                        <div className="absolute left-4 top-4 flex items-center gap-2 rounded-full border border-white/10 bg-[#111827]/75 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white">
                             <Camera className="w-3.5 h-3.5" />
                             Live Preview
                         </div>
 
-                        <div className="absolute right-4 top-4 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-white bg-black/45 px-3 py-1.5 rounded-full">
+                        <div className="absolute right-4 top-4 flex items-center gap-2 rounded-full border border-white/10 bg-[#111827]/75 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white">
                             <Mic className="w-3.5 h-3.5" />
                             Audio On
                         </div>
 
                         {isRecording && (
                             <div className="absolute left-1/2 top-4 z-10 flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/20 bg-black/55 px-4 py-2 text-white shadow-lg backdrop-blur-sm">
-                                <Timer className="h-4 w-4 text-[#f2b261]" aria-hidden />
+                                <Timer className="h-4 w-4 text-[#A855F7]" aria-hidden />
                                 <span className="font-mono text-sm font-bold tabular-nums tracking-wide">
                                     {formatElapsed(elapsedSeconds)}
                                 </span>
@@ -388,21 +388,21 @@ export default function SectionAPage() {
             </div>
 
             <section
-                className="mt-4 shrink-0 rounded-[1.5rem] border border-[#efe8df] bg-white p-4 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:border-gray-800 dark:bg-[#221910] md:p-5 lg:mt-6"
+                className="mt-4 shrink-0 rounded-[1.5rem] border border-[#E2E8F0] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:border-[#22315F] dark:bg-[#121C46] dark:shadow-[0_20px_60px_rgba(0,0,0,0.22)] md:p-5 lg:mt-6"
                 aria-label="Live transcript"
             >
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                    <h3 className="text-sm font-bold uppercase tracking-widest text-[#9a734c] dark:text-gray-400">
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-[#A855F7]">
                         Live transcript
                     </h3>
                     {!speechSupported && (
-                        <span className="text-[11px] text-stone-500 dark:text-gray-500">
+                        <span className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">
                             Live captions need Chrome or Edge
                         </span>
                     )}
                 </div>
                 <div
-                    className="max-h-[min(220px,32vh)] min-h-[100px] overflow-y-auto rounded-xl bg-[#fcfaf8] p-4 text-sm leading-relaxed text-[#1b140d] dark:bg-white/5 dark:text-gray-200"
+                    className="max-h-[min(220px,32vh)] min-h-[100px] overflow-y-auto rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-4 text-sm leading-relaxed text-[#334155] dark:border-[#22315F] dark:bg-[#1A275A] dark:text-[#E2E8F0]"
                     role="log"
                     aria-live="polite"
                     aria-relevant="additions text"
@@ -410,7 +410,7 @@ export default function SectionAPage() {
                     {liveTranscript ? (
                         <p className="whitespace-pre-wrap">{liveTranscript}</p>
                     ) : (
-                        <p className="text-[#9a734c]/90 dark:text-gray-500">
+                        <p className="text-[#64748B] dark:text-[#A8B3CF]">
                             {isRecording
                                 ? speechSupported
                                     ? 'Listening… speak clearly toward your microphone.'

@@ -80,7 +80,7 @@ export default function SkillVerificationExamLayout({
     }
 
     return (
-        <div className="flex min-h-0 flex-1 flex-col overflow-auto w-full max-w-none bg-[#fdf9f4] dark:bg-[#1b140d]">
+        <div className="flex min-h-0 flex-1 flex-col overflow-auto w-full max-w-none bg-[#F8FAFC] dark:bg-[#0B1120]">
             {children}
             <Modal
                 isOpen={showExitModal}

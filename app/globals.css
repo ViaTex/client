@@ -171,6 +171,18 @@
   width: 5px;
 }
 
+/* Avoid duplicate browser password reveal controls when we render our own eye icon */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  visibility: hidden;
+  display: none !important;
+  pointer-events: none;
+}
+
 ::-webkit-scrollbar-track {
   @apply bg-transparent;
 }
