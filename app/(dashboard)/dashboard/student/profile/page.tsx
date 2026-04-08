@@ -911,7 +911,7 @@ export default function StudentProfile() {
                                     <button
                                         type="button"
                                         onClick={cancelEducationEdit}
-                                        className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
+                                        className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-[#6D28D9] transition-colors"
                                     >
                                         <X className="w-4 h-4" />
                                         Cancel
@@ -1156,7 +1156,7 @@ export default function StudentProfile() {
                                                             value={educationDraft.description}
                                                             onChange={(e) => updateEducationDraft({ description: e.target.value })}
                                                             rows={3}
-                                                            className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
+                                                            className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#7C3AED] transition-all"
                                                             placeholder="Optional highlights, specialization, awards"
                                                         />
                                                     </div>
@@ -1175,7 +1175,7 @@ export default function StudentProfile() {
                                                         type="button"
                                                         onClick={saveEducation}
                                                         loading={isEducationSaving}
-                                                        className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-6"
+                                                        className="rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] px-6 text-white hover:from-[#6D28D9] hover:to-[#7C3AED]"
                                                     >
                                                         Save
                                                     </Button>
@@ -1475,7 +1475,7 @@ export default function StudentProfile() {
                                         <Button
                                             type="button"
                                             onClick={() => addExperience('other')}
-                                            className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-9 text-xs font-bold shadow-lg shadow-[#ee8c2b]/20"
+                                            className="h-9 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] px-4 text-xs font-bold text-white shadow-lg shadow-[#7C3AED]/20 hover:from-[#6D28D9] hover:to-[#7C3AED]"
                                         >
                                             <Plus className="w-3.5 h-3.5" />
                                             Add Other
@@ -1579,7 +1579,7 @@ export default function StudentProfile() {
                     <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-[#243056] dark:bg-[#121C46]">
                         <div className="flex items-start justify-between gap-4 mb-8">
                             <h3 className="text-xl font-bold flex items-center gap-3">
-                                <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-indigo-600">
+                                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl text-purple-600">
                                     <BookOpen className="w-5 h-5" />
                                 </div>
                                 Projects
@@ -1588,7 +1588,7 @@ export default function StudentProfile() {
                                 <Button
                                     type="button"
                                     onClick={addProject}
-                                    className="bg-[#ee8c2b] hover:bg-[#d57a22] text-white rounded-xl px-4 h-10 font-bold shadow-lg shadow-[#ee8c2b]/20"
+                                    className="h-10 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#8B5CF6] px-4 font-bold text-white shadow-lg shadow-[#7C3AED]/20 hover:from-[#6D28D9] hover:to-[#7C3AED]"
                                 >
                                     Add Project
                                 </Button>
@@ -1673,7 +1673,7 @@ export default function StudentProfile() {
                                                     value={project.description}
                                                     onChange={(e) => updateProject(project.id, { description: e.target.value })}
                                                     rows={3}
-                                                    className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
+                                                    className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#7C3AED] transition-all"
                                                     placeholder="What you built, what problem it solved, and the impact."
                                                 />
                                             </div>
@@ -1900,7 +1900,7 @@ export default function StudentProfile() {
                                                     value={achievement.description}
                                                     onChange={(e) => updateAchievement(achievement.id, { description: e.target.value })}
                                                     rows={3}
-                                                    className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#ee8c2b] transition-all"
+                                                    className="w-full p-4 rounded-xl border border-gray-200 bg-white/80 dark:bg-black/20 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#7C3AED] transition-all"
                                                     placeholder="What you achieved and why it matters."
                                                 />
                                             </div>
@@ -1938,7 +1938,7 @@ export default function StudentProfile() {
                     {/* Additional Profile Details */}
                     <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-[#243056] dark:bg-[#121C46]">
                         <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                            <div className="rounded-xl bg-orange-50 p-2 text-orange-600 dark:bg-[#241A52] dark:text-[#8B5CF6]">
+                            <div className="rounded-xl bg-[#E9E7FF] p-2 text-[#7C3AED] dark:bg-[#241A52] dark:text-[#8B5CF6]">
                                 <MapPin className="w-5 h-5" />
                             </div>
                             Additional Details
@@ -2037,7 +2037,7 @@ export default function StudentProfile() {
                     {/* Professional Links */}
                     <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-[#243056] dark:bg-[#121C46]">
                         <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
-                             <div className="rounded-xl bg-orange-50 p-2 text-orange-600 dark:bg-[#241A52] dark:text-[#8B5CF6]">
+                             <div className="rounded-xl bg-[#E9E7FF] p-2 text-[#7C3AED] dark:bg-[#241A52] dark:text-[#8B5CF6]">
                                 <LinkIcon className="w-5 h-5" />
                             </div>
                             Professional Links
@@ -2193,13 +2193,13 @@ export default function StudentProfile() {
                         <div className="space-y-3">
                             <div className="flex items-center justify-between text-xs">
                                 <span className="text-gray-500 dark:text-gray-400">Profile Strength</span>
-                                <span className={`${showNudge ? 'text-orange-400' : 'text-green-400'} font-bold`}>{showNudge ? '40%' : '100%'}</span>
+                                <span className={`${showNudge ? 'text-[#7C3AED]' : 'text-green-400'} font-bold`}>{showNudge ? '40%' : '100%'}</span>
                             </div>
                             <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#C7D2FE] dark:bg-gray-700">
                                 <motion.div 
                                     initial={{ width: 0 }}
                                     animate={{ width: showNudge ? '40%' : '100%' }}
-                                    className={`h-full ${showNudge ? 'bg-orange-500' : 'bg-green-500'}`}
+                                    className={`h-full ${showNudge ? 'bg-[#7C3AED]' : 'bg-green-500'}`}
                                 />
                             </div>
                         </div>

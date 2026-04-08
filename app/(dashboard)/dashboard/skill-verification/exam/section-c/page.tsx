@@ -134,35 +134,35 @@ export default function SectionCPage() {
     }
 
     if (isLoading) {
-        return <div className="p-8 text-sm text-[#9a734c]">Loading Section C...</div>
+        return <div className="p-8 text-sm text-[#A8B3CF]">Loading Section C...</div>
     }
 
     return (
-        <div className="min-h-screen w-full max-w-none box-border px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
-            <div className="w-full max-w-none bg-white rounded-[1.5rem] border border-white/40 dark:bg-[#221910] dark:border-gray-800 p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04),0_4px_10px_rgba(0,0,0,0.02)]">
+        <div className="min-h-screen w-full max-w-none box-border px-4 py-6 text-white sm:px-6 lg:px-8 lg:py-8">
+            <div className="w-full max-w-none rounded-[1.5rem] border border-[#22315F] bg-[#121C46] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.28)] md:p-8">
                 <h2 className="text-2xl font-extrabold tracking-tight">Section C: Logic</h2>
-                <p className="text-sm text-[#9a734c] dark:text-gray-400 mt-2">
+                <p className="mt-2 text-sm text-[#A8B3CF]">
                     Explain your logic clearly. Use pseudocode if needed.
                 </p>
 
-                <div className="mt-6 rounded-2xl border border-[#efe8df] bg-[#fcfaf8] p-4 text-sm text-[#1b140d]">
+                <div className="mt-6 rounded-2xl border border-[#22315F] bg-[#1A275A] p-4 text-sm text-[#E2E8F0]">
                     {question || 'Question unavailable. Please refresh.'}
                 </div>
 
                 <textarea
-                    className="mt-5 w-full min-h-[200px] rounded-2xl border border-[#efe8df] bg-white px-4 py-3 text-sm font-mono text-[#1b140d] focus:outline-none focus:ring-2 focus:ring-[#ee8c2b]/40"
+                    className="mt-5 w-full min-h-[200px] rounded-2xl border border-[#22315F] bg-[#0F172A] px-4 py-3 text-sm font-mono text-[#E2E8F0] placeholder:text-[#7F8DB3] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40"
                     placeholder="Write your reasoning or pseudocode here..."
                     value={answer}
                     onChange={(event) => setAnswer(event.target.value)}
                 />
 
                 {error && (
-                    <p className="mt-4 text-sm text-red-600 dark:text-red-400 font-medium">{error}</p>
+                    <p className="mt-4 text-sm font-medium text-red-300">{error}</p>
                 )}
 
                 <div className="mt-6 flex flex-wrap gap-3">
                     <Button
-                        className="bg-[#1b140d] hover:bg-[#2b2017] text-white rounded-xl"
+                        className="rounded-xl bg-[#243B85] text-white hover:bg-[#2D4AA3]"
                         disabled={isSubmitting}
                         loading={isSubmitting}
                         onClick={handleSubmit}
@@ -176,7 +176,7 @@ export default function SectionCPage() {
                 <button
                     type="button"
                     onClick={handleOpenChat}
-                    className="h-14 w-14 rounded-full bg-[#ee8c2b] text-white shadow-lg flex items-center justify-center hover:bg-[#df7f1f]"
+                    className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-r from-[#7C3AED] to-[#A855F7] text-white shadow-lg hover:from-[#6D28D9] hover:to-[#9333EA]"
                     aria-label="Open AI assistant"
                 >
                     <Sparkles className="w-6 h-6" />
@@ -184,54 +184,54 @@ export default function SectionCPage() {
             </div>
 
             {isChatOpen && (
-                <div className="fixed bottom-24 right-6 z-50 w-[320px] max-w-[90vw] rounded-2xl border border-[#efe8df] bg-white shadow-xl overflow-hidden">
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-[#efe8df]">
-                        <p className="text-sm font-semibold text-[#1b140d]">AI Assistant</p>
+                <div className="fixed bottom-24 right-6 z-50 w-[320px] max-w-[90vw] overflow-hidden rounded-2xl border border-[#22315F] bg-[#121C46] shadow-xl">
+                    <div className="flex items-center justify-between border-b border-[#22315F] px-4 py-3">
+                        <p className="text-sm font-semibold text-white">AI Assistant</p>
                         <button type="button" onClick={() => setIsChatOpen(false)} aria-label="Close chat">
-                            <X className="w-4 h-4 text-[#1b140d]" />
+                            <X className="w-4 h-4 text-[#A8B3CF]" />
                         </button>
                     </div>
 
                     {showChatPenalty && (
-                        <div className="px-4 py-2 text-xs text-[#7b4b1c] bg-[#fff3e8] border-b border-[#f1d4b8]">
+                        <div className="border-b border-[#5B21B6] bg-[#3B1D73] px-4 py-2 text-xs text-[#E9D5FF]">
                             Starting a conversation will deduct 0.5 marks from this question's score.
                         </div>
                     )}
 
                     <div className="max-h-64 overflow-y-auto px-4 py-3 space-y-3 text-sm">
                         {chatMessages.length === 0 && (
-                            <p className="text-xs text-[#9a734c]">Ask for guidance on a specific part you are stuck on.</p>
+                            <p className="text-xs text-[#A8B3CF]">Ask for guidance on a specific part you are stuck on.</p>
                         )}
                         {chatMessages.map((message, index) => (
                             <div
                                 key={`${message.role}-${index}`}
                                 className={
                                     message.role === 'user'
-                                        ? 'bg-[#1b140d] text-white px-3 py-2 rounded-2xl ml-auto max-w-[85%]'
-                                        : 'bg-[#fcfaf8] text-[#1b140d] px-3 py-2 rounded-2xl mr-auto max-w-[85%]'
+                                        ? 'ml-auto max-w-[85%] rounded-2xl bg-[#7C3AED] px-3 py-2 text-white'
+                                        : 'mr-auto max-w-[85%] rounded-2xl bg-[#1A275A] px-3 py-2 text-[#E2E8F0]'
                                 }
                             >
                                 {message.content}
                             </div>
                         ))}
                         {isChatLoading && (
-                            <div className="bg-[#fcfaf8] text-[#1b140d] px-3 py-2 rounded-2xl mr-auto max-w-[85%]">
+                            <div className="mr-auto max-w-[85%] rounded-2xl bg-[#1A275A] px-3 py-2 text-[#E2E8F0]">
                                 Typing...
                             </div>
                         )}
                     </div>
 
-                    <div className="border-t border-[#efe8df] p-3 flex items-center gap-2">
+                    <div className="flex items-center gap-2 border-t border-[#22315F] p-3">
                         <input
                             value={chatInput}
                             onChange={(event) => setChatInput(event.target.value)}
                             placeholder="Ask for a hint..."
-                            className="flex-1 rounded-xl border border-[#efe8df] px-3 py-2 text-sm focus:outline-none"
+                            className="flex-1 rounded-xl border border-[#22315F] bg-[#0F172A] px-3 py-2 text-sm text-[#E2E8F0] placeholder:text-[#7F8DB3] focus:outline-none focus:ring-2 focus:ring-[#7C3AED]/40"
                         />
                         <button
                             type="button"
                             onClick={handleSendChat}
-                            className="rounded-xl bg-[#1b140d] text-white px-3 py-2 text-sm"
+                            className="rounded-xl bg-[#243B85] px-3 py-2 text-sm text-white"
                             disabled={isChatLoading}
                         >
                             Send
