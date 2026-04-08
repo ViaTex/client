@@ -111,139 +111,155 @@ export default function CorporateProfilePage() {
 
     if (loading) {
         return (
-            <div className="rounded-3xl border border-[#ded9cf] bg-white p-6">
-                <div className="text-sm text-stone-500">Loading company profile...</div>
+            <div className="rounded-3xl border border-[#d4def8] bg-white p-6 dark:border-[#223067] dark:bg-[#111d49]">
+                <div className="text-sm text-[#5f6f98] dark:text-[#93a4d1]">Loading company profile...</div>
             </div>
         )
     }
 
-    return (
-        <div className="rounded-3xl border border-[#ddd8ce] bg-[#f5f4f1] p-5 md:p-6 shadow-sm">
-            <h1 className="text-[40px] leading-[1.05] font-bold tracking-tight text-[#221910] dark:text-white mb-1">Company Profile</h1>
-            <p className="text-[15px] text-stone-500 mb-5">Manage your company information and contact details</p>
+    const labelClass = "mb-1.5 block text-xs font-medium text-[#5f6f98] dark:text-[#93a4d1]"
+    const inputClass =
+        "h-11 rounded-lg border-[#d4def8] bg-white text-[#16213f] placeholder:text-[14px] placeholder:text-[#91a1c7] dark:border-[#223067] dark:bg-[#0f183f] dark:text-white dark:placeholder:text-[#6f84bb]"
+    const textareaClass =
+        "min-h-28 w-full rounded-lg border border-[#d4def8] bg-white px-3 py-2 text-sm text-[#16213f] placeholder:text-[#91a1c7] disabled:opacity-70 dark:border-[#223067] dark:bg-[#0f183f] dark:text-white dark:placeholder:text-[#6f84bb]"
+    const selectClass =
+        "h-11 w-full rounded-lg border border-[#d4def8] bg-white px-3 py-2 text-sm text-[#16213f] disabled:opacity-70 dark:border-[#223067] dark:bg-[#0f183f] dark:text-white"
 
-            <div className="border-b border-[#e5e1d8] mb-5">
-                <nav className="flex gap-6">
+    return (
+        <div className="rounded-3xl border border-[#d4def8] bg-[#eef3ff] p-4 shadow-[0_10px_30px_rgba(66,98,170,0.12)] sm:p-5 md:p-6 dark:border-[#223067] dark:bg-[#0d1635] dark:shadow-[0_8px_32px_rgba(3,8,26,0.35)]">
+            <h1 className="mb-1 text-[30px] font-bold leading-[1.05] tracking-tight text-[#16213f] sm:text-[34px] md:text-[40px] dark:text-white">Company Profile</h1>
+            <p className="mb-5 text-sm text-[#5f6f98] sm:text-[15px] dark:text-[#93a4d1]">Manage your company information and contact details</p>
+
+            <div className="mb-5 border-b border-[#d4def8] dark:border-[#223067]">
+                <nav className="flex flex-wrap gap-4 sm:gap-6">
                     <button
                         type="button"
                         onClick={() => setActiveTab("basic")}
-                        className={`py-2 text-sm font-semibold border-b-2 transition-colors ${activeTab === "basic" ? "border-[#2f65cb] text-[#2f65cb]" : "border-transparent text-stone-500 hover:text-stone-700"}`}
+                        className={`border-b-2 py-2 text-sm font-semibold transition-colors ${
+                            activeTab === "basic"
+                                ? "border-[#2f65cb] text-[#2f65cb]"
+                                : "border-transparent text-[#5f6f98] hover:text-[#16213f] dark:text-[#93a4d1] dark:hover:text-white"
+                        }`}
                     >
                         Basic Info
                     </button>
                     <button
                         type="button"
                         onClick={() => setActiveTab("company")}
-                        className={`py-2 text-sm font-semibold border-b-2 transition-colors ${activeTab === "company" ? "border-[#2f65cb] text-[#2f65cb]" : "border-transparent text-stone-500 hover:text-stone-700"}`}
+                        className={`border-b-2 py-2 text-sm font-semibold transition-colors ${
+                            activeTab === "company"
+                                ? "border-[#2f65cb] text-[#2f65cb]"
+                                : "border-transparent text-[#5f6f98] hover:text-[#16213f] dark:text-[#93a4d1] dark:hover:text-white"
+                        }`}
                     >
                         Company
                     </button>
                 </nav>
             </div>
 
-            <form onSubmit={onSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <form onSubmit={onSubmit} className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {activeTab === "basic" ? (
                     <>
-                        <div className="md:col-span-2 flex items-center justify-between rounded-2xl border border-[#e5e1d8] bg-[#f8f7f4] p-4">
+                        <div className="md:col-span-2 flex flex-col gap-4 rounded-2xl border border-[#d4def8] bg-white p-4 sm:flex-row sm:items-center sm:justify-between dark:border-[#223067] dark:bg-[#111d49]">
                             <div className="flex items-center gap-3">
-                                <div className="w-11 h-11 rounded-xl flex items-center justify-center">
-                                    <Building2 className="w-7 h-7 text-black"/>
+                                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#edf3ff] dark:bg-[#1a2858]">
+                                    <Building2 className="h-6 w-6 text-[#2f65cb] dark:text-[#9bb6ff]" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-[#221910] dark:text-white">Basic Information</h3>
-                                    <p className="text-xs text-stone-500">Company details and contact information</p>
+                                    <h3 className="font-semibold text-[#16213f] dark:text-white">Basic Information</h3>
+                                    <p className="text-xs text-[#5f6f98] dark:text-[#93a4d1]">Company details and contact information</p>
                                 </div>
                             </div>
-                            <Button type="button" variant="ghost" size="sm" className="text-stone-600 hover:text-stone-800" onClick={() => setEditing("basic")}>
+                            <Button type="button" variant="ghost" size="sm" className="self-start text-[#5f6f98] hover:text-[#16213f] dark:text-[#93a4d1] dark:hover:text-white sm:self-auto" onClick={() => setEditing("basic")}>
                                 Edit
                             </Button>
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-medium text-stone-600">Company Name</label>
-                            <Input className="h-11 bg-white rounded-lg border-[#e2ddd2] placeholder:text-[14px]" placeholder="Company name" value={form.company_name} onChange={(e) => setForm((p) => ({ ...p, company_name: e.target.value }))} disabled={editing !== "basic"} />
+                            <label className={labelClass}>Company Name</label>
+                            <Input className={inputClass} placeholder="Company name" value={form.company_name} onChange={(e) => setForm((p) => ({ ...p, company_name: e.target.value }))} disabled={editing !== "basic"} />
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-medium text-stone-600">Email</label>
-                            <Input className="h-11 bg-[#f3f3f3] rounded-lg border-[#e2ddd2] placeholder:text-[14px]" placeholder="Email" value={form.email} disabled />
+                            <label className={labelClass}>Email</label>
+                            <Input className={`${inputClass} bg-[#f4f7ff] dark:bg-[#19234e]`} placeholder="Email" value={form.email} disabled />
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-medium text-stone-600">Phone</label>
-                            <Input className="h-11 bg-white rounded-lg border-[#e2ddd2] placeholder:text-[14px]" placeholder="Phone (10 digits)" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value.replace(/[^0-9]/g, "").slice(0, 10) }))} disabled={editing !== "basic"} />
+                            <label className={labelClass}>Phone</label>
+                            <Input className={inputClass} placeholder="Phone (10 digits)" value={form.phone} onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value.replace(/[^0-9]/g, "").slice(0, 10) }))} disabled={editing !== "basic"} />
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-medium text-stone-600">Contact Person Name</label>
-                            <Input className="h-11 bg-white rounded-lg border-[#e2ddd2] placeholder:text-[14px]" placeholder="Contact Person Name" value={form.contact_person} onChange={(e) => setForm((p) => ({ ...p, contact_person: e.target.value.replace(/[^a-zA-Z\s.-]/g, "") }))} disabled={editing !== "basic"} />
+                            <label className={labelClass}>Contact Person Name</label>
+                            <Input className={inputClass} placeholder="Contact Person Name" value={form.contact_person} onChange={(e) => setForm((p) => ({ ...p, contact_person: e.target.value.replace(/[^a-zA-Z\s.-]/g, "") }))} disabled={editing !== "basic"} />
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-medium text-stone-600">Contact Person Designation</label>
-                            <Input className="h-11 bg-white rounded-lg border-[#e2ddd2] placeholder:text-[14px]" placeholder="Contact Person Designation" value={form.contact_designation} onChange={(e) => setForm((p) => ({ ...p, contact_designation: e.target.value.replace(/[^a-zA-Z\s.-]/g, "") }))} disabled={editing !== "basic"} />
+                            <label className={labelClass}>Contact Person Designation</label>
+                            <Input className={inputClass} placeholder="Contact Person Designation" value={form.contact_designation} onChange={(e) => setForm((p) => ({ ...p, contact_designation: e.target.value.replace(/[^a-zA-Z\s.-]/g, "") }))} disabled={editing !== "basic"} />
                         </div>
                         <div className="md:col-span-2">
-                            <label className="mb-1.5 block text-xs font-medium text-stone-600">Bio</label>
-                            <textarea className="md:col-span-2 min-h-28 w-full rounded-lg border border-[#e2ddd2] bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 disabled:opacity-70" placeholder="Enter your bio" value={form.bio} onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))} disabled={editing !== "basic"} />
+                            <label className={labelClass}>Bio</label>
+                            <textarea className={textareaClass} placeholder="Enter your bio" value={form.bio} onChange={(e) => setForm((p) => ({ ...p, bio: e.target.value }))} disabled={editing !== "basic"} />
                         </div>
                     </>
                 ) : (
                     <>
-                        <div className="md:col-span-2 flex items-center justify-between rounded-2xl border border-[#e5e1d8] bg-[#f8f7f4] p-4">
+                        <div className="md:col-span-2 flex flex-col gap-4 rounded-2xl border border-[#d4def8] bg-white p-4 sm:flex-row sm:items-center sm:justify-between dark:border-[#223067] dark:bg-[#111d49]">
                             <div className="flex items-center gap-3">
-                                <div className="w-11 h-11 rounded-xl bg-[#1fb885] flex items-center justify-center">
-                                    <Building2 className="w-5 h-5 text-white" />
+                                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#1fb885] text-white">
+                                    <Building2 className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <h3 className="font-semibold text-[#221910] dark:text-white">Company Information</h3>
-                                    <p className="text-xs text-stone-500">Business details and company profile</p>
+                                    <h3 className="font-semibold text-[#16213f] dark:text-white">Company Information</h3>
+                                    <p className="text-xs text-[#5f6f98] dark:text-[#93a4d1]">Business details and company profile</p>
                                 </div>
                             </div>
-                            <Button type="button" variant="ghost" size="sm" className="text-stone-600 hover:text-stone-800" onClick={() => setEditing("company")}>
+                            <Button type="button" variant="ghost" size="sm" className="self-start text-[#5f6f98] hover:text-[#16213f] dark:text-[#93a4d1] dark:hover:text-white sm:self-auto" onClick={() => setEditing("company")}>
                                 Edit
                             </Button>
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-medium text-stone-600">Company Name</label>
-                            <Input className="h-11 bg-white rounded-lg border-[#e2ddd2] placeholder:text-[14px]" placeholder="Company name" value={form.company_name} onChange={(e) => setForm((p) => ({ ...p, company_name: e.target.value }))} disabled={editing !== "company"} />
+                            <label className={labelClass}>Company Name</label>
+                            <Input className={inputClass} placeholder="Company name" value={form.company_name} onChange={(e) => setForm((p) => ({ ...p, company_name: e.target.value }))} disabled={editing !== "company"} />
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-medium text-stone-600">Website URL</label>
-                            <Input className="h-11 bg-white rounded-lg border-[#e2ddd2] placeholder:text-[14px]" placeholder="Website URL" value={form.website_url} onChange={(e) => setForm((p) => ({ ...p, website_url: e.target.value }))} disabled={editing !== "company"} />
+                            <label className={labelClass}>Website URL</label>
+                            <Input className={inputClass} placeholder="Website URL" value={form.website_url} onChange={(e) => setForm((p) => ({ ...p, website_url: e.target.value }))} disabled={editing !== "company"} />
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-medium text-stone-600">Industry</label>
-                            <select className="h-11 w-full rounded-lg border border-[#e2ddd2] bg-white px-3 py-2 text-sm text-gray-900 disabled:opacity-70" value={form.industry} onChange={(e) => setForm((p) => ({ ...p, industry: e.target.value }))} disabled={editing !== "company"}>
+                            <label className={labelClass}>Industry</label>
+                            <select className={selectClass} value={form.industry} onChange={(e) => setForm((p) => ({ ...p, industry: e.target.value }))} disabled={editing !== "company"}>
                                 <option value="">Select industry</option>
                                 {industryOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-medium text-stone-600">Company Size</label>
-                            <select className="h-11 w-full rounded-lg border border-[#e2ddd2] bg-white px-3 py-2 text-sm text-gray-900 disabled:opacity-70" value={form.company_size} onChange={(e) => setForm((p) => ({ ...p, company_size: e.target.value }))} disabled={editing !== "company"}>
+                            <label className={labelClass}>Company Size</label>
+                            <select className={selectClass} value={form.company_size} onChange={(e) => setForm((p) => ({ ...p, company_size: e.target.value }))} disabled={editing !== "company"}>
                                 <option value="">Select company size</option>
                                 {companySizeOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                             </select>
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-medium text-stone-600">Founded Year</label>
-                            <Input className="h-11 bg-white rounded-lg border-[#e2ddd2] placeholder:text-[14px]" type="number" placeholder="Founded year" value={form.founded_year} onChange={(e) => setForm((p) => ({ ...p, founded_year: e.target.value }))} disabled={editing !== "company"} />
+                            <label className={labelClass}>Founded Year</label>
+                            <Input className={inputClass} type="number" placeholder="Founded year" value={form.founded_year} onChange={(e) => setForm((p) => ({ ...p, founded_year: e.target.value }))} disabled={editing !== "company"} />
                         </div>
                         <div>
-                            <label className="mb-1.5 block text-xs font-medium text-stone-600">Company Type</label>
-                            <select className="h-11 w-full rounded-lg border border-[#e2ddd2] bg-white px-3 py-2 text-sm text-gray-900 disabled:opacity-70" value={form.company_type} onChange={(e) => setForm((p) => ({ ...p, company_type: e.target.value }))} disabled={editing !== "company"}>
+                            <label className={labelClass}>Company Type</label>
+                            <select className={selectClass} value={form.company_type} onChange={(e) => setForm((p) => ({ ...p, company_type: e.target.value }))} disabled={editing !== "company"}>
                                 <option value="">Select company type</option>
                                 {companyTypeOptions.map((item) => <option key={item} value={item}>{item}</option>)}
                             </select>
                         </div>
                         <div className="md:col-span-2">
-                            <label className="mb-1.5 block text-xs font-medium text-stone-600">Description</label>
-                            <textarea className="md:col-span-2 min-h-28 w-full rounded-lg border border-[#e2ddd2] bg-white px-3 py-2 text-sm text-gray-900 placeholder:text-gray-500 disabled:opacity-70" placeholder="Enter your description" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} disabled={editing !== "company"} />
+                            <label className={labelClass}>Description</label>
+                            <textarea className={textareaClass} placeholder="Enter your description" value={form.description} onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))} disabled={editing !== "company"} />
                         </div>
                     </>
                 )}
 
-                <div className="md:col-span-2 flex items-center gap-3">
-                    <Button type="button" variant="outline" className="rounded-lg h-10 px-5 border-[#d8d2c7]" onClick={() => setEditing(null)}>
+                <div className="md:col-span-2 flex flex-col items-start gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+                    <Button type="button" variant="outline" className="h-10 rounded-lg border-[#ccd7f5] bg-transparent px-5 text-[#42548d] hover:bg-[#edf3ff] hover:text-[#16213f] dark:border-[#223067] dark:text-[#c4d3ff] dark:hover:bg-[#1a2858] dark:hover:text-white" onClick={() => setEditing(null)}>
                         Cancel
                     </Button>
-                    <Button type="submit" loading={saving} disabled={!editing} className="rounded-lg h-10 px-5 bg-[#2f65cb] hover:bg-[#2a59b2] text-white">
+                    <Button type="submit" loading={saving} disabled={!editing} className="h-10 rounded-lg bg-[#2f65cb] px-5 text-white hover:bg-[#2a59b2]">
                         Save Changes
                     </Button>
                     {message ? <p className="text-sm text-green-600">{message}</p> : null}

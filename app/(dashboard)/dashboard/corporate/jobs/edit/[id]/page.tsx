@@ -220,18 +220,18 @@ export default function EditJobPage() {
 
     return (
         <div className="space-y-6">
-            <div className="rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 p-6">
+            <div className="rounded-2xl bg-[#edf4ff] border border-[#d7ddf8] p-6 shadow-[0_18px_40px_rgba(121,144,198,0.14)] dark:border-[#2f3b68] dark:bg-[#253261] dark:shadow-[0_18px_40px_rgba(7,10,27,0.28)]">
                 <div className="mb-5 flex justify-between items-center">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Edit Job</h1>
-                        <p className="text-sm text-gray-500 mt-1">Update the details of your job listing.</p>
+                        <p className="text-sm text-[#5f6f98] mt-1 dark:text-[#aeb7d6]">Update the details of your job listing.</p>
                     </div>
-                    <Button variant="outline" onClick={() => router.push("/dashboard/corporate/jobs")}>
+                    <Button variant="outline" className="border-[#cdd8f7] bg-white text-[#42548d] hover:bg-[#eef3ff] hover:text-[#16213f] dark:border-[#46517f] dark:bg-transparent dark:text-[#d9dff3] dark:hover:bg-[#1b2346] dark:hover:text-white" onClick={() => router.push("/dashboard/corporate/jobs")}>
                         Cancel
                     </Button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-5 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden mb-6">
+                <div className="grid grid-cols-1 md:grid-cols-5 rounded-xl border border-[#d7ddf8] bg-white dark:border-[#3a4677] dark:bg-[#222d58] overflow-hidden mb-6">
                     {STEPS.map((step, index) => {
                         const isDone = index < currentStep
                         const isActive = index === currentStep
@@ -240,11 +240,11 @@ export default function EditJobPage() {
                                 key={step.id}
                                 type="button"
                                 onClick={() => setCurrentStep(index)}
-                                className={`px-3 py-3 text-sm font-semibold border-r last:border-r-0 dark:border-gray-700 ${
-                                    isActive ? "bg-blue-50 text-blue-700" : isDone ? "bg-emerald-50 text-emerald-700" : "bg-white text-gray-500 dark:bg-gray-900 dark:text-gray-300"
+                                className={`px-3 py-3 text-sm font-semibold border-r last:border-r-0 border-[#d7ddf8] dark:border-[#3a4677] ${
+                                    isActive ? "bg-[#e9eeff] text-[#2a52d6]" : isDone ? "bg-emerald-50 text-emerald-700 dark:bg-[#1b3b34] dark:text-[#71e0aa]" : "bg-white text-[#5f6f98] dark:bg-[#182247] dark:text-[#dbe3ff]"
                                 }`}
                             >
-                                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full mr-2 text-xs ${isDone ? "bg-emerald-600 text-white" : isActive ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"}`}>
+                                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full mr-2 text-xs ${isDone ? "bg-emerald-600 text-white" : isActive ? "bg-blue-600 text-white dark:bg-[#2a52d6]" : "bg-gray-200 text-gray-600 dark:bg-[#f2f5ff] dark:text-[#334372]"}`}>
                                     {isDone ? "✓" : index + 1}
                                 </span>
                                 {step.label}
@@ -253,7 +253,7 @@ export default function EditJobPage() {
                     })}
                 </div>
 
-                <form onSubmit={onSubmit} className="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <form onSubmit={onSubmit} className="rounded-xl border border-[#d7ddf8] bg-white overflow-hidden [&_input]:border-[#d7ddf8] [&_input]:bg-white [&_input]:text-[#16213f] [&_input]:placeholder:text-[#8b97bf] [&_textarea]:border-[#d7ddf8] [&_textarea]:bg-white [&_textarea]:text-[#16213f] [&_textarea]:placeholder:text-[#8b97bf] [&_select]:border-[#d7ddf8] [&_select]:bg-white [&_select]:text-[#16213f] [&_label]:text-[#16213f] dark:border-[#36426e] dark:bg-[#253261] dark:text-[#dbe3ff] dark:[&_input]:border-[#46517f] dark:[&_input]:bg-[#121938] dark:[&_input]:text-white dark:[&_input]:placeholder:text-[#7d88aa] dark:[&_textarea]:border-[#46517f] dark:[&_textarea]:bg-[#121938] dark:[&_textarea]:text-white dark:[&_textarea]:placeholder:text-[#7d88aa] dark:[&_select]:border-[#46517f] dark:[&_select]:bg-[#121938] dark:[&_select]:text-white dark:[&_label]:text-white">
                     <div>
                         {currentStepId === "job_basics" && (
                             <div className="p-4 space-y-4">
@@ -264,7 +264,7 @@ export default function EditJobPage() {
                                 <div>
                                     <label className="block text-sm font-semibold mb-2">Job description</label>
                                     <textarea
-                                        className="w-full min-h-32 rounded-md border border-gray-300 dark:border-gray-600 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-sm"
+                                        className="w-full min-h-32 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-[#46517f] dark:bg-[#121938] dark:text-white dark:placeholder:text-[#7d88aa]"
                                         placeholder="Describe responsibilities, goals, and impact."
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
@@ -272,11 +272,11 @@ export default function EditJobPage() {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-semibold mb-2">Requirements</label>
-                                    <textarea className="w-full min-h-24 rounded-md border border-gray-300 dark:border-gray-600 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-sm" placeholder="Required qualifications" value={requirements} onChange={(e) => setRequirements(e.target.value)} />
+                                    <textarea className="w-full min-h-24 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-[#46517f] dark:bg-[#121938] dark:text-white dark:placeholder:text-[#7d88aa]" placeholder="Required qualifications" value={requirements} onChange={(e) => setRequirements(e.target.value)} />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-semibold mb-2">Responsibilities</label>
-                                    <textarea className="w-full min-h-24 rounded-md border border-gray-300 dark:border-gray-600 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-sm" placeholder="Key responsibilities" value={responsibilities} onChange={(e) => setResponsibilities(e.target.value)} />
+                                    <textarea className="w-full min-h-24 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-[#46517f] dark:bg-[#121938] dark:text-white dark:placeholder:text-[#7d88aa]" placeholder="Key responsibilities" value={responsibilities} onChange={(e) => setResponsibilities(e.target.value)} />
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
@@ -286,7 +286,7 @@ export default function EditJobPage() {
                                     <div>
                                         <label className="block text-sm font-semibold mb-2">Job type</label>
                                         <select
-                                            className="h-10 rounded-md border border-gray-300 dark:border-gray-600 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-sm w-full"
+                                            className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 w-full dark:border-[#46517f] dark:bg-[#121938] dark:text-white"
                                             value={jobType}
                                             onChange={(e) => setJobType(e.target.value as JobType)}
                                         >
@@ -299,7 +299,7 @@ export default function EditJobPage() {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-semibold mb-2">Mode of work</label>
-                                        <select className="h-10 rounded-md border border-gray-300 dark:border-gray-600 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-sm w-full" value={modeOfWork} onChange={(e) => setModeOfWork(e.target.value as "onsite" | "remote" | "hybrid")}>
+                                        <select className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 w-full dark:border-[#46517f] dark:bg-[#121938] dark:text-white" value={modeOfWork} onChange={(e) => setModeOfWork(e.target.value as "onsite" | "remote" | "hybrid")}>
                                             <option value="onsite">Onsite</option>
                                             <option value="remote">Remote</option>
                                             <option value="hybrid">Hybrid</option>
@@ -394,7 +394,7 @@ export default function EditJobPage() {
                                     <div><label className="block text-sm font-semibold mb-2">Contact person</label><Input value={contactPerson} onChange={(e) => setContactPerson(e.target.value)} /></div>
                                     <div><label className="block text-sm font-semibold mb-2">Contact designation</label><Input value={contactDesignation} onChange={(e) => setContactDesignation(e.target.value)} /></div>
                                     <div><label className="block text-sm font-semibold mb-2">Company logo URL</label><Input value={companyLogo} onChange={(e) => setCompanyLogo(e.target.value)} /></div>
-                                    <div className="md:col-span-2"><label className="block text-sm font-semibold mb-2">Company description</label><textarea className="w-full min-h-20 rounded-md border border-gray-300 dark:border-gray-600 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-sm" value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} /></div>
+                                    <div className="md:col-span-2"><label className="block text-sm font-semibold mb-2">Company description</label><textarea className="w-full min-h-20 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-[#46517f] dark:bg-[#121938] dark:text-white dark:placeholder:text-[#7d88aa]" value={companyDescription} onChange={(e) => setCompanyDescription(e.target.value)} /></div>
                                 </div>
                             </div>
                         )}
@@ -404,7 +404,7 @@ export default function EditJobPage() {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-semibold mb-2">Selection process</label>
-                                        <textarea className="w-full min-h-24 rounded-md border border-gray-300 dark:border-gray-600 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-sm" value={selectionProcess} onChange={(e) => setSelectionProcess(e.target.value)} />
+                                        <textarea className="w-full min-h-24 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-[#46517f] dark:bg-[#121938] dark:text-white dark:placeholder:text-[#7d88aa]" value={selectionProcess} onChange={(e) => setSelectionProcess(e.target.value)} />
                                     </div>
                                     <div>
                                         <label className="block text-sm font-semibold mb-2">Campus drive date</label>
@@ -416,32 +416,32 @@ export default function EditJobPage() {
                                     </div>
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-semibold mb-2">Service agreement details</label>
-                                        <textarea className="w-full min-h-20 rounded-md border border-gray-300 dark:border-gray-600 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-sm" value={serviceAgreementDetails} onChange={(e) => setServiceAgreementDetails(e.target.value)} />
+                                        <textarea className="w-full min-h-20 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-[#46517f] dark:bg-[#121938] dark:text-white dark:placeholder:text-[#7d88aa]" value={serviceAgreementDetails} onChange={(e) => setServiceAgreementDetails(e.target.value)} />
                                     </div>
                                     <div className="md:col-span-2">
                                         <label className="block text-sm font-semibold mb-2">Perks and benefits</label>
-                                        <textarea className="w-full min-h-20 rounded-md border border-gray-300 dark:border-gray-600 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-sm" value={perksAndBenefits} onChange={(e) => setPerksAndBenefits(e.target.value)} />
+                                        <textarea className="w-full min-h-20 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-[#46517f] dark:bg-[#121938] dark:text-white dark:placeholder:text-[#7d88aa]" value={perksAndBenefits} onChange={(e) => setPerksAndBenefits(e.target.value)} />
                                     </div>
                                     <div><label className="block text-sm font-semibold mb-2">Ongoing project title</label><Input value={ongoingProjectTitle} onChange={(e) => setOngoingProjectTitle(e.target.value)} /></div>
                                     <div><label className="block text-sm font-semibold mb-2">Application deadline</label><Input type="datetime-local" value={applicationDeadline} onChange={(e) => setApplicationDeadline(e.target.value)} /></div>
-                                    <div className="md:col-span-2"><label className="block text-sm font-semibold mb-2">Ongoing project description</label><textarea className="w-full min-h-20 rounded-md border border-gray-300 dark:border-gray-600 bg-white text-gray-900 dark:bg-gray-800 dark:text-gray-100 px-3 py-2 text-sm" value={ongoingProjectDescription} onChange={(e) => setOngoingProjectDescription(e.target.value)} /></div>
+                                    <div className="md:col-span-2"><label className="block text-sm font-semibold mb-2">Ongoing project description</label><textarea className="w-full min-h-20 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 dark:border-[#46517f] dark:bg-[#121938] dark:text-white dark:placeholder:text-[#7d88aa]" value={ongoingProjectDescription} onChange={(e) => setOngoingProjectDescription(e.target.value)} /></div>
                                 </div>
                             </div>
                         )}
 
-                        <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between gap-3">
-                            <Button type="button" variant="outline" disabled={currentStep === 0} onClick={() => setCurrentStep((p) => p - 1)}>
+                        <div className="border-t border-[#d7ddf8] dark:border-[#36426e] p-4 flex items-center justify-between gap-3">
+                            <Button type="button" variant="outline" className="border-[#cdd8f7] bg-white text-[#42548d] hover:bg-[#eef3ff] hover:text-[#16213f] dark:border-[#46517f] dark:bg-transparent dark:text-[#d9dff3] dark:hover:bg-[#1b2346] dark:hover:text-white" disabled={currentStep === 0} onClick={() => setCurrentStep((p) => p - 1)}>
                                 Back
                             </Button>
                             <div className="flex items-center gap-3">
-                                {success ? <p className="text-sm text-green-600">{success}</p> : null}
-                                {error ? <p className="text-sm text-red-600">{error}</p> : null}
+                                {success ? <p className="text-sm text-green-600 dark:text-green-400">{success}</p> : null}
+                                {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
                                 {currentStep < STEPS.length - 1 ? (
-                                    <Button type="button" disabled={!canGoNext} onClick={() => setCurrentStep((p) => p + 1)}>
+                                    <Button type="button" className="bg-[#2f7fff] text-white hover:bg-[#246dea] dark:bg-[#8b5cf6] dark:text-white dark:hover:bg-[#7c46ee]" disabled={!canGoNext} onClick={() => setCurrentStep((p) => p + 1)}>
                                         Next
                                     </Button>
                                 ) : (
-                                    <Button type="submit" disabled={submitting}>
+                                    <Button type="submit" className="bg-[#2f7fff] text-white hover:bg-[#246dea] dark:bg-[#8b5cf6] dark:text-white dark:hover:bg-[#7c46ee]" disabled={submitting}>
                                         {submitting ? "Saving..." : "Save Changes"}
                                     </Button>
                                 )}
