@@ -24,7 +24,11 @@ import {
     CheckCircle2,
     Clock,
     Search,
-    Target
+    Target,
+    Heart,
+    Verified,
+    AtSignIcon,
+    HeartCrackIcon
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { apiClient } from '@/lib/api'
@@ -33,7 +37,7 @@ import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import { PieChart, Pie, Cell, LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts'
-import { Roboto } from 'next/font/google'
+import { Roboto, Teachers } from 'next/font/google'
 import StatCard from '@/components/ui/statscard'
 
 interface StudentProfile {
@@ -65,6 +69,8 @@ type EducationEntry = {
 }
 
 const robotoExtraBold = Roboto({ weight: '700', subsets: ['latin'] })
+
+const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark')
 
 // Mock Data for Charts
 const jobAppsData = [
@@ -129,7 +135,7 @@ export default function StudentDashboard() {
             <div className="sm:space-y-6 px-3 sm:px-4 md:px-6 pt-1 sm:pt-6 mb-6 lg:pt-1 lg:px-0">
                 {/* Header - Figma: 16px radius, 10px padding; dark mode #1A2C58 */}
                 <div
-                    className="w-full flex flex-col rounded-[16px] p-2.5 gap-2.5 bg-white dark:bg-[#1A2C58] min-h-[92px]"
+                    className="w-full flex flex-col rounded-[16px] p-2.5 gap-2.5 bg-gradient-to-r from-[#deefff] via-[#fff0f7] to-[#fffce3] dark:bg-none dark:bg-[#1A2C58] min-h-[92px]"
                     style={{
                         boxShadow: 'inset 0 1px 1.5px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.25)',
                     }}
@@ -156,33 +162,33 @@ export default function StudentDashboard() {
                     label="Dishasetu Employability Score (DES)"
                     value={`${desScoreDisplay}/100`}
                     secondaryText="+5 points from last month"
-                    backgroundColor="#FFFFFF"
+                    backgroundColor="#deefff"
                     darkBackgroundColor="#0B1739"
-                    iconBgColor="bg-emerald-500/20"
-                    iconColor="text-emerald-500"
+                    iconBgColor="bg-emerald-500/100"
+                    iconColor="text-white"
                 />
 
 
                 <StatCard
-                    icon={CheckCircle2}
+                    icon={Trophy}
                     label="Mentorship Vivas"
                     value="4"
                     secondaryText="total mentorship vivas"
-                    backgroundColor="#FFFFFF"
+                    backgroundColor="#f8f0ff"
                     darkBackgroundColor="#0B1739"
-                    iconBgColor="bg-blue-500/20"
-                    iconColor="text-blue-500"
+                    iconBgColor="bg-blue-500/100"
+                    iconColor="text-white"
                 />
 
                 <StatCard
-                    icon={Eye}
+                    icon={Verified}
                     label="Verified Projects"
                     value="42"
                     secondaryText="Projects verified by mentors and employers"
-                    backgroundColor="#FFFFFF"
+                    backgroundColor="#fff0f7"
                     darkBackgroundColor="#0B1739"
-                    iconBgColor="bg-purple-500/20"
-                    iconColor="text-purple-500"
+                    iconBgColor="bg-purple-500/100"
+                    iconColor="text-white"
                 />
 
 
@@ -191,10 +197,10 @@ export default function StudentDashboard() {
                     label="ATS Score"
                     value="42"
                     secondaryText="Your resume is optimized for 3 out of 5 job descriptions"
-                    backgroundColor="#FFFFFF"
+                    backgroundColor="#fffce3"
                     darkBackgroundColor="#0B1739"
-                    iconBgColor="bg-purple-500/20"
-                    iconColor="text-purple-500"
+                    iconBgColor="bg-purple-500/100"
+                    iconColor="text-white"
                 />
 
 
@@ -204,53 +210,92 @@ export default function StudentDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
 
                 {/* Donut Chart (Left) */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="lg:col-span-5 bg-white rounded-xl p-6 border border-gray-200 dark:bg-[#0B1739] dark:border-white/10 shadow-sm flex flex-col">
-                    <h3 className="text-[18px] font-bold text-gray-900 dark:text-white mb-1">Application Pipeline</h3>
-                    <p className="text-[14px] text-gray-600 dark:text-gray-400 font-medium mb-6">Total: 12 Apps</p>
-
-                    <div className="flex-1 flex flex-col sm:flex-row items-center justify-center">
-                        <div className="h-[200px] w-full sm:w-1/2 relative">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <PieChart>
-                                    <Pie
-                                        data={jobAppsData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={85}
-                                        paddingAngle={2}
-                                        dataKey="value"
-                                        stroke="none"
-                                    >
-                                        {jobAppsData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <RechartsTooltip
-                                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                    />
-                                </PieChart>
-                            </ResponsiveContainer>
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                                <span className="text-4xl font-bold text-gray-900 dark:text-white mt-1">12</span>
-                            </div>
-                        </div>
-
-                        <div className="w-full sm:w-1/2 flex flex-col justify-center gap-3 mt-4 sm:mt-0 sm:pl-4">
-                            {jobAppsData.map((item, index) => (
-                                <div key={index} className="flex items-center gap-3">
-                                    <div className="w-3.5 h-3.5 rounded-full flex-shrink-0" style={{ backgroundColor: item.color }}></div>
-                                    <span className="text-[15px] font-semibold text-gray-800 dark:text-gray-200">
-                                        {item.name} <span className="font-medium">({item.value})</span>
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
+                <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="lg:col-span-5 rounded-[20px] p-6 shadow-md flex flex-col justify-between relative overflow-hidden bg-[#deefff]
+                dark:bg-none dark:bg-[#0B1739] dark:border dark:border-white/10"
+                >
+                {/* Header */}
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                    <h3 className="text-[14px] tracking-widest font-semibold text-gray-600 dark:text-gray-400">
+                        Application Pipeline
+                    </h3>
+                    <h5 className="text-[26px] font-bold text-[#0B2540] dark:text-white mt-1">
+                        12 Active Applications
+                    </h5>
                     </div>
+
+                    <span className="text-xs font-semibold bg-yellow-200 text-gray-800 
+                    dark:bg-yellow-400/20 dark:text-yellow-300 px-3 py-1 rounded-full">
+                    Updated today
+                    </span>
+                </div>
+
+                {/* Content */}
+                <div className="flex items-center justify-between mt-4">
+                    {/* Donut */}
+                    <div className="relative w-[160px] h-[160px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                        <Pie
+                            data={jobAppsData}
+                            dataKey="value"
+                            innerRadius={50}
+                            outerRadius={70}
+                            paddingAngle={3}
+                            stroke="none"
+                        >
+                            {jobAppsData.map((entry, index) => (
+                            <Cell key={index} fill={entry.color} />
+                            ))}
+                        </Pie>
+                        </PieChart>
+                    </ResponsiveContainer>
+
+                    {/* Center Text */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-xs text-gray-500 tracking-widest">TOTAL</span>
+                        <span className="text-3xl font-bold text-gray-900 dark:text-white">12</span>
+                    </div>
+                    </div>
+
+                    {/* Right Stats */}
+                    <div className="flex flex-col gap-4">
+                    <div className="bg-white/70 backdrop-blur
+                    dark:bg-white/5 dark:border dark:border-white/10 rounded-xl px-4 py-3 flex items-center justify-between min-w-[170px]">
+                        <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Shortlisted</span>
+                        </div>
+                        <span className="font-bold text-lg text-gray-900 dark:text-white">5</span>
+                    </div>
+
+                    <div className="bg-white/70 backdrop-blur dark:bg-white/5 rounded-xl px-4 py-3 flex items-center justify-between min-w-[170px]">
+                        <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-indigo-500"></span>
+                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Under Review</span>
+                        </div>
+                        <span className="font-bold text-lg text-gray-900 dark:text-white">4</span>
+                    </div>
+
+                    <div className="bg-white/70 backdrop-blur dark:bg-white/5 rounded-xl px-4 py-3 flex items-center justify-between min-w-[170px]">
+                        <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-teal-400"></span>
+                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Applied</span>
+                        </div>
+                        <span className="font-bold text-lg text-gray-900 dark:text-white">2</span>
+                    </div>
+                    </div>
+                </div>
                 </motion.div>
 
                 {/* Line Graph (Right) */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="lg:col-span-7 bg-white rounded-xl p-6 border border-gray-200 dark:bg-[#0B1739] dark:border-white/10 shadow-sm flex flex-col">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="lg:col-span-7 rounded-xl p-6 border border-gray-200 
+                bg-[f8f0ff]
+                dark:bg-none dark:bg-[#0B1739] dark:border dark:border-white/10 shadow-sm flex flex-col">
                     <div className="flex justify-between items-center mb-6">
                         <div>
                             <h3 className="text-lg font-bold">Profile Engagement & Growth</h3>
@@ -270,16 +315,66 @@ export default function StudentDashboard() {
                     <div className="flex-1 min-h-[250px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={engagementData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" opacity={0.5} />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} dy={10} />
-                                <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
-                                <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} domain={[0, 100]} />
-                                <RechartsTooltip
-                                    contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB', backgroundColor: '#fff', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                <CartesianGrid 
+                                    strokeDasharray="3 3" 
+                                    vertical={false} 
+                                    stroke={typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? "#1F2A44" : "#E5E7EB"} 
+                                    opacity={0.4} 
                                 />
+                                <XAxis 
+                                    dataKey="name" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fontSize: 12, fill: '#6B7280' }} 
+                                    dy={10} 
+                                />
+                                <YAxis 
+                                    yAxisId="left" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fontSize: 12, fill: '#6B7280' }} 
+                                />
+                                <YAxis 
+                                    yAxisId="right" 
+                                    orientation="right" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fontSize: 12, fill: '#6B7280' }} 
+                                    domain={[0, 100]} 
+                                />
+                                <RechartsTooltip
+                                    contentStyle={{
+                                        borderRadius: '8px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        backgroundColor: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? '#0B1739' : '#fff',
+                                        color: typeof window !== 'undefined' && document.documentElement.classList.contains('dark') ? '#fff' : '#000',
+                                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                                    }}
+                                    />
                                 <Legend verticalAlign="top" height={36} iconType="circle" wrapperStyle={{ paddingBottom: '20px' }} />
-                                <Line yAxisId="left" type="monotone" dataKey="views" name="Profile Views" stroke="#3B82F6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
-                                <Line yAxisId="right" type="monotone" dataKey="des" name="DES Score" stroke="#10B981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                                {/* <Line yAxisId="left" type="monotone" dataKey="views" name="Profile Views" stroke="#3B82F6" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                                <Line yAxisId="right" type="monotone" dataKey="des" name="DES Score" stroke="#10B981" strokeWidth={3} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} /> */}
+                                <Line 
+                                yAxisId="left" 
+                                type="monotone" 
+                                dataKey="views" 
+                                name="Profile Views" 
+                                stroke="#f2ac4d" 
+                                strokeWidth={3} 
+                                dot={{ r: 4, strokeWidth: 2 }} 
+                                activeDot={{ r: 6 }} 
+                                />
+
+                                <Line 
+                                yAxisId="right" 
+                                type="monotone" 
+                                dataKey="des" 
+                                name="DES Score" 
+                                stroke="#fc6bb0" 
+                                strokeWidth={3} 
+                                dot={{ r: 4, strokeWidth: 2 }} 
+                                activeDot={{ r: 6 }} 
+                                />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -290,7 +385,7 @@ export default function StudentDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
                 {/* Viewer Demographics (Left) */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="lg:col-span-7 bg-white dark:bg-[#0B1739] p-6 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm flex flex-col">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="lg:col-span-7 bg-gradient-to-tr from-[#d9f0ff] via-[#e6d9ff] to-[#ffe5d9] dark:bg-none dark:bg-[#0B1739] p-6 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm flex flex-col">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
                         <div>
                             <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-1">Who is Viewing Your Profile</h3>
@@ -298,8 +393,8 @@ export default function StudentDashboard() {
                         </div>
                         <div className="mt-4 sm:mt-0 flex p-1 bg-gray-50 dark:bg-[#1A2C58] rounded-lg border border-gray-100 dark:border-white/5">
                             <button className="px-4 py-1.5 text-[14px] font-bold bg-[#1B6CFB] text-white rounded-md shadow-sm">Industry</button>
-                            <button className="px-4 py-1.5 text-[14px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">Role</button>
-                            <button className="px-4 py-1.5 text-[14px] font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">Location</button>
+                            <button className="px-4 py-1.5 text-[14px] font-medium text-black-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">Role</button>
+                            <button className="px-4 py-1.5 text-[14px] font-medium text-black-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors">Location</button>
                         </div>
                     </div>
 
@@ -307,7 +402,7 @@ export default function StudentDashboard() {
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={analyticsBarData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" opacity={0.6} />
-                                <XAxis 
+                                {/* <XAxis 
                                     dataKey="name" 
                                     axisLine={{ stroke: '#9CA3AF' }} 
                                     tickLine={{ stroke: '#9CA3AF' }} 
@@ -320,6 +415,20 @@ export default function StudentDashboard() {
                                     tick={{ fontSize: 12, fill: '#6B7280' }} 
                                     ticks={[0, 25, 50, 75, 100]}
                                     domain={[0, 100]}
+                                /> */}
+                                <XAxis 
+                                    dataKey="name" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fontSize: 12, fill: isDark ? '#9CA3AF' : '#6B7280' }} 
+                                    dy={10} 
+                                />
+
+                                <YAxis 
+                                    yAxisId="left" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fontSize: 12, fill: isDark ? '#9CA3AF' : '#6B7280' }} 
                                 />
                                 <RechartsTooltip 
                                     cursor={{ fill: 'rgba(0,0,0,0.04)' }}
@@ -337,7 +446,7 @@ export default function StudentDashboard() {
                 </motion.div>
 
                 {/* List/Feed (Right) */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="lg:col-span-5 bg-white rounded-xl p-6 border border-gray-200 dark:bg-[#0B1739] dark:border-white/10 shadow-sm relative overflow-hidden">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="lg:col-span-5 bg-gradient-to-tr from-[#e6d9fe] via-[#ffe5d9] to-[#e6d9ff] rounded-xl p-6 border border-gray-200 dark:bg-none dark:bg-[#0B1739] order-white/10 shadow-sm relative overflow-hidden">
                     <h3 className="text-lg font-bold mb-6">Activity & Next Steps</h3>
 
                     <div className="space-y-4">
