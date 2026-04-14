@@ -1,174 +1,176 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { Modal } from "@/components/ui/modal"
+import { Button } from "@/components/ui/button"
 import { apiClient, JobItem } from "@/lib/api"
-import JobApplicationModal from "@/components/ui/job-application-modal"
-import { motion } from "framer-motion"
-import { AlertCircle, CheckCircle, Loader } from "lucide-react"
+
+const getErrorMessage = (error: unknown, fallback: string) => {
+  if (
+    typeof error === "object" &&
+    error !== null &&
+    "response" in error &&
+    typeof (error as { response?: { data?: { detail?: unknown } } }).response?.data?.detail === "string"
+  ) {
+    return (error as { response?: { data?: { detail?: string } } }).response?.data?.detail || fallback
+  }
+
+  return fallback
+}
 
 export default function StudentJobsPage() {
   const [jobs, setJobs] = useState<JobItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [successMessage, setSuccessMessage] = useState("")
-  
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [applyError, setApplyError] = useState("")
   const [selectedJob, setSelectedJob] = useState<JobItem | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set())
+  const [submittingJobId, setSubmittingJobId] = useState<string | null>(null)
+
+  const loadJobs = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const data = await apiClient.getJobs(false)
+      setJobs(data)
+    } catch (error: unknown) {
+      setError(getErrorMessage(error, "Failed to load jobs"))
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const loadJobs = async () => {
-      setLoading(true)
-      setError("")
-      try {
-        const data = await apiClient.getJobs(false)
-        setJobs(data)
-        
-        // Load student applications to mark applied jobs
-        const applications = await apiClient.getStudentApplications()
-        const appliedJobIds = new Set(applications.map((app: any) => app.job_id))
-        setAppliedJobs(appliedJobIds)
-      } catch (e: any) {
-        setError(e?.response?.data?.detail || "Failed to load jobs")
-      } finally {
-        setLoading(false)
-      }
-    }
     loadJobs()
   }, [])
 
-  const handleApplyClick = (job: JobItem) => {
-    if (appliedJobs.has(job.id)) {
-      setError("You have already applied for this job")
-      return
-    }
-    setSelectedJob(job)
-    setIsModalOpen(true)
-  }
-
-  const handleSubmitApplication = async (data: { expected_salary?: string; cover_letter?: string }) => {
+  const handleApply = async () => {
     if (!selectedJob) return
 
-    setIsSubmitting(true)
+    setSubmittingJobId(selectedJob.id)
+    setApplyError("")
     try {
-      await apiClient.submitJobApplication(selectedJob.id, data)
-      
-      // Add job to applied jobs set
-      setAppliedJobs(new Set([...appliedJobs, selectedJob.id]))
-      
-      setSuccessMessage(`Application submitted for ${selectedJob.title}!`)
-      setIsModalOpen(false)
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccessMessage(""), 3000)
-    } catch (err: any) {
-      throw err
+      await apiClient.applyToJob(selectedJob.id)
+      setJobs((prevJobs) =>
+        prevJobs.map((job) =>
+          job.id === selectedJob.id
+            ? {
+                ...job,
+                has_applied: true,
+                current_applications: (job.current_applications || 0) + 1,
+              }
+            : job
+        )
+      )
+      setSelectedJob(null)
+    } catch (error: unknown) {
+      setApplyError(getErrorMessage(error, "Failed to apply for this job"))
     } finally {
-      setIsSubmitting(false)
+      setSubmittingJobId(null)
     }
   }
 
   return (
     <div className="space-y-4">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-        Jobs
+        Jobs & Internships
       </h1>
 
-      {loading && (
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Loader className="h-4 w-4 animate-spin" />
-          Loading jobs...
-        </div>
-      )}
-      
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex gap-3 rounded-lg bg-red-50 p-3 dark:bg-red-900/20"
-        >
-          <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-600 dark:text-red-400" />
-          <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-        </motion.div>
-      )}
-
-      {successMessage && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex gap-3 rounded-lg bg-green-50 p-3 dark:bg-green-900/20"
-        >
-          <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-600 dark:text-green-400" />
-          <p className="text-sm text-green-600 dark:text-green-400">{successMessage}</p>
-        </motion.div>
-      )}
-
+      {loading && <p className="text-sm text-gray-500">Loading jobs...</p>}
+      {error && <p className="text-sm text-red-600">{error}</p>}
       {!loading && !error && jobs.length === 0 && (
         <p className="text-sm text-gray-500">No jobs available.</p>
       )}
 
-      {/* Jobs Grid */}
       <div className="grid gap-3">
         {jobs.map((job) => (
-          <motion.div
+          <div
             key={job.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-xl border border-gray-200 dark:border-gray-700 bg-[#f7f8f7] dark:bg-blue-900/10 p-4"
+            className="rounded-xl border border-gray-200 bg-[#f7f8f7] p-4 dark:border-gray-700 dark:bg-blue-900/10"
           >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 dark:text-white">
-                  {job.title}
-                </h3>
+            <h3 className="font-semibold text-gray-900 dark:text-white">
+              {job.title}
+            </h3>
 
-                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                  {job.description}
-                </p>
+            <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+              {job.description}
+            </p>
 
-                <div className="flex flex-wrap gap-3 mt-3 text-xs text-gray-500">
-                  <span>📍 {job.location}</span>
-                  <span>💼 {job.job_type}</span>
-                  {job.company_name && <span>🏢 {job.company_name}</span>}
-                </div>
+            <p className="mt-2 text-xs text-gray-500">
+              {job.location} • {job.job_type.replaceAll("_", " ")}
+            </p>
 
-                {job.salary_min && job.salary_max && (
-                  <p className="text-xs text-gray-500 mt-2">
-                    💰 ₹{job.salary_min} - ₹{job.salary_max} {job.salary_currency}
-                  </p>
-                )}
-              </div>
-
-              {/* Apply Button */}
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => handleApplyClick(job)}
-                  disabled={appliedJobs.has(job.id)}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
-                    appliedJobs.has(job.id)
-                      ? "bg-gray-200 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400"
-                      : "bg-[#7c3aed] text-white hover:opacity-90 dark:bg-[#6d28d9] dark:hover:bg-[#5b21b6]"
-                  }`}
-                >
-                  {appliedJobs.has(job.id) ? "✓ Applied" : "Apply"}
-                </button>
-              </div>
+            <div className="mt-3 flex justify-end">
+              <button
+                type="button"
+                disabled={job.has_applied || submittingJobId === job.id}
+                onClick={() => {
+                  setApplyError("")
+                  setSelectedJob(job)
+                }}
+                className="rounded-lg bg-[#7c3aed] px-4 py-2 text-sm font-semibold text-black transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 dark:text-white"
+              >
+                {job.has_applied ? "Applied" : "Apply"}
+              </button>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
 
-      {/* Application Modal */}
-      <JobApplicationModal
-        isOpen={isModalOpen}
-        jobTitle={selectedJob?.title || ""}
-        companyName={selectedJob?.company_name}
-        onClose={() => setIsModalOpen(false)}
-        onSubmit={handleSubmitApplication}
-        isLoading={isSubmitting}
-      />
+      <Modal
+        isOpen={!!selectedJob}
+        onClose={() => {
+          setSelectedJob(null)
+          setApplyError("")
+        }}
+        title={selectedJob ? `Apply for ${selectedJob.title}` : "Apply"}
+        maxWidth="md"
+      >
+        {selectedJob ? (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/40">
+              <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                {selectedJob.title}
+              </p>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300">
+                {selectedJob.company_name || "Company not specified"}
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                {selectedJob.location} • {selectedJob.job_type.replaceAll("_", " ")}
+              </p>
+            </div>
+
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              Confirm your application. Your latest student resume will be sent to the corporate manage applicants page for this job.
+            </p>
+
+            {applyError ? <p className="text-sm text-red-600">{applyError}</p> : null}
+
+            <div className="flex justify-end gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setSelectedJob(null)
+                  setApplyError("")
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="button"
+                onClick={handleApply}
+                disabled={submittingJobId === selectedJob.id || !!selectedJob.has_applied}
+              >
+                {selectedJob.has_applied
+                  ? "Already Applied"
+                  : submittingJobId === selectedJob.id
+                    ? "Applying..."
+                    : "Apply Now"}
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
     </div>
   )
 }

@@ -35,7 +35,7 @@ const corporateNavigation = [
     { name: 'Dashboard', href: '/dashboard/corporate', icon: LayoutDashboard },
     { name: 'Company Profile', href: '/dashboard/corporate/profile', icon: Building },
     { name: 'Manage Jobs', href: '/dashboard/corporate/jobs', icon: Briefcase },
-    { name: 'Manage Applicants', href: '/dashboard/corporate/applicants', icon: Users },
+    { name: 'Manage Applicants', href: '/dashboard/corporate/jobs/applicants', icon: Users },
     { name: 'Settings', href: '/dashboard/corporate/settings', icon: Settings },
 ]
 

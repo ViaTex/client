@@ -65,6 +65,27 @@ export interface JobItem extends JobPayload {
     current_applications: number
     created_at: string
     is_public?: boolean
+    has_applied?: boolean
+}
+
+export interface JobApplicationItem {
+    id: string
+    job_id: string
+    student_id: string
+    corporate_id?: string | null
+    college_id?: string | null
+    status: 'applied' | 'shortlisted' | 'selected' | 'rejected'
+    resume_url?: string | null
+    student_name?: string | null
+    student_email?: string | null
+    student_phone?: string | null
+    note?: string | null
+    applied_at: string
+    updated_at?: string | null
+    job_title: string
+    job_type: JobPayload['job_type']
+    company_name?: string | null
+    location?: string | null
 }
 
 export interface CorporateProfile {
@@ -201,6 +222,16 @@ export const apiClient = {
     getJobById: async (jobId: string) => {
         const response = await axiosInstance.get(`/jobs/${jobId}`)
         return response.data as JobItem
+    },
+
+    applyToJob: async (jobId: string) => {
+        const response = await axiosInstance.post(`/jobs/${jobId}/apply`)
+        return response.data as { message: string; application: JobApplicationItem }
+    },
+
+    getReceivedApplications: async () => {
+        const response = await axiosInstance.get('/jobs/applications/received')
+        return response.data as JobApplicationItem[]
     },
 
     updateJob: async (jobId: string, data: Partial<JobPayload>) => {
