@@ -135,7 +135,7 @@ export default function StudentDashboard() {
             <div className="sm:space-y-6 px-3 sm:px-4 md:px-6 pt-1 sm:pt-6 mb-6 lg:pt-1 lg:px-0">
                 {/* Header - Figma: 16px radius, 10px padding; dark mode #1A2C58 */}
                 <div
-                    className="w-full flex flex-col rounded-[16px] p-2.5 gap-2.5 bg-gradient-to-r from-[#deefff] via-[#fff0f7] to-[#fffce3] dark:bg-none dark:bg-[#1A2C58] min-h-[92px]"
+                    className="w-full flex flex-col rounded-[16px] p-2.5 gap-2.5 bg-[#f9f9f9] dark:bg-none dark:bg-[#1A2C58] min-h-[92px]"
                     style={{
                         boxShadow: 'inset 0 1px 1.5px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.25)',
                     }}
@@ -199,7 +199,7 @@ export default function StudentDashboard() {
                     secondaryText="Your resume is optimized for 3 out of 5 job descriptions"
                     backgroundColor="#fffce3"
                     darkBackgroundColor="#0B1739"
-                    iconBgColor="bg-purple-500/100"
+                    iconBgColor="bg-yellow-500/100"
                     iconColor="text-white"
                 />
 
@@ -209,47 +209,88 @@ export default function StudentDashboard() {
             {/* Middle Section: Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
 
-                {/* Donut Chart (Left) */}
+                {/* Donut Chart */}
                 <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
-                className="lg:col-span-5 rounded-[20px] p-6 shadow-md flex flex-col justify-between relative overflow-hidden bg-[#deefff]
+                className="lg:col-span-5 rounded-[20px] p-6 shadow-md bg-[#f9f9f9]
                 dark:bg-none dark:bg-[#0B1739] dark:border dark:border-white/10"
                 >
                 {/* Header */}
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                    <h3 className="text-[14px] tracking-widest font-semibold text-gray-600 dark:text-gray-400">
+                    <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-400">
                         Application Pipeline
                     </h3>
-                    <h5 className="text-[26px] font-bold text-[#0B2540] dark:text-white mt-1">
-                        12 Active Applications
-                    </h5>
+                    <p className="text-sm text-gray-500 dark:text-white mt-1">
+                        Total: 12 Apps
+                    </p>
                     </div>
 
-                    <span className="text-xs font-semibold bg-yellow-200 text-gray-800 
-                    dark:bg-yellow-400/20 dark:text-yellow-300 px-3 py-1 rounded-full">
+                    <span className="text-xs font-semibold bg-yellow-200 text-gray-700 dark:bg-yellow-400/20 dark:text-yellow-300 px-3 py-1 rounded-full">
                     Updated today
                     </span>
                 </div>
 
                 {/* Content */}
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                    
                     {/* Donut */}
-                    <div className="relative w-[160px] h-[160px]">
+                    <div className="relative w-[220px] h-[220px] sm:w-[260px] sm:h-[260px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                         <Pie
-                            data={jobAppsData}
+                            data={[
+                            { name: "Shortlisted", value: 5, color: "#3B82F6" },
+                            { name: "Under Review", value: 4, color: "#22C55E" },
+                            { name: "Applied", value: 2, color: "#14B8A6" },
+                            { name: "Interviews", value: 1, color: "#065F46" },
+                            ]}
                             dataKey="value"
-                            innerRadius={50}
-                            outerRadius={70}
-                            paddingAngle={3}
+                            innerRadius={70}
+                            outerRadius={100}
+                            paddingAngle={2}
                             stroke="none"
+                            labelLine={false}
+
+                            // ✅ CUSTOM LABEL (INSIDE + WHITE)
+                            label={({
+                            cx = 0,
+                            cy = 0,
+                            midAngle = 0,
+                            innerRadius = 0,
+                            outerRadius = 0,
+                            value = 0,
+                            }) => {
+                            const RADIAN = Math.PI / 180;
+                            const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+
+                            const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                            const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+                            return (
+                                <text
+                                x={x}
+                                y={y}
+                                fill="white"
+                                textAnchor="middle"
+                                dominantBaseline="central"
+                                fontSize={14}
+                                fontWeight="bold"
+                                >
+                                {value}
+                                </text>
+                            );
+                            }}
                         >
-                            {jobAppsData.map((entry, index) => (
-                            <Cell key={index} fill={entry.color} />
+                            {[
+                            "#3B82F6",
+                            "#22C55E",
+                            "#14B8A6",
+                            "#065F46",
+                            ].map((color, i) => (
+                            <Cell key={i} fill={color} />
                             ))}
                         </Pie>
                         </PieChart>
@@ -257,37 +298,36 @@ export default function StudentDashboard() {
 
                     {/* Center Text */}
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-xs text-gray-500 tracking-widest">TOTAL</span>
-                        <span className="text-3xl font-bold text-gray-900 dark:text-white">12</span>
+                        <span className="text-xs text-gray-400 tracking-widest">
+                        TOTAL
+                        </span>
+                        <span className="text-3xl font-bold text-gray-800 dark:text-white">
+                        12
+                        </span>
                     </div>
                     </div>
 
                     {/* Right Stats */}
-                    <div className="flex flex-col gap-4">
-                    <div className="bg-white/70 backdrop-blur
-                    dark:bg-white/5 dark:border dark:border-white/10 rounded-xl px-4 py-3 flex items-center justify-between min-w-[170px]">
+                    <div className="flex flex-col gap-3 w-full md:w-[200px]">
+                    {[
+                        { label: "Shortlisted", value: 5, color: "bg-blue-500" },
+                        { label: "Under Review", value: 4, color: "bg-green-500" },
+                        { label: "Applied", value: 2, color: "bg-teal-400" },
+                        { label: "Interviews", value: 1, color: "bg-green-900" },
+                    ].map((item, i) => (
+                        <div key={i} className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-blue-500"></span>
-                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Shortlisted</span>
+                            <span className={`w-3 h-3 rounded-full ${item.color}`} />
+                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                            {item.label}
+                            </span>
                         </div>
-                        <span className="font-bold text-lg text-gray-900 dark:text-white">5</span>
-                    </div>
 
-                    <div className="bg-white/70 backdrop-blur dark:bg-white/5 rounded-xl px-4 py-3 flex items-center justify-between min-w-[170px]">
-                        <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-indigo-500"></span>
-                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Under Review</span>
+                        <span className="text-sm font-semibold text-gray-800 dark:text-white">
+                            ({item.value})
+                        </span>
                         </div>
-                        <span className="font-bold text-lg text-gray-900 dark:text-white">4</span>
-                    </div>
-
-                    <div className="bg-white/70 backdrop-blur dark:bg-white/5 rounded-xl px-4 py-3 flex items-center justify-between min-w-[170px]">
-                        <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 rounded-full bg-teal-400"></span>
-                        <span className="text-sm font-medium text-gray-800 dark:text-gray-200">Applied</span>
-                        </div>
-                        <span className="font-bold text-lg text-gray-900 dark:text-white">2</span>
-                    </div>
+                    ))}
                     </div>
                 </div>
                 </motion.div>
@@ -385,7 +425,7 @@ export default function StudentDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
                 {/* Viewer Demographics (Left) */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="lg:col-span-7 bg-gradient-to-tr from-[#d9f0ff] via-[#e6d9ff] to-[#ffe5d9] dark:bg-none dark:bg-[#0B1739] p-6 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm flex flex-col">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="lg:col-span-7 bg-[#f9f9f9] dark:bg-none dark:bg-[#0B1739] p-6 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm flex flex-col">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
                         <div>
                             <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-1">Who is Viewing Your Profile</h3>
@@ -446,7 +486,7 @@ export default function StudentDashboard() {
                 </motion.div>
 
                 {/* List/Feed (Right) */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="lg:col-span-5 bg-gradient-to-tr from-[#e6d9fe] via-[#ffe5d9] to-[#e6d9ff] rounded-xl p-6 border border-gray-200 dark:bg-none dark:bg-[#0B1739] order-white/10 shadow-sm relative overflow-hidden">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="lg:col-span-5 bg-[#f9f9f9] rounded-xl p-6 border border-gray-200 dark:bg-none dark:bg-[#0B1739] order-white/10 shadow-sm relative overflow-hidden">
                     <h3 className="text-lg font-bold mb-6">Activity & Next Steps</h3>
 
                     <div className="space-y-4">
