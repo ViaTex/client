@@ -16,7 +16,7 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 
 const topNavTransitionClass =
-    'transition-[left,width] duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none'
+    'transition-[left,width] duration-[ms:400ms] ease-[transition-timing-function:cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none'
 
 type TopNavProps = {
     isSidebarCollapsed: boolean

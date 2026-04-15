@@ -102,7 +102,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
             <aside
                 className={`fixed left-0 top-0 z-50 flex flex-col h-screen
                     bg-[#080F26] dark:bg-[#0B1739] text-gray-800 dark:text-white 
-                    transition-[width,transform] duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none
+                    transition-[width,transform] duration-[ms:400ms] ease-[transition-timing-function:cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none
                     shrink-0
                     ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
                 style={{ width: 'var(--sidebar-w)' }}

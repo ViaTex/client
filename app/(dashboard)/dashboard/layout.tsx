@@ -11,7 +11,7 @@ const SIDEBAR_EXPANDED_PX = 244
 const SIDEBAR_COLLAPSED_PX = 72
 
 const layoutTransitionClass =
-    'transition-[padding-left] duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none'
+    'transition-[padding-left] duration-[ms:400ms] ease-[transition-timing-function:cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none'
 
 export default function DashboardLayout({
     children,
