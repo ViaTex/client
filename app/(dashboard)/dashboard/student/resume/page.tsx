@@ -54,6 +54,9 @@ interface ResumeStatus {
     resume_uploaded: boolean
     resume_filename?: string
     resume_path?: string
+    filename?: string
+    last_updated?: string
+    resume_url?: string
     uploaded_at?: string
     can_upload: boolean
     can_calculate_ats: boolean
@@ -92,10 +95,11 @@ export default function ResumePage() {
     const fetchResumeStatus = async () => {
         try {
             const status = await apiClient.getResumeStatus()
-            setResumeStatus(status)
+            const statusData = status?.data ?? status
+            setResumeStatus(statusData)
             
             // If no resume exists, show upload section
-            if (!status.data.has_resume) {
+            if (!statusData?.has_resume) {
                 setShowUploadSection(true)
             }
         } catch (error) {
@@ -277,6 +281,26 @@ export default function ResumePage() {
         return filename
     }
 
+    const getResumeHref = (status: ResumeStatus | null): string | null => {
+        const rawValue = status?.resume_url || status?.resume_path
+        if (!rawValue) return null
+
+        const trimmed = rawValue.trim()
+        if (!trimmed) return null
+        if (/^(https?:\/\/|blob:)/i.test(trimmed)) return trimmed
+
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
+        const backendBase = apiUrl.replace(/\/api\/v\d+\/?$/i, '').replace(/\/$/, '')
+
+        if (trimmed.startsWith('/')) return `${backendBase}${trimmed}`
+        if (/^(media|uploads?)\//i.test(trimmed)) return `${backendBase}/${trimmed}`
+        return `https://${trimmed}`
+    }
+
+    const resumeFileName = getReadableFilename(resumeStatus?.resume_filename || resumeStatus?.filename)
+    const resumeUploadedAt = resumeStatus?.uploaded_at || resumeStatus?.last_updated
+    const resumeHref = getResumeHref(resumeStatus)
+
     if (loadingStatus) {
         return (
             <div className="w-full font-sans text-gray-900 dark:text-gray-100 relative max-w-7xl mx-auto">
@@ -334,24 +358,41 @@ export default function ResumePage() {
                                         </div>
                                         <div className="flex-1 min-w-0 overflow-hidden">
                                             <p className="font-semibold text-sm sm:text-base text-gray-900 dark:text-gray-100 truncate overflow-hidden text-ellipsis whitespace-nowrap">
-                                                {getReadableFilename(resumeStatus.resume_filename)}
+                                                {resumeFileName}
                                             </p>
                                             <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate overflow-hidden">
-                                                Uploaded {resumeStatus.uploaded_at ? new Date(resumeStatus.uploaded_at).toLocaleDateString() : 'recently'}
+                                                Uploaded {resumeUploadedAt ? new Date(resumeUploadedAt).toLocaleDateString() : 'recently'}
                                             </p>
                                         </div>
                                     </div>
-                                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto flex-shrink-0">
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => setShowUploadSection(true)}
-                                            className="border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/50 w-full sm:w-auto text-xs sm:text-sm"
-                                        >
-                                            <RefreshCw className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                                            Replace
-                                        </Button>
-                                    </motion.div>
+                                    <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-2 sm:gap-2 flex-shrink-0">
+                                        {resumeHref && (
+                                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
+                                                <Button
+                                                    asChild
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/50 w-full sm:w-auto text-xs sm:text-sm"
+                                                >
+                                                    <a href={resumeHref} target="_blank" rel="noopener noreferrer">
+                                                        <Download className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                                                        View Resume
+                                                    </a>
+                                                </Button>
+                                            </motion.div>
+                                        )}
+                                        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => setShowUploadSection(true)}
+                                                className="border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/50 w-full sm:w-auto text-xs sm:text-sm"
+                                            >
+                                                <RefreshCw className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                                                Replace
+                                            </Button>
+                                        </motion.div>
+                                    </div>
                                 </div>
                             </CardContent>
                         </Card>
