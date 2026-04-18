@@ -324,45 +324,46 @@ export const apiClient = {
         }
     },
 
-  async uploadResume(
-    file: File,
-    onProgress?: (progress: number) => void,
-  ): Promise<any> {
-    const formData = new FormData();
-    formData.append("file", file);
+    async uploadResume(
+        file: File,
+        onProgress?: (progress: number) => void,
+    ): Promise<any> {
+        const formData = new FormData()
+        formData.append("file", file)
 
-    const response = await this.client.post(
-      "/v1/students/resume/upload",
-      formData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent: any) => {
-          if (progressEvent.total && onProgress) {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total,
-            );
-            onProgress(percentCompleted);
-          }
-        },
-      },
-    );
-    return response.data;
-  },
+        const response = await axiosInstance.post(
+            "/student/resume/upload",
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+                timeout: 60000,
+                onUploadProgress: (progressEvent: any) => {
+                    if (progressEvent.total && onProgress) {
+                        const percentCompleted = Math.round(
+                            (progressEvent.loaded * 100) / progressEvent.total,
+                        )
+                        onProgress(percentCompleted)
+                    }
+                },
+            },
+        )
+        return response.data
+    },
 
-  async getResumeStatus(): Promise<any> {
-    const response = await this.client.get("/v1/students/resume/status");
-    return response.data;
-  },
+    async getResumeStatus(): Promise<any> {
+        const response = await axiosInstance.get("/student/resume/status")
+        return response.data
+    },
 
-  async getATSScore(jobDescription?: string): Promise<any> {
-    const params = jobDescription ? { job_description: jobDescription } : {};
-    const response = await this.client.get(
-      "/v1/students/resume/ats-score",
-      { params },
-    );
-    return response.data;
-  }
+    async getATSScore(jobDescription?: string): Promise<any> {
+        const params = jobDescription ? { job_description: jobDescription } : {}
+        const response = await axiosInstance.get(
+            "/student/resume/ats-score",
+            { params },
+        )
+        return response.data
+    }
 
 }
