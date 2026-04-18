@@ -18,11 +18,16 @@ export default function DashboardLayout({
 }: {
     children: React.ReactNode
 }) {
+    const [hasMounted, setHasMounted] = useState(false)
     const { isAuthenticated, isLoading } = useAuth()
     const router = useRouter()
     const pathname = usePathname()
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+
+    useEffect(() => {
+        setHasMounted(true)
+    }, [])
 
     // Auth guard: redirect unauthenticated users to login
     useEffect(() => {
@@ -45,8 +50,8 @@ export default function DashboardLayout({
           ? SIDEBAR_COLLAPSED_PX
           : SIDEBAR_EXPANDED_PX
 
-    // Show nothing while checking auth or if not authenticated (during redirect)
-    if (isLoading || !isAuthenticated) {
+    // Keep initial render deterministic to avoid hydration mismatches
+    if (!hasMounted || isLoading || !isAuthenticated) {
         return (
             <div className="min-h-screen bg-[#F9F9F9] dark:bg-[#080F26] flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
