@@ -28,6 +28,11 @@ import {
 import { motion } from 'framer-motion'
 import { Textarea } from '@/components/ui/textarea'
 import { AxiosError } from 'axios'
+import { ATSScoreOverview } from '@/components/ats/ATSScoreOverview'
+import { ATSKeywordAnalysis } from '@/components/ats/ATSKeywordAnalysis'
+import { ATSSkillsExtraction } from '@/components/ats/ATSSkillsExtraction'
+import { ATSSectionAnalysis } from '@/components/ats/ATSSectionAnalysis'
+import { ATSRecommendations } from '@/components/ats/ATSRecommendations'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED_TYPES = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
@@ -639,20 +644,80 @@ export default function ResumePage() {
                                     </Button>
                                 </motion.div>
 
-                                {/* ATS Results - Keep all the existing display code */}
+                                {/* ATS Results - Comprehensive Visualization */}
                                 {atsScore && (
                                     <div className="space-y-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                        {/* All your existing ATS score display code stays here */}
-                                        {/* Score Display */}
-                                        <div className="text-center p-4 sm:p-6 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-lg border border-blue-200 dark:border-blue-800">
-                                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-wide font-semibold">
-                                                Your ATS Score
-                                            </p>
-                                            <p className={`text-4xl sm:text-5xl md:text-6xl font-bold ${getScoreColor(atsScore.ats_score)}`}>
-                                                {atsScore.ats_score}
-                                                <span className="text-xl sm:text-2xl text-gray-500">/100</span>
-                                            </p>
-                                        </div>
+                                        {/* 1. Score Overview */}
+                                        <ATSScoreOverview
+                                            atsScore={atsScore.ats_score}
+                                            overallAssessment={atsScore.overall_assessment}
+                                            formattingScore={atsScore.formatting_score}
+                                            contentScore={atsScore.content_score}
+                                            keywordScore={atsScore.keyword_score}
+                                        />
+
+                                        {/* 2. Strengths, Weaknesses & Recommendations */}
+                                        <ATSRecommendations
+                                            strengths={atsScore.strengths}
+                                            weaknesses={atsScore.weaknesses}
+                                            recommendations={atsScore.recommendations}
+                                        />
+
+                                        {/* 3. Keyword Analysis */}
+                                        {atsScore.keyword_analysis && (
+                                            <ATSKeywordAnalysis
+                                                foundKeywords={atsScore.keyword_analysis.found_keywords}
+                                                missingKeywords={atsScore.keyword_analysis.missing_keywords}
+                                            />
+                                        )}
+
+                                        {/* 4. Section Analysis */}
+                                        {atsScore.sections_analysis && (
+                                            <ATSSectionAnalysis
+                                                sectionsAnalysis={atsScore.sections_analysis}
+                                            />
+                                        )}
+
+                                        {/* 5. Extracted Skills */}
+                                        <ATSSkillsExtraction
+                                            extractedSkills={{
+                                                technical_skills: (atsScore as any).extracted_skills?.technical_skills,
+                                                soft_skills: (atsScore as any).extracted_skills?.soft_skills,
+                                                domain_skills: (atsScore as any).extracted_skills?.domain_skills,
+                                                tools_platforms: (atsScore as any).extracted_skills?.tools_platforms
+                                            }}
+                                        />
+
+                                        {/* Export & Share Section */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.5, delay: 0.6 }}
+                                        >
+                                            <Card className="border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/50 shadow-lg">
+                                                <CardContent className="p-4 sm:p-6">
+                                                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="flex-1"
+                                                        >
+                                                            <Download className="mr-2 h-4 w-4" />
+                                                            Download Report
+                                                        </Button>
+                                                        <Button
+                                                            onClick={handleCalculateATS}
+                                                            disabled={isCalculatingATS}
+                                                            size="sm"
+                                                            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                                                        >
+                                                            <RefreshCw className="mr-2 h-4 w-4" />
+                                                            Recalculate Score
+                                                        </Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </motion.div>
                                     </div>
                                 )}
                             </CardContent>
