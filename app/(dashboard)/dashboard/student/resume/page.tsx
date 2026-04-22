@@ -52,6 +52,12 @@ interface ATSScore {
     formatting_score?: number
     content_score?: number
     keyword_score?: number
+    extracted_skills?: {
+        technical_skills?: string[]
+        soft_skills?: string[]
+        domain_skills?: string[]
+        tools_platforms?: string[]
+    }
 }
 
 interface ResumeStatus {
@@ -65,6 +71,21 @@ interface ResumeStatus {
     uploaded_at?: string
     can_upload: boolean
     can_calculate_ats: boolean
+    ats_score?: number | null
+    overall_assessment?: string | null
+    strengths?: string[]
+    weaknesses?: string[]
+    recommendations?: string[]
+    keyword_analysis?: {
+        found_keywords: string[]
+        missing_keywords: string[]
+    }
+    sections_analysis?: Record<string, string>
+    formatting_score?: number | null
+    content_score?: number | null
+    keyword_score?: number | null
+    extracted_skills?: ATSScore['extracted_skills']
+    ats_calculated_at?: string | null
 }
 
 export default function ResumePage() {
@@ -102,10 +123,16 @@ export default function ResumePage() {
             const status = await apiClient.getResumeStatus()
             const statusData = status?.data ?? status
             setResumeStatus(statusData)
+
+            // Reuse cached ATS result when already available.
+            if (hasCachedATS(statusData)) {
+                setAtsScore(mapStatusToATSScore(statusData))
+            }
             
             // If no resume exists, show upload section
             if (!statusData?.has_resume) {
                 setShowUploadSection(true)
+                setAtsScore(null)
             }
         } catch (error) {
             console.error('Error fetching resume status:', error)
@@ -213,8 +240,21 @@ export default function ResumePage() {
         setError(null)
         
         try {
+            const latestStatusResponse = await apiClient.getResumeStatus()
+            const latestStatus = latestStatusResponse?.data ?? latestStatusResponse
+            setResumeStatus(latestStatus)
+
+            const hasCustomJobDescription = Boolean(jobDescription.trim())
+            if (!hasCustomJobDescription && hasCachedATS(latestStatus)) {
+                setAtsScore(mapStatusToATSScore(latestStatus))
+                return
+            }
+
             const result = await apiClient.getATSScore(jobDescription || undefined)
             setAtsScore(result)
+
+            // Refresh status so future visits can reuse the newly saved ATS data.
+            await fetchResumeStatus()
         } catch (err) {
             const axiosError = err as AxiosError<{ detail: string }>
             const errorDetail = axiosError.response?.data?.detail || axiosError.message || 'Failed to calculate ATS score'
@@ -240,6 +280,26 @@ export default function ResumePage() {
         setJobDescription('')
         if (fileInputRef.current) {
             fileInputRef.current.value = ''
+        }
+    }
+
+    const hasCachedATS = (status: ResumeStatus | null | undefined): status is ResumeStatus & { ats_score: number } => {
+        return Boolean(status?.has_resume && typeof status.ats_score === 'number')
+    }
+
+    const mapStatusToATSScore = (status: ResumeStatus): ATSScore => {
+        return {
+            ats_score: status.ats_score ?? 0,
+            overall_assessment: status.overall_assessment ?? '',
+            strengths: status.strengths ?? [],
+            weaknesses: status.weaknesses ?? [],
+            recommendations: status.recommendations ?? [],
+            keyword_analysis: status.keyword_analysis,
+            sections_analysis: status.sections_analysis,
+            formatting_score: status.formatting_score ?? undefined,
+            content_score: status.content_score ?? undefined,
+            keyword_score: status.keyword_score ?? undefined,
+            extracted_skills: status.extracted_skills,
         }
     }
 
@@ -374,15 +434,13 @@ export default function ResumePage() {
                                         {resumeHref && (
                                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
                                                 <Button
-                                                    asChild
                                                     variant="outline"
                                                     size="sm"
+                                                    onClick={() => window.open(resumeHref, '_blank', 'noopener,noreferrer')}
                                                     className="border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/50 w-full sm:w-auto text-xs sm:text-sm"
                                                 >
-                                                    <a href={resumeHref} target="_blank" rel="noopener noreferrer">
-                                                        <Download className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                                                        View Resume
-                                                    </a>
+                                                    <Download className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                                                    View Resume
                                                 </Button>
                                             </motion.div>
                                         )}
@@ -681,10 +739,10 @@ export default function ResumePage() {
                                         {/* 5. Extracted Skills */}
                                         <ATSSkillsExtraction
                                             extractedSkills={{
-                                                technical_skills: (atsScore as any).extracted_skills?.technical_skills,
-                                                soft_skills: (atsScore as any).extracted_skills?.soft_skills,
-                                                domain_skills: (atsScore as any).extracted_skills?.domain_skills,
-                                                tools_platforms: (atsScore as any).extracted_skills?.tools_platforms
+                                                technical_skills: atsScore.extracted_skills?.technical_skills,
+                                                soft_skills: atsScore.extracted_skills?.soft_skills,
+                                                domain_skills: atsScore.extracted_skills?.domain_skills,
+                                                tools_platforms: atsScore.extracted_skills?.tools_platforms
                                             }}
                                         />
 
