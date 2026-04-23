@@ -13,6 +13,7 @@ import {
     Users,
     FileSpreadsheet,
     GraduationCap,
+    CalendarCheck,
     Shield,
     Settings,
     Rocket,
@@ -37,6 +38,13 @@ const corporateNavigation = [
     { name: 'Manage Jobs', href: '/dashboard/corporate/jobs', icon: Briefcase },
     { name: 'Manage Applicants', href: '/dashboard/corporate/applicants', icon: Users },
     { name: 'Settings', href: '/dashboard/corporate/settings', icon: Settings },
+]
+
+const mentorNavigation = [
+    { name: 'Dashboard', href: '/dashboard/mentor', icon: LayoutDashboard },
+    { name: 'My Profile', href: '/dashboard/mentor/profile', icon: User },
+    { name: 'Skill Evaluations', href: '/dashboard/mentor/evaluations', icon: CalendarCheck },
+    { name: 'Settings', href: '/dashboard/mentor/settings', icon: Settings },
 ]
 
 const collegeNavigation = [
@@ -76,6 +84,8 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
 
         if (user.user_type === 'corporate') {
             return corporateNavigation
+        } else if (user.user_type === 'mentor') {
+            return mentorNavigation
         } else if (user.user_type === 'college') {
             return collegeNavigation
         } else if (user.user_type === 'admin') {
