@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import Link from 'next/link'
 import { apiClient, SkillEvaluationItem } from '@/lib/api'
 import { Star, CalendarClock, ClipboardCheck, UserRound } from 'lucide-react'
 
@@ -100,6 +101,23 @@ export default function MentorDashboardPage() {
                         ))}
                     </div>
                 )}
+            </div>
+
+            <div className="rounded-2xl border bg-white p-5 dark:bg-[#0F1A3A]">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 className="text-lg font-semibold">Exam Review Queue</h2>
+                        <p className="mt-1 text-xs text-gray-500">
+                            Review Section A and D submissions with structured feedback.
+                        </p>
+                    </div>
+                    <Link
+                        href="/dashboard/mentor/exam-reviews"
+                        className="rounded-xl bg-primary-500 px-4 py-2 text-xs font-semibold text-white hover:bg-primary-600"
+                    >
+                        Open Queue
+                    </Link>
+                </div>
             </div>
         </div>
     )
