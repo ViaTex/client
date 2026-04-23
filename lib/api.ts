@@ -121,6 +121,61 @@ export interface SkillEvaluationItem {
     updated_at?: string | null
 }
 
+export interface ExamReviewAssignmentItem {
+    session_id: string
+    student_id: string
+    mentor_id?: string | null
+    status: string
+    assigned_at?: string | null
+    completed_at?: string | null
+    created_at: string
+    updated_at?: string | null
+}
+
+export interface ExamReviewResponsePayload {
+    response_id: string
+    section_type: string
+    question_text: unknown
+    user_response: unknown
+    video_url?: string | null
+    transcript?: string | null
+    ai_score?: number | null
+    ai_feedback?: unknown
+    mentor_score?: number | null
+    mentor_feedback?: unknown
+}
+
+export interface ExamReviewStudentPayload {
+    student_id: string
+    name: string
+    technical_skills?: string | null
+    resume_url?: string | null
+}
+
+export interface ExamReviewAssignmentDetail {
+    session_id: string
+    current_step: string
+    exam_level: string
+    student: ExamReviewStudentPayload
+    section_a: ExamReviewResponsePayload
+    section_d: ExamReviewResponsePayload
+}
+
+export interface MentorSectionScorePayload {
+    score: number
+    feedback: {
+        strengths: string[]
+        behavioral_analysis: string
+        areas_for_improvement: string[]
+    }
+    topic_scores?: Record<string, number>
+}
+
+export interface MentorExamReviewScorePayload {
+    section_a: MentorSectionScorePayload
+    section_d: MentorSectionScorePayload
+}
+
 // Request interceptor to add auth token
 axiosInstance.interceptors.request.use((config) => {
     if (typeof window !== 'undefined') {
@@ -282,6 +337,23 @@ export const apiClient = {
     createMentorEvaluation: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.post('/mentor/evaluations', data)
         return response.data as SkillEvaluationItem
+    },
+
+    getMentorExamReviews: async (status?: string) => {
+        const response = await axiosInstance.get('/mentor/exam-reviews', {
+            params: status ? { status } : undefined,
+        })
+        return response.data as ExamReviewAssignmentItem[]
+    },
+
+    getMentorExamReviewDetail: async (sessionId: string) => {
+        const response = await axiosInstance.get(`/mentor/exam-reviews/${sessionId}`)
+        return response.data as ExamReviewAssignmentDetail
+    },
+
+    submitMentorExamReviewScore: async (sessionId: string, payload: MentorExamReviewScorePayload) => {
+        const response = await axiosInstance.post(`/mentor/exam-reviews/${sessionId}/score`, payload)
+        return response.data
     },
 
     uploadSectionA: async (formData: FormData) => {

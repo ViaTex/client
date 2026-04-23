@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
+import { apiClient } from '@/lib/api'
 
 export default function SkillVerificationPage() {
     const router = useRouter()
@@ -10,8 +11,42 @@ export default function SkillVerificationPage() {
 
     useEffect(() => {
         if (typeof window === 'undefined') return
-        const flag = localStorage.getItem('skill_verification_under_review')
-        setShowBanner(Boolean(flag))
+
+        let isMounted = true
+
+        const syncStatus = async () => {
+            const sessionId = localStorage.getItem('active_exam_session_id')
+            if (!sessionId) {
+                const flag = localStorage.getItem('skill_verification_under_review')
+                if (isMounted) setShowBanner(Boolean(flag))
+                return
+            }
+
+            try {
+                const status = await apiClient.getExamSessionStatus(sessionId)
+                const step = status?.current_step
+                if (step === 'PENDING_MENTOR_REVIEW') {
+                    if (isMounted) setShowBanner(true)
+                    localStorage.setItem('skill_verification_under_review', '1')
+                    return
+                }
+                if (step === 'FINALIZED') {
+                    localStorage.removeItem('skill_verification_under_review')
+                }
+                if (isMounted) setShowBanner(false)
+            } catch {
+                const flag = localStorage.getItem('skill_verification_under_review')
+                if (isMounted) setShowBanner(Boolean(flag))
+            }
+        }
+
+        syncStatus()
+        const intervalId = window.setInterval(syncStatus, 30000)
+
+        return () => {
+            isMounted = false
+            window.clearInterval(intervalId)
+        }
     }, [])
 
     return (
