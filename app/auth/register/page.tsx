@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { useForm, type SubmitHandler } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
-import { Eye, EyeOff, Mail, Lock, User, Building2, GraduationCap, Phone, Globe } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Building2, GraduationCap, Phone, Globe, BriefcaseBusiness } from 'lucide-react'
 import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
@@ -16,6 +16,7 @@ import { useAuth } from '@/hooks/useAuth'
 
 const userTypeOptions = [
     { value: 'student', label: 'Student', icon: User },
+    { value: 'mentor', label: 'Mentor', icon: BriefcaseBusiness },
     { value: 'corporate', label: 'Corporate', icon: Building2 },
     { value: 'college', label: 'College', icon: GraduationCap },
 ]
@@ -28,6 +29,10 @@ type RegisterFormData = {
     name?: string
     phone?: string
     institution?: string
+    current_role?: string
+    experience_years?: number
+    expertise_areas?: string
+    motivation?: string
     company_name?: string
     website_url?: string
     contact_person?: string
@@ -51,7 +56,7 @@ function RegisterContent() {
 
     useEffect(() => {
         const type = searchParams.get('type') as UserType
-        if (type && ['student', 'corporate', 'college'].includes(type)) {
+        if (type && ['student', 'mentor', 'corporate', 'college'].includes(type)) {
             setSelectedUserType(type)
         }
     }, [searchParams])
@@ -88,6 +93,15 @@ function RegisterContent() {
                 case 'corporate':
                     await apiClient.registerCorporate(registerData)
                     break
+                case 'mentor':
+                    await apiClient.registerMentor({
+                        ...registerData,
+                        expertise_areas: data.expertise_areas
+                            ? data.expertise_areas.split(',').map((item) => item.trim()).filter(Boolean)
+                            : [],
+                        experience_years: data.experience_years ? Number(data.experience_years) : undefined,
+                    })
+                    break
                 case 'college':
                     await apiClient.registerCollege(registerData)
                     break
@@ -122,6 +136,7 @@ function RegisterContent() {
 
                 switch (selectedUserType) {
                     case 'student': router.push('/dashboard/student/profile'); break
+                    case 'mentor': router.push('/dashboard/mentor'); break
                     case 'corporate': router.push('/dashboard/corporate'); break
                     case 'college': router.push('/dashboard/college'); break
                     default: router.push('/dashboard')
@@ -216,6 +231,71 @@ function RegisterContent() {
         </div>
     )
 
+    const renderMentorForm = () => (
+        <div className="space-y-4">
+            <div>
+                <label className={labelClassName}>Full Name *</label>
+                <Input
+                    id="name"
+                    placeholder="Enter your full name"
+                    leftIcon={<User className="w-4 h-4" />}
+                    className={inputClassName}
+                    {...register('name', { required: 'Name is required' })}
+                />
+                {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name.message as string}</p>}
+            </div>
+            <div>
+                <label className={labelClassName}>Current Role</label>
+                <Input
+                    id="current_role"
+                    placeholder="Principal Engineer, Data Scientist..."
+                    leftIcon={<BriefcaseBusiness className="w-4 h-4" />}
+                    className={inputClassName}
+                    {...register('current_role')}
+                />
+            </div>
+            <div>
+                <label className={labelClassName}>Years of Experience</label>
+                <Input
+                    id="experience_years"
+                    type="number"
+                    placeholder="e.g. 12"
+                    className={inputClassName}
+                    {...register('experience_years')}
+                />
+            </div>
+            <div>
+                <label className={labelClassName}>Expertise Areas</label>
+                <Input
+                    id="expertise_areas"
+                    placeholder="Cloud, DevOps, AI, Communication"
+                    className={inputClassName}
+                    {...register('expertise_areas')}
+                />
+            </div>
+            <div>
+                <label className={labelClassName}>Phone Number</label>
+                <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="Enter phone number"
+                    leftIcon={<Phone className="w-4 h-4" />}
+                    className={inputClassName}
+                    {...register('phone')}
+                />
+            </div>
+            <div>
+                <label className={labelClassName}>Why Mentor on DishaSetu?</label>
+                <Input
+                    id="motivation"
+                    placeholder="Share your mentoring motivation"
+                    className={inputClassName}
+                    {...register('motivation')}
+                />
+            </div>
+        </div>
+    )
+
     const renderCollegeForm = () => (
         <div className="space-y-4">
             <div>
@@ -266,6 +346,7 @@ function RegisterContent() {
     const renderFormFields = () => {
         switch (selectedUserType) {
             case 'student': return renderStudentForm()
+            case 'mentor': return renderMentorForm()
             case 'corporate': return renderCorporateForm()
             case 'college': return renderCollegeForm()
         }
@@ -297,7 +378,7 @@ function RegisterContent() {
                                     <label className="mb-3 block text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-[#A8B3CF]">
                                         I am a
                                     </label>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                         {userTypeOptions.map((option) => {
                                             const Icon = option.icon
                                             const isSelected = selectedUserType === option.value

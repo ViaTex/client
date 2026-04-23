@@ -28,6 +28,11 @@ import {
 import { motion } from 'framer-motion'
 import { Textarea } from '@/components/ui/textarea'
 import { AxiosError } from 'axios'
+import { ATSScoreOverview } from '@/components/ats/ATSScoreOverview'
+import { ATSKeywordAnalysis } from '@/components/ats/ATSKeywordAnalysis'
+import { ATSSkillsExtraction } from '@/components/ats/ATSSkillsExtraction'
+import { ATSSectionAnalysis } from '@/components/ats/ATSSectionAnalysis'
+import { ATSRecommendations } from '@/components/ats/ATSRecommendations'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const ALLOWED_TYPES = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
@@ -47,6 +52,12 @@ interface ATSScore {
     formatting_score?: number
     content_score?: number
     keyword_score?: number
+    extracted_skills?: {
+        technical_skills?: string[]
+        soft_skills?: string[]
+        domain_skills?: string[]
+        tools_platforms?: string[]
+    }
 }
 
 interface ResumeStatus {
@@ -60,6 +71,21 @@ interface ResumeStatus {
     uploaded_at?: string
     can_upload: boolean
     can_calculate_ats: boolean
+    ats_score?: number | null
+    overall_assessment?: string | null
+    strengths?: string[]
+    weaknesses?: string[]
+    recommendations?: string[]
+    keyword_analysis?: {
+        found_keywords: string[]
+        missing_keywords: string[]
+    }
+    sections_analysis?: Record<string, string>
+    formatting_score?: number | null
+    content_score?: number | null
+    keyword_score?: number | null
+    extracted_skills?: ATSScore['extracted_skills']
+    ats_calculated_at?: string | null
 }
 
 export default function ResumePage() {
@@ -97,10 +123,16 @@ export default function ResumePage() {
             const status = await apiClient.getResumeStatus()
             const statusData = status?.data ?? status
             setResumeStatus(statusData)
+
+            // Reuse cached ATS result when already available.
+            if (hasCachedATS(statusData)) {
+                setAtsScore(mapStatusToATSScore(statusData))
+            }
             
             // If no resume exists, show upload section
             if (!statusData?.has_resume) {
                 setShowUploadSection(true)
+                setAtsScore(null)
             }
         } catch (error) {
             console.error('Error fetching resume status:', error)
@@ -208,8 +240,21 @@ export default function ResumePage() {
         setError(null)
         
         try {
+            const latestStatusResponse = await apiClient.getResumeStatus()
+            const latestStatus = latestStatusResponse?.data ?? latestStatusResponse
+            setResumeStatus(latestStatus)
+
+            const hasCustomJobDescription = Boolean(jobDescription.trim())
+            if (!hasCustomJobDescription && hasCachedATS(latestStatus)) {
+                setAtsScore(mapStatusToATSScore(latestStatus))
+                return
+            }
+
             const result = await apiClient.getATSScore(jobDescription || undefined)
             setAtsScore(result)
+
+            // Refresh status so future visits can reuse the newly saved ATS data.
+            await fetchResumeStatus()
         } catch (err) {
             const axiosError = err as AxiosError<{ detail: string }>
             const errorDetail = axiosError.response?.data?.detail || axiosError.message || 'Failed to calculate ATS score'
@@ -235,6 +280,26 @@ export default function ResumePage() {
         setJobDescription('')
         if (fileInputRef.current) {
             fileInputRef.current.value = ''
+        }
+    }
+
+    const hasCachedATS = (status: ResumeStatus | null | undefined): status is ResumeStatus & { ats_score: number } => {
+        return Boolean(status?.has_resume && typeof status.ats_score === 'number')
+    }
+
+    const mapStatusToATSScore = (status: ResumeStatus): ATSScore => {
+        return {
+            ats_score: status.ats_score ?? 0,
+            overall_assessment: status.overall_assessment ?? '',
+            strengths: status.strengths ?? [],
+            weaknesses: status.weaknesses ?? [],
+            recommendations: status.recommendations ?? [],
+            keyword_analysis: status.keyword_analysis,
+            sections_analysis: status.sections_analysis,
+            formatting_score: status.formatting_score ?? undefined,
+            content_score: status.content_score ?? undefined,
+            keyword_score: status.keyword_score ?? undefined,
+            extracted_skills: status.extracted_skills,
         }
     }
 
@@ -369,15 +434,13 @@ export default function ResumePage() {
                                         {resumeHref && (
                                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="w-full sm:w-auto">
                                                 <Button
-                                                    asChild
                                                     variant="outline"
                                                     size="sm"
+                                                    onClick={() => window.open(resumeHref, '_blank', 'noopener,noreferrer')}
                                                     className="border-green-300 dark:border-green-700 hover:bg-green-50 dark:hover:bg-green-900/50 w-full sm:w-auto text-xs sm:text-sm"
                                                 >
-                                                    <a href={resumeHref} target="_blank" rel="noopener noreferrer">
-                                                        <Download className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                                                        View Resume
-                                                    </a>
+                                                    <Download className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                                                    View Resume
                                                 </Button>
                                             </motion.div>
                                         )}
@@ -639,20 +702,80 @@ export default function ResumePage() {
                                     </Button>
                                 </motion.div>
 
-                                {/* ATS Results - Keep all the existing display code */}
+                                {/* ATS Results - Comprehensive Visualization */}
                                 {atsScore && (
                                     <div className="space-y-6 pt-4 border-t border-gray-200 dark:border-gray-700">
-                                        {/* All your existing ATS score display code stays here */}
-                                        {/* Score Display */}
-                                        <div className="text-center p-4 sm:p-6 md:p-8 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-lg border border-blue-200 dark:border-blue-800">
-                                            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-2 uppercase tracking-wide font-semibold">
-                                                Your ATS Score
-                                            </p>
-                                            <p className={`text-4xl sm:text-5xl md:text-6xl font-bold ${getScoreColor(atsScore.ats_score)}`}>
-                                                {atsScore.ats_score}
-                                                <span className="text-xl sm:text-2xl text-gray-500">/100</span>
-                                            </p>
-                                        </div>
+                                        {/* 1. Score Overview */}
+                                        <ATSScoreOverview
+                                            atsScore={atsScore.ats_score}
+                                            overallAssessment={atsScore.overall_assessment}
+                                            formattingScore={atsScore.formatting_score}
+                                            contentScore={atsScore.content_score}
+                                            keywordScore={atsScore.keyword_score}
+                                        />
+
+                                        {/* 2. Strengths, Weaknesses & Recommendations */}
+                                        <ATSRecommendations
+                                            strengths={atsScore.strengths}
+                                            weaknesses={atsScore.weaknesses}
+                                            recommendations={atsScore.recommendations}
+                                        />
+
+                                        {/* 3. Keyword Analysis */}
+                                        {atsScore.keyword_analysis && (
+                                            <ATSKeywordAnalysis
+                                                foundKeywords={atsScore.keyword_analysis.found_keywords}
+                                                missingKeywords={atsScore.keyword_analysis.missing_keywords}
+                                            />
+                                        )}
+
+                                        {/* 4. Section Analysis */}
+                                        {atsScore.sections_analysis && (
+                                            <ATSSectionAnalysis
+                                                sectionsAnalysis={atsScore.sections_analysis}
+                                            />
+                                        )}
+
+                                        {/* 5. Extracted Skills */}
+                                        <ATSSkillsExtraction
+                                            extractedSkills={{
+                                                technical_skills: atsScore.extracted_skills?.technical_skills,
+                                                soft_skills: atsScore.extracted_skills?.soft_skills,
+                                                domain_skills: atsScore.extracted_skills?.domain_skills,
+                                                tools_platforms: atsScore.extracted_skills?.tools_platforms
+                                            }}
+                                        />
+
+                                        {/* Export & Share Section */}
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.5, delay: 0.6 }}
+                                        >
+                                            <Card className="border-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/50 dark:to-slate-800/50 shadow-lg">
+                                                <CardContent className="p-4 sm:p-6">
+                                                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="flex-1"
+                                                        >
+                                                            <Download className="mr-2 h-4 w-4" />
+                                                            Download Report
+                                                        </Button>
+                                                        <Button
+                                                            onClick={handleCalculateATS}
+                                                            disabled={isCalculatingATS}
+                                                            size="sm"
+                                                            className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                                                        >
+                                                            <RefreshCw className="mr-2 h-4 w-4" />
+                                                            Recalculate Score
+                                                        </Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        </motion.div>
                                     </div>
                                 )}
                             </CardContent>

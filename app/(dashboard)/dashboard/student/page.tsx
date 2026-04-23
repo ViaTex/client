@@ -63,6 +63,12 @@ interface StudentProfile {
     badge?: string
 }
 
+interface ResumeStatus {
+    has_resume: boolean
+    ats_score?: number | null
+    ats_calculated_at?: string | null
+}
+
 type EducationEntry = {
     institution?: string
     level?: string
@@ -101,6 +107,7 @@ export default function StudentDashboard() {
     const { user } = useAuth()
     const [profile, setProfile] = useState<StudentProfile | null>(null)
     const [profileLoading, setProfileLoading] = useState(true)
+    const [resumeStatus, setResumeStatus] = useState<ResumeStatus | null>(null)
     const [showToast, setShowToast] = useState(false)
     const [chartFilter, setChartFilter] = useState('Last 6 Months')
 
@@ -108,8 +115,16 @@ export default function StudentDashboard() {
         const fetchProfile = async () => {
             try {
                 setProfileLoading(true)
-                const data = await apiClient.getStudentProfile()
+                const [profileData, resumeStatusData] = await Promise.all([
+                    apiClient.getStudentProfile(),
+                    apiClient.getResumeStatus().catch(() => null),
+                ])
+                const data = profileData
                 setProfile(data)
+                if (resumeStatusData) {
+                    const normalizedStatus = resumeStatusData?.data ?? resumeStatusData
+                    setResumeStatus(normalizedStatus)
+                }
                 const hasEducation = Array.isArray(data?.education)
                     && data.education.some((entry: EducationEntry) => entry?.institution && entry?.level)
                 if (!hasEducation || !data?.technical_skills) {
@@ -126,6 +141,12 @@ export default function StudentDashboard() {
 
     const desScore = Math.max(0, Math.min(100, Number(profile?.current_des_score ?? 78))) // scaling to 100 for display
     const desScoreDisplay = desScore.toFixed(0)
+    const atsScoreValue = typeof resumeStatus?.ats_score === 'number' ? String(resumeStatus.ats_score) : '--'
+    const atsSecondaryText = !resumeStatus?.has_resume
+        ? 'Upload your resume to view ATS score'
+        : typeof resumeStatus?.ats_score === 'number'
+            ? 'Latest ATS score from your resume analysis'
+            : 'Go to Resume and calculate your ATS score once'
 
 
     return (
@@ -195,8 +216,8 @@ export default function StudentDashboard() {
                 <StatCard
                     icon={Eye}
                     label="ATS Score"
-                    value="42"
-                    secondaryText="Your resume is optimized for 3 out of 5 job descriptions"
+                    value={atsScoreValue}
+                    secondaryText={atsSecondaryText}
                     backgroundColor="#fffce3"
                     darkBackgroundColor="#0B1739"
                     iconBgColor="bg-purple-500/100"
