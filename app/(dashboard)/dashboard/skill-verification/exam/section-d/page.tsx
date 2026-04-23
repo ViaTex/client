@@ -52,7 +52,14 @@ export default function SectionDPage() {
                 }
 
                 const questionPayload = await apiClient.getSectionDQuestion(sessionId)
-                setQuestion(questionPayload?.question_text || '')
+                const rawQuestion = questionPayload?.question_text
+                const questionText =
+                    typeof rawQuestion === 'string'
+                        ? rawQuestion
+                        : typeof rawQuestion?.prompt_text === 'string'
+                        ? rawQuestion.prompt_text
+                        : ''
+                setQuestion(questionText)
                 setResponseId(questionPayload?.response_id || '')
 
                 try {
