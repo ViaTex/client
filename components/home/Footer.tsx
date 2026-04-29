@@ -21,8 +21,12 @@ export default function Footer() {
         {/* Left */}
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#00D1C1]/10 flex items-center justify-center">
-              <Layers className="w-6 h-6 text-[#00D1C1]" strokeWidth={2.5} />
+            <div className="animated-logo-bg flex-shrink-0 flex items-center justify-center">
+              <img 
+                src="images/dishasetu_logo.png" 
+                alt="Dishasetu Logo" 
+                className="h-10 w-auto object-contain" 
+              />
             </div>
             <span className="font-extrabold text-[#2A2D31] text-xl tracking-tight">Dishasetu <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4B32C3] to-[#7C3AED]">Platform</span></span>
           </div>
