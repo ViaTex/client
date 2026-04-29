@@ -18,10 +18,10 @@ export default function Navbar() {
         {/* Actions */}
         <div className="flex items-center gap-4">
           <button className="bg-transparent border border-[#C0BFBD] text-[#2A2D31] px-6 py-2 rounded-xl text-sm font-semibold hover:bg-black/5 transition-colors">
-            Login
+            <a href="/auth/login">Login</a>
           </button>
           <button className="primary-btn-gradient text-[#2A2D31] px-6 py-2 rounded-xl text-sm font-bold hover:opacity-90 transition-all">
-            Register
+            <a href="/auth/register">Register</a>
           </button>
         </div>
       </div>
