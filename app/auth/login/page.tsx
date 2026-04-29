@@ -101,6 +101,9 @@ function LoginContent() {
                 case 'student':
                     router.push('/dashboard/student')
                     break
+                case 'mentor':
+                    router.push('/dashboard/mentor')
+                    break
                 case 'corporate':
                     router.push('/dashboard/corporate')
                     break

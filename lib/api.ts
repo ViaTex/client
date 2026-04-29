@@ -85,6 +85,42 @@ export interface CorporateProfile {
     address?: string
 }
 
+export interface MentorProfile {
+    id: string
+    user_id: string
+    email: string
+    name: string
+    phone?: string
+    current_role?: string
+    expertise_areas: string[]
+    experience_years?: number
+    motivation?: string
+    average_rating: number
+}
+
+export interface SkillEvaluationItem {
+    evaluation_id: string
+    mentor_id: string
+    student_id: string
+    project_id?: string | null
+    status: string
+    proposed_slots: string[]
+    confirmed_slot?: string | null
+    viva_meeting_link?: string | null
+    score_technical?: number | null
+    score_practical?: number | null
+    score_communication?: number | null
+    score_originality?: number | null
+    total_score?: number | null
+    verdict?: string | null
+    feedback_strengths?: string | null
+    feedback_improvements?: string | null
+    student_rating_of_mentor?: number | null
+    student_technical_issues?: string | null
+    created_at: string
+    updated_at?: string | null
+}
+
 // Request interceptor to add auth token
 axiosInstance.interceptors.request.use((config) => {
     if (typeof window !== 'undefined') {
@@ -148,6 +184,11 @@ export const apiClient = {
 
     registerCorporate: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.post(`/auth/register/corporate`, data)
+        return response.data
+    },
+
+    registerMentor: async (data: Record<string, unknown>) => {
+        const response = await axiosInstance.post(`/auth/register/mentor`, data)
         return response.data
     },
 
@@ -221,6 +262,26 @@ export const apiClient = {
     updateCorporateProfile: async (data: Partial<CorporateProfile>) => {
         const response = await axiosInstance.patch('/corporate/profile', data)
         return response.data as CorporateProfile
+    },
+
+    getMentorProfile: async () => {
+        const response = await axiosInstance.get('/mentor/profile')
+        return response.data as MentorProfile
+    },
+
+    updateMentorProfile: async (data: Partial<MentorProfile>) => {
+        const response = await axiosInstance.patch('/mentor/profile', data)
+        return response.data as MentorProfile
+    },
+
+    getMentorEvaluations: async () => {
+        const response = await axiosInstance.get('/mentor/evaluations')
+        return response.data as SkillEvaluationItem[]
+    },
+
+    createMentorEvaluation: async (data: Record<string, unknown>) => {
+        const response = await axiosInstance.post('/mentor/evaluations', data)
+        return response.data as SkillEvaluationItem
     },
 
     uploadSectionA: async (formData: FormData) => {
@@ -323,4 +384,47 @@ export const apiClient = {
             localStorage.removeItem('user_data')
         }
     },
+
+    async uploadResume(
+        file: File,
+        onProgress?: (progress: number) => void,
+    ): Promise<any> {
+        const formData = new FormData()
+        formData.append("file", file)
+
+        const response = await axiosInstance.post(
+            "/student/resume/upload",
+            formData,
+            {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+                timeout: 60000,
+                onUploadProgress: (progressEvent: any) => {
+                    if (progressEvent.total && onProgress) {
+                        const percentCompleted = Math.round(
+                            (progressEvent.loaded * 100) / progressEvent.total,
+                        )
+                        onProgress(percentCompleted)
+                    }
+                },
+            },
+        )
+        return response.data
+    },
+
+    async getResumeStatus(): Promise<any> {
+        const response = await axiosInstance.get("/student/resume/status")
+        return response.data
+    },
+
+    async getATSScore(jobDescription?: string): Promise<any> {
+        const params = jobDescription ? { job_description: jobDescription } : {}
+        const response = await axiosInstance.get(
+            "/student/resume/ats-score",
+            { params },
+        )
+        return response.data
+    }
+
 }

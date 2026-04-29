@@ -13,6 +13,7 @@ import {
     Users,
     FileSpreadsheet,
     GraduationCap,
+    CalendarCheck,
     Shield,
     Settings,
     Rocket,
@@ -37,6 +38,13 @@ const corporateNavigation = [
     { name: 'Manage Jobs', href: '/dashboard/corporate/jobs', icon: Briefcase },
     { name: 'Manage Applicants', href: '/dashboard/corporate/applicants', icon: Users },
     { name: 'Settings', href: '/dashboard/corporate/settings', icon: Settings },
+]
+
+const mentorNavigation = [
+    { name: 'Dashboard', href: '/dashboard/mentor', icon: LayoutDashboard },
+    { name: 'My Profile', href: '/dashboard/mentor/profile', icon: User },
+    { name: 'Skill Evaluations', href: '/dashboard/mentor/evaluations', icon: CalendarCheck },
+    { name: 'Settings', href: '/dashboard/mentor/settings', icon: Settings },
 ]
 
 const collegeNavigation = [
@@ -76,6 +84,8 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
 
         if (user.user_type === 'corporate') {
             return corporateNavigation
+        } else if (user.user_type === 'mentor') {
+            return mentorNavigation
         } else if (user.user_type === 'college') {
             return collegeNavigation
         } else if (user.user_type === 'admin') {
@@ -102,7 +112,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
             <aside
                 className={`fixed left-0 top-0 z-50 flex flex-col h-screen
                     bg-[#080F26] dark:bg-[#0B1739] text-gray-800 dark:text-white 
-                    transition-[width,transform] duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none
+                    transition-[width,transform] duration-[ms:400ms] ease-[transition-timing-function:cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none
                     shrink-0
                     ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
                 style={{ width: 'var(--sidebar-w)' }}

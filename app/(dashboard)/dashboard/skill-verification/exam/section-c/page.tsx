@@ -50,7 +50,14 @@ export default function SectionCPage() {
                 }
 
                 const questionPayload = await apiClient.getSectionCQuestion(sessionId)
-                setQuestion(questionPayload?.question_text || '')
+                const rawQuestion = questionPayload?.question_text
+                const questionText =
+                    typeof rawQuestion === 'string'
+                        ? rawQuestion
+                        : typeof rawQuestion?.prompt_text === 'string'
+                        ? rawQuestion.prompt_text
+                        : ''
+                setQuestion(questionText)
                 setResponseId(questionPayload?.response_id || '')
             } catch {
                 setError('Unable to load Section C. Please try again.')

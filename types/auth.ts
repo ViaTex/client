@@ -1,4 +1,4 @@
-export type UserType = 'student' | 'corporate' | 'college' | 'admin';
+export type UserType = 'student' | 'mentor' | 'corporate' | 'college' | 'admin';
 
 export interface StudentRegisterRequest {
     name: string;
@@ -27,6 +27,18 @@ export interface CorporateRegisterRequest {
     address?: string;
     description?: string;
     company_type?: string;
+}
+
+export interface MentorRegisterRequest {
+    name: string;
+    email: string;
+    password: string;
+    phone?: string;
+    user_id?: string;
+    current_role?: string;
+    expertise_areas?: string[];
+    experience_years?: number;
+    motivation?: string;
 }
 
 export interface CollegeRegisterRequest {
