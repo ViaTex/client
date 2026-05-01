@@ -11,6 +11,7 @@ import {
     Menu,
     X,
     User,
+    BriefcaseBusiness,
     Building2,
     GraduationCap,
     Shield,
@@ -50,6 +51,7 @@ export function Navbar({
     const getUserTypeIcon = () => {
         switch (user?.user_type) {
             case 'student': return User
+            case 'mentor': return BriefcaseBusiness
             case 'corporate': return Building2
             case 'college': return GraduationCap
             case 'admin': return Shield
@@ -60,6 +62,7 @@ export function Navbar({
     const getUserTypeLabel = () => {
         switch (user?.user_type) {
             case 'student': return 'Student'
+            case 'mentor': return 'Mentor'
             case 'corporate': return 'Corporate'
             case 'college': return 'College'
             case 'admin': return 'Admin'

@@ -16,7 +16,7 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 
 const topNavTransitionClass =
-    'transition-[left,width] duration-[400ms] ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none'
+    'transition-[left,width] duration-[ms:400ms] ease-[transition-timing-function:cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none'
 
 type TopNavProps = {
     isSidebarCollapsed: boolean
@@ -39,6 +39,7 @@ export function TopNav({
     const defaultTitle = useMemo(() => {
         if (pathname.startsWith('/dashboard/student/profile')) return 'Student Profile'
         if (pathname.startsWith('/dashboard/student')) return 'Student Dashboard'
+        if (pathname.startsWith('/dashboard/mentor')) return 'Mentor Dashboard'
         if (pathname.startsWith('/dashboard/corporate')) return 'Corporate Dashboard'
         if (pathname.startsWith('/dashboard/college')) return 'College Dashboard'
         if (pathname.startsWith('/dashboard/admin')) return 'Admin Dashboard'
@@ -155,7 +156,7 @@ export function TopNav({
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild className="cursor-pointer">
-                            <Link href="/dashboard/student/profile">Profile</Link>
+                            <Link href={user?.user_type === 'mentor' ? '/dashboard/mentor/profile' : '/dashboard/student/profile'}>Profile</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20">
                             Log out
