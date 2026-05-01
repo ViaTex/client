@@ -41,11 +41,13 @@ export function Modal({
         if (isOpen) {
             document.addEventListener("keydown", handleEscape)
             document.body.style.overflow = "hidden"
+            document.documentElement.style.overflow = "hidden"
         }
 
         return () => {
             document.removeEventListener("keydown", handleEscape)
             document.body.style.overflow = "unset"
+            document.documentElement.style.overflow = "unset"
         }
     }, [isOpen, onClose])
 
@@ -57,7 +59,7 @@ export function Modal({
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[999] flex items-center justify-center pointer-events-none">
+                <div className="fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto overscroll-none p-4 pt-6 pointer-events-none sm:items-center sm:p-6">
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -74,14 +76,14 @@ export function Modal({
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
                         transition={{ duration: 0.2 }}
                         className={cn(
-                            "relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full mx-4 pointer-events-auto",
+                            "relative my-auto w-full rounded-xl border border-gray-200 bg-white shadow-2xl pointer-events-auto dark:border-gray-700 dark:bg-gray-800",
                             maxWidthClasses[maxWidth],
                             className
                         )}
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                        <div className="flex items-start justify-between gap-4 border-b border-gray-200 p-4 dark:border-gray-700 sm:p-6">
+                            <h2 className="min-w-0 text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
                                 {title}
                             </h2>
                             <Button
@@ -96,7 +98,7 @@ export function Modal({
                         </div>
 
                         {/* Content */}
-                        <div className="p-6">
+                        <div className="p-4 sm:p-6">
                             {children}
                         </div>
                     </motion.div>

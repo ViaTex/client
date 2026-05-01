@@ -274,6 +274,28 @@ function hasEducationEntries(value: unknown) {
     return value.some((entry: any) => Boolean(entry?.institution) && Boolean(entry?.level))
 }
 
+function hasNonEmptyValue(value: unknown) {
+    if (typeof value === 'string') return value.trim().length > 0
+    if (Array.isArray(value)) return value.length > 0
+    return Boolean(value)
+}
+
+function calculateProfileStrength(data: any) {
+    const checks = [
+        hasNonEmptyValue(data?.name) && hasNonEmptyValue(data?.phone) && hasNonEmptyValue(data?.bio),
+        hasEducationEntries(data?.education),
+        hasNonEmptyValue(data?.technical_skills),
+        hasNonEmptyValue(data?.soft_skills),
+        hasNonEmptyValue(data?.preferred_industry) && hasNonEmptyValue(data?.job_roles_of_interest),
+        hasNonEmptyValue(data?.gender) && hasNonEmptyValue(data?.country) && hasNonEmptyValue(data?.state) && hasNonEmptyValue(data?.city),
+        hasNonEmptyValue(data?.location_preferences) && hasNonEmptyValue(data?.language_proficiency),
+        hasNonEmptyValue(data?.linkedin_profile) || hasNonEmptyValue(data?.github_profile) || hasNonEmptyValue(data?.personal_website),
+        hasNonEmptyValue(data?.resume_url),
+    ]
+    const completed = checks.filter(Boolean).length
+    return Math.round((completed / checks.length) * 100)
+}
+
 function TagInput({
     value,
     onChange,
@@ -378,6 +400,7 @@ export default function StudentProfile() {
     const [resumeFile, setResumeFile] = useState<File | null>(null)
     const [isUploading, setIsUploading] = useState(false)
     const [uploadSuccess, setUploadSuccess] = useState(false)
+    const profileStrength = calculateProfileStrength(profileData)
 
     useEffect(() => {
         fetchProfile()
@@ -387,10 +410,9 @@ export default function StudentProfile() {
         try {
             setIsLoading(true)
             const data = await apiClient.getStudentProfile()
+            const hydrated = hydrateDynamicSections(data ?? {})
             setProfileData(hydrateDynamicSections(data ?? {}))
-            if (!hasEducationEntries(data?.education) || !data?.technical_skills) {
-                setShowNudge(true)
-            }
+            setShowNudge(calculateProfileStrength(hydrated) < 100)
         } catch (error: any) {
             console.error("Error fetching profile:", error)
             const status = error?.response?.status
@@ -417,12 +439,13 @@ export default function StudentProfile() {
     const handleSaveProfile = async () => {
         try {
             setIsSaving(true)
-            const { education, experience, ...payload } = profileData || {}
+            const { experience, ...payload } = profileData || {}
             const experiencePayload = flattenExperienceGroups(normalizeExperienceGroups(experience))
             const updated = await apiClient.updateStudentProfile({ ...payload, experience: experiencePayload })
-            setProfileData(hydrateDynamicSections(updated ?? { ...payload, education, experience: experiencePayload }))
+            const hydrated = hydrateDynamicSections(updated ?? { ...payload, experience: experiencePayload })
+            setProfileData(hydrateDynamicSections(updated ?? { ...payload, experience: experiencePayload }))
             toast.success("Profile updated successfully!")
-            setShowNudge(false)
+            setShowNudge(calculateProfileStrength(hydrated) < 100)
             setIsEditing(false)
         } catch (error) {
             console.error("Error updating profile:", error)
@@ -442,10 +465,10 @@ export default function StudentProfile() {
 
         try {
             const formData = new FormData()
-            formData.append("resume", file)
+            formData.append("file", file)
 
             const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
-            const response = await fetch(`${apiUrl}/student/upload-resume`, {
+            const response = await fetch(`${apiUrl}/student/resume/upload`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`
@@ -459,8 +482,16 @@ export default function StudentProfile() {
             }
 
             const data = await response.json()
+            const resumeUrl = data.resume_url || data.url
+            if (!resumeUrl) {
+                throw new Error("Resume uploaded, but no resume URL was returned")
+            }
             toast.success("Resume uploaded successfully!")
-            setProfileData((prev: any) => ({ ...prev, resume_url: data.url }))
+            setProfileData((prev: any) => {
+                const next = { ...prev, resume_url: resumeUrl }
+                setShowNudge(calculateProfileStrength(next) < 100)
+                return next
+            })
             setIsUploading(false)
             setUploadSuccess(true)
         } catch (error: any) {
@@ -884,7 +915,7 @@ export default function StudentProfile() {
                     </div>
 
                     {/* Education */}
-                    <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-[#243056] dark:bg-[#121C46]">
+                    <div id="resume" className="scroll-mt-24 rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-[#243056] dark:bg-[#121C46]">
                         <div className="flex items-start justify-between gap-4 mb-8">
                             <h3 className="text-xl font-bold flex items-center gap-3">
                                 <div className="rounded-xl bg-emerald-50 p-2 text-emerald-600 dark:bg-[#1A2348] dark:text-[#8B5CF6]">
@@ -2139,7 +2170,7 @@ export default function StudentProfile() {
                             </div>
                             Resume
                         </h3>
-                        <p className="text-sm text-gray-500 mb-6">Upload your latest resume (PDF/DOCX)</p>
+                        <p className="text-sm text-gray-500 mb-6">Upload your latest resume (PDF)</p>
 
                         {profileData.resume_url && (
                             <div className="mb-4 flex items-center justify-between rounded-2xl border border-[#E1E8F8] bg-[#EEF2FF] p-4 dark:border-[#31406B] dark:bg-[#1C2752]">
@@ -2179,7 +2210,7 @@ export default function StudentProfile() {
                                     </>
                                 )}
                             </div>
-                            <input type="file" className="hidden" accept=".pdf,.doc,.docx" onChange={handleResumeUpload} disabled={isUploading} />
+                            <input type="file" className="hidden" accept=".pdf" onChange={handleResumeUpload} disabled={isUploading} />
                         </label>
                     </div>
 
@@ -2193,13 +2224,13 @@ export default function StudentProfile() {
                         <div className="space-y-3">
                             <div className="flex items-center justify-between text-xs">
                                 <span className="text-gray-500 dark:text-gray-400">Profile Strength</span>
-                                <span className={`${showNudge ? 'text-[#7C3AED]' : 'text-green-400'} font-bold`}>{showNudge ? '40%' : '100%'}</span>
+                                <span className={`${profileStrength < 100 ? 'text-[#7C3AED]' : 'text-green-400'} font-bold`}>{profileStrength}%</span>
                             </div>
                             <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#C7D2FE] dark:bg-gray-700">
                                 <motion.div 
                                     initial={{ width: 0 }}
-                                    animate={{ width: showNudge ? '40%' : '100%' }}
-                                    className={`h-full ${showNudge ? 'bg-[#7C3AED]' : 'bg-green-500'}`}
+                                    animate={{ width: `${profileStrength}%` }}
+                                    className={`h-full ${profileStrength < 100 ? 'bg-[#7C3AED]' : 'bg-green-500'}`}
                                 />
                             </div>
                         </div>

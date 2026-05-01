@@ -463,27 +463,27 @@ export default function CorporateJobsPage() {
     }, [])
 
     return (
-        <div className="space-y-6">
-            <div className="rounded-[28px] border border-[#8fbfff] bg-[#edf3ff] px-6 py-7 shadow-[0_18px_34px_rgba(92,134,198,0.18)] dark:border-[#35518a] dark:bg-[#131d3f] dark:shadow-[0_20px_34px_rgba(3,8,26,0.4)]">
-                <div className="space-y-4">
+        <div className="space-y-5">
+            <div className="rounded-[24px] border border-[#8fbfff] bg-[#edf3ff] px-5 py-5 shadow-[0_12px_26px_rgba(92,134,198,0.16)] dark:border-[#35518a] dark:bg-[#131d3f] dark:shadow-[0_16px_28px_rgba(3,8,26,0.32)]">
+                <div className="space-y-3">
                     <div className="flex flex-wrap items-center gap-3">
-                        <h1 className="text-[2rem] font-bold tracking-tight text-[#111827] dark:text-white">Job Postings</h1>
+                        <h1 className="text-[1.65rem] font-bold tracking-tight text-[#111827] dark:text-white sm:text-[1.8rem]">Job Postings</h1>
                         <span className="text-[1.9rem]" aria-hidden="true">💼</span>
                     </div>
-                    <p className="max-w-3xl text-[1.05rem] text-[#29476f] dark:text-[#c8d7ff]">
+                    <p className="max-w-3xl text-[0.94rem] leading-6 text-[#29476f] dark:text-[#c8d7ff]">
                         Manage your job postings and find the best talent
                         <span className="ml-2" aria-hidden="true">✨</span>
                     </p>
                     <div className="flex flex-wrap gap-3">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-[#8fc0f7]/70 px-4 py-2 text-[0.95rem] font-medium text-[#123d72] dark:bg-[#20376a] dark:text-[#d9e5ff]">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-[#8fc0f7]/70 px-3 py-1.5 text-[0.84rem] font-medium text-[#123d72] dark:bg-[#20376a] dark:text-[#d9e5ff]">
                             <span aria-hidden="true">🎯</span>
                             {currentBannerDate}
                         </span>
-                        <span className="inline-flex items-center gap-2 rounded-full bg-[#d8f3d9] px-4 py-2 text-[0.95rem] font-medium text-[#166534] dark:bg-[#183925] dark:text-[#b7efc5]">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-[#d8f3d9] px-3 py-1.5 text-[0.84rem] font-medium text-[#166534] dark:bg-[#183925] dark:text-[#b7efc5]">
                             <span aria-hidden="true">📈</span>
                             Talent Acquisition
                         </span>
-                        <span className="inline-flex items-center gap-2 rounded-full bg-[#dfe8ff] px-4 py-2 text-[0.95rem] font-medium text-[#2348b8] dark:bg-[#243567] dark:text-[#bfd0ff]">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-[#dfe8ff] px-3 py-1.5 text-[0.84rem] font-medium text-[#2348b8] dark:bg-[#243567] dark:text-[#bfd0ff]">
                             <span aria-hidden="true">🚀</span>
                             Growth Opportunities
                         </span>
@@ -491,24 +491,24 @@ export default function CorporateJobsPage() {
                 </div>
             </div>
 
-            <div className="rounded-[24px] border border-[#d7ddf8] bg-[#edf3ff] p-4 shadow-[0_14px_30px_rgba(121,144,198,0.14)] sm:p-5 md:p-6 dark:border-[#2b3458] dark:bg-[#131d3f] dark:shadow-[0_14px_28px_rgba(3,8,26,0.42)]">
+            <div className="rounded-[22px] border border-[#d7ddf8] bg-[#edf3ff] p-4 shadow-[0_12px_24px_rgba(121,144,198,0.12)] sm:p-4 md:p-5 dark:border-[#2b3458] dark:bg-[#131d3f] dark:shadow-[0_12px_24px_rgba(3,8,26,0.34)]">
                 <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <Input
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Job title or keyword"
-                        className="h-14 w-full rounded-[18px] border-[#d7ddf8] bg-white px-4 text-base text-[#1d2755] placeholder:text-[#8b97bf] md:max-w-[272px] dark:border-[#3b456b] dark:bg-[#1a213a] dark:text-white dark:placeholder:text-[#8e99bf]"
+                        className="h-12 w-full rounded-[16px] border-[#d7ddf8] bg-white px-4 text-sm text-[#1d2755] placeholder:text-[#8b97bf] md:max-w-[248px] dark:border-[#3b456b] dark:bg-[#1a213a] dark:text-white dark:placeholder:text-[#8e99bf]"
                     />
                     <div className="flex w-full flex-col gap-2 sm:flex-row md:w-auto">
                         <Button
                             type="button"
                             onClick={() => router.push("/dashboard/corporate/jobs/create")}
-                            className="h-14 rounded-[18px] bg-[#3b82f6] px-7 text-[1.02rem] font-semibold text-white shadow-none hover:bg-[#3174e8] dark:bg-[#3b82f6] dark:text-white dark:hover:bg-[#3174e8]"
+                            className="h-12 rounded-[16px] bg-[#3b82f6] px-5 text-[0.95rem] font-semibold text-white shadow-none hover:bg-[#3174e8] dark:bg-[#3b82f6] dark:text-white dark:hover:bg-[#3174e8]"
                         >
                             <Plus className="mr-2 h-4 w-4 stroke-[2.5]" />
                             Create Job
                         </Button>
-                        <Button type="button" variant="outline" className="h-14 rounded-[18px] border-[1.5px] border-[#3b82f6] bg-white px-7 text-[1.02rem] font-medium text-[#3b82f6] shadow-none hover:bg-[#f4f8ff] hover:text-[#3174e8] dark:border-[#3b82f6] dark:bg-transparent dark:text-[#8fb5ff] dark:hover:bg-[#17244f] dark:hover:text-white">
+                        <Button type="button" variant="outline" className="h-12 rounded-[16px] border-[1.5px] border-[#3b82f6] bg-white px-5 text-[0.95rem] font-medium text-[#3b82f6] shadow-none hover:bg-[#f4f8ff] hover:text-[#3174e8] dark:border-[#3b82f6] dark:bg-transparent dark:text-[#8fb5ff] dark:hover:bg-[#17244f] dark:hover:text-white">
                             <Filter className="mr-2 h-4 w-4 stroke-[2.2]" />
                             Filters
                         </Button>

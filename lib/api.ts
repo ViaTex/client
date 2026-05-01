@@ -65,6 +65,29 @@ export interface JobItem extends JobPayload {
     current_applications: number
     created_at: string
     is_public?: boolean
+    can_apply?: boolean
+}
+
+export interface JobApplicationItem {
+    id: string
+    job_id: string
+    student_id: string
+    corporate_id?: string | null
+    college_id?: string | null
+    status: string
+    expected_salary?: number | string | null
+    cover_letter?: string | null
+    resume_url?: string | null
+    created_at: string
+    updated_at?: string | null
+    student_name?: string | null
+    student_email?: string | null
+    student_phone?: string | null
+    job_title?: string | null
+    company_name?: string | null
+    salary_min?: number | string | null
+    salary_max?: number | string | null
+    salary_currency?: string | null
 }
 
 export interface CorporateProfile {
@@ -208,6 +231,22 @@ export const apiClient = {
         return response.data as JobItem
     },
 
+    applyToJob: async (
+        jobId: string,
+        data?: {
+            expected_salary?: number
+            cover_letter?: string
+        }
+    ) => {
+        const response = await axiosInstance.post(`/jobs/${jobId}/apply`, data || {})
+        return response.data as JobApplicationItem
+    },
+
+    getMyApplications: async () => {
+        const response = await axiosInstance.get('/jobs/applications/me')
+        return response.data as JobApplicationItem[]
+    },
+
     approveJob: async (jobId: string) => {
         const response = await axiosInstance.patch(`/jobs/${jobId}/approve`)
         return response.data as JobItem
@@ -221,6 +260,16 @@ export const apiClient = {
     updateCorporateProfile: async (data: Partial<CorporateProfile>) => {
         const response = await axiosInstance.patch('/corporate/profile', data)
         return response.data as CorporateProfile
+    },
+
+    getCorporateApplicants: async () => {
+        const response = await axiosInstance.get('/corporate/applicants')
+        return response.data as JobApplicationItem[]
+    },
+
+    updateCorporateApplicant: async (applicationId: string, data: { status: string }) => {
+        const response = await axiosInstance.patch(`/corporate/applicants/${applicationId}`, data)
+        return response.data as JobApplicationItem
     },
 
     uploadSectionA: async (formData: FormData) => {

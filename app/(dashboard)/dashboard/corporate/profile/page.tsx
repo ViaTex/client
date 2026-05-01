@@ -43,7 +43,7 @@ function OverviewChip({
     icon: ReactNode
 }) {
     return (
-        <span className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-[0.88rem] font-medium ${tone}`}>
+        <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[0.82rem] font-medium ${tone}`}>
             <span aria-hidden="true">{icon}</span>
             {label}
         </span>
@@ -62,13 +62,13 @@ function SummaryTile({
     icon: ReactNode
 }) {
     return (
-        <div className={`rounded-[14px] border p-3.5 ${tone}`}>
+        <div className={`self-start rounded-[14px] border p-3 ${tone}`}>
             <div className="flex items-start justify-between gap-3">
-                <div>
-                    <p className="text-[0.88rem] font-medium text-[#4d5c79] dark:text-[#d7dfff]">{label}</p>
-                    <p className="mt-2 text-[0.98rem] font-semibold text-[#16213f] dark:text-[#ffffff]">{value}</p>
+                <div className="min-w-0">
+                    <p className="text-[0.82rem] font-medium text-[#4d5c79] dark:text-[#d7dfff]">{label}</p>
+                    <p className="mt-1.5 break-words text-[0.92rem] font-semibold leading-5 text-[#16213f] dark:text-[#ffffff]">{value}</p>
                 </div>
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-[#f2b300] shadow-sm dark:border dark:border-black/5 dark:bg-white/20 dark:text-[#ffc83d]">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/80 text-[#f2b300] shadow-sm dark:border dark:border-black/5 dark:bg-white/20 dark:text-[#ffc83d]">
                     {icon}
                 </div>
             </div>
@@ -84,9 +84,9 @@ function ProfileField({
     value: string
 }) {
     return (
-        <div className="rounded-[18px] border border-[#e5ebf8] bg-[#fbfcff] px-5 py-4 dark:border-[#223067] dark:bg-[#111a3a]">
-            <p className="text-[0.96rem] font-semibold text-[#0f214f] dark:text-white">{label}</p>
-            <p className="mt-3 text-[0.92rem] leading-6 text-[#56698f] dark:text-[#c7d2f4]">{value}</p>
+        <div className="rounded-[16px] border border-[#e5ebf8] bg-[#fbfcff] px-5 py-3.5 dark:border-[#223067] dark:bg-[#111a3a]">
+            <p className="text-[0.92rem] font-semibold text-[#0f214f] dark:text-white">{label}</p>
+            <p className="mt-2.5 text-[0.9rem] leading-6 text-[#56698f] dark:text-[#c7d2f4]">{value}</p>
         </div>
     )
 }
@@ -99,8 +99,8 @@ function EditableCard({
     children: ReactNode
 }) {
     return (
-        <div className="rounded-[16px] border border-[#e2e8f7] bg-[#fbfcff] p-4 dark:border-[#223067] dark:bg-[#111a3a]">
-            <p className="mb-3 text-[0.94rem] font-semibold text-[#16213f] dark:text-white">{label}</p>
+        <div className="rounded-[16px] border border-[#e2e8f7] bg-[#fbfcff] p-3.5 dark:border-[#223067] dark:bg-[#111a3a]">
+            <p className="mb-2.5 text-[0.92rem] font-semibold text-[#16213f] dark:text-white">{label}</p>
             {children}
         </div>
     )
@@ -246,10 +246,10 @@ export default function CorporateProfilePage() {
         <div className="space-y-6">
             <input ref={logoInputRef} type="file" accept=".png,.jpg,.jpeg" className="hidden" onChange={handleLogoChange} />
 
-            <div className="rounded-[24px] border border-[#8fbfff] bg-[#edf3ff] px-5 py-6 shadow-[0_18px_34px_rgba(92,134,198,0.18)] dark:border-[#35518a] dark:bg-[#131d3f] dark:shadow-[0_20px_34px_rgba(3,8,26,0.4)]">
+            <div className="rounded-[24px] border border-[#8fbfff] bg-[#edf3ff] px-5 py-5 shadow-[0_18px_34px_rgba(92,134,198,0.18)] dark:border-[#35518a] dark:bg-[#131d3f] dark:shadow-[0_20px_34px_rgba(3,8,26,0.4)]">
                 <div className="space-y-3">
                     <div className="flex flex-wrap items-center gap-3">
-                        <h1 className="text-[1.8rem] font-bold tracking-tight text-[#111827] dark:text-white">Company Profile</h1>
+                        <h1 className="text-[1.6rem] font-bold tracking-tight text-[#111827] dark:text-white">Company Profile</h1>
                         <span className="text-[1.9rem]" aria-hidden="true">🏢</span>
                     </div>
                     <p className="max-w-3xl text-[0.98rem] text-[#29476f] dark:text-[#c8d7ff]">
@@ -266,10 +266,10 @@ export default function CorporateProfilePage() {
                 </div>
             </div>
 
-            <div className="rounded-[22px] border border-[#e2e8f7] bg-white p-5 shadow-[0_10px_30px_rgba(66,98,170,0.08)] dark:border-[#223a7a] dark:bg-[#121b46] dark:shadow-[0_8px_32px_rgba(3,8,26,0.35)]">
-                <div className="grid grid-cols-1 gap-4 xl:grid-cols-[130px_1fr]">
-                    <div className="space-y-3">
-                        <div className="relative h-24 w-24 overflow-hidden rounded-full bg-[linear-gradient(180deg,_#4a77ff_0%,_#3652d9_100%)] shadow-[0_12px_22px_rgba(59,104,255,0.28)]">
+            <div className="rounded-[22px] border border-[#e2e8f7] bg-white p-4 shadow-[0_10px_30px_rgba(66,98,170,0.08)] dark:border-[#223a7a] dark:bg-[#121b46] dark:shadow-[0_8px_32px_rgba(3,8,26,0.35)]">
+                <div className="grid grid-cols-1 items-start gap-4 xl:grid-cols-[220px_1fr]">
+                    <div className="flex items-center gap-4">
+                        <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full bg-[linear-gradient(180deg,_#4a77ff_0%,_#3652d9_100%)] shadow-[0_12px_22px_rgba(59,104,255,0.28)]">
                             {logoPreviewUrl ? (
                                 // Local preview until backend supports persistent logo storage.
                                 <img
@@ -278,7 +278,7 @@ export default function CorporateProfilePage() {
                                     className="h-full w-full object-cover"
                                 />
                             ) : (
-                                <div className="flex h-full w-full items-center justify-center text-center text-[0.96rem] font-bold uppercase tracking-wide text-[#ff8a1f]">
+                                <div className="flex h-full w-full items-center justify-center text-center text-[0.88rem] font-bold uppercase tracking-wide text-[#ff8a1f]">
                                     {form.company_name ? form.company_name.slice(0, 4) : "COMP"}
                                 </div>
                             )}
@@ -291,18 +291,18 @@ export default function CorporateProfilePage() {
                                 <ImageIcon className="h-3.5 w-3.5" />
                             </button>
                         </div>
-                        <div>
-                            <h2 className="text-[1.05rem] font-bold text-[#1a243b] dark:text-white">{form.company_name || form.name || "Company Name"}</h2>
-                            <p className="mt-1 text-[0.98rem] text-[#5f6f98] dark:text-[#a8b5de]">{form.company_type || "Company"}</p>
+                        <div className="min-w-0">
+                            <h2 className="text-[1rem] font-bold leading-6 text-[#1a243b] dark:text-white">{form.company_name || form.name || "Company Name"}</h2>
+                            <p className="mt-1 text-[0.92rem] text-[#5f6f98] dark:text-[#a8b5de]">{form.company_type || "Company"}</p>
                             <p className="text-[0.98rem] text-[#5f6f98] dark:text-[#a8b5de]">{form.industry || "•"}</p>
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-                        <SummaryTile label="Email" value={form.email || "Not provided"} icon={<Mail className="h-4 w-4" />} tone="border-[#d3f0de] bg-[linear-gradient(90deg,_#effcf4_0%,_#f7fffb_100%)] dark:border-[#5ce08a] dark:bg-[linear-gradient(180deg,_#f2fff7_0%,_#fbfffd_100%)]" />
-                        <SummaryTile label="Phone" value={form.phone || "Not provided"} icon={<Phone className="h-4 w-4" />} tone="border-[#cfdbff] bg-[linear-gradient(90deg,_#eef4ff_0%,_#f7faff_100%)] dark:border-[#5380ff] dark:bg-[linear-gradient(180deg,_#f3f7ff_0%,_#fbfcff_100%)]" />
-                        <SummaryTile label="Logo" value={logoFileName || "Not uploaded"} icon={<BadgeCheck className="h-4 w-4 text-[#22c55e] dark:text-[#22c55e]" />} tone="border-[#e4d8ff] bg-[linear-gradient(90deg,_#f7f1ff_0%,_#fcfaff_100%)] dark:border-[#b26cff] dark:bg-[linear-gradient(180deg,_#fcf7ff_0%,_#fffaff_100%)]" />
-                        <SummaryTile label="Verified" value="Pending" icon={<BriefcaseBusiness className="h-4 w-4" />} tone="border-[#f7dfa6] bg-[linear-gradient(90deg,_#fff9ec_0%,_#fffdf7_100%)] dark:border-[#e29a3f] dark:bg-[linear-gradient(180deg,_#fff9ee_0%,_#fffdf7_100%)]" />
+                    <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-2 xl:grid-cols-4">
+                        <SummaryTile label="Email" value={form.email || "Not provided"} icon={<Mail className="h-4 w-4" />} tone="border-[#d3f0de] bg-[linear-gradient(90deg,_#effcf4_0%,_#f7fffb_100%)] dark:border-[#2f8f5a] dark:bg-[linear-gradient(180deg,_#142d22_0%,_#193628_100%)]" />
+                        <SummaryTile label="Phone" value={form.phone || "Not provided"} icon={<Phone className="h-4 w-4" />} tone="border-[#cfdbff] bg-[linear-gradient(90deg,_#eef4ff_0%,_#f7faff_100%)] dark:border-[#3f67c9] dark:bg-[linear-gradient(180deg,_#162544_0%,_#1b2f57_100%)]" />
+                        <SummaryTile label="Logo" value={logoFileName || "Not uploaded"} icon={<BadgeCheck className="h-4 w-4 text-[#22c55e] dark:text-[#4ade80]" />} tone="border-[#e4d8ff] bg-[linear-gradient(90deg,_#f7f1ff_0%,_#fcfaff_100%)] dark:border-[#8b5cf6] dark:bg-[linear-gradient(180deg,_#241739_0%,_#2d1d47_100%)]" />
+                        <SummaryTile label="Verified" value="Pending" icon={<BriefcaseBusiness className="h-4 w-4" />} tone="border-[#f7dfa6] bg-[linear-gradient(90deg,_#fff9ec_0%,_#fffdf7_100%)] dark:border-[#c9872f] dark:bg-[linear-gradient(180deg,_#33230f_0%,_#402c13_100%)]" />
                     </div>
                 </div>
             </div>
@@ -338,15 +338,15 @@ export default function CorporateProfilePage() {
 
             <form onSubmit={onSubmit} className="space-y-5">
                 {activeTab === "basic" ? (
-                    <div className="rounded-[20px] border border-[#d9e3f8] bg-white p-4 shadow-[0_14px_30px_rgba(66,98,170,0.08)] dark:border-[#223067] dark:bg-[#10193a]">
-                        <div className="mb-5 flex flex-col gap-3 border-b border-[#e8eefb] pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-[#1d294d]">
+                    <div className="rounded-[20px] border border-[#d9e3f8] bg-white p-3.5 shadow-[0_14px_30px_rgba(66,98,170,0.08)] dark:border-[#223067] dark:bg-[#10193a]">
+                        <div className="mb-4 flex flex-col gap-3 border-b border-[#e8eefb] pb-3.5 sm:flex-row sm:items-center sm:justify-between dark:border-[#1d294d]">
                             <div className="flex items-center gap-3">
-                                <div className="flex h-[48px] w-[48px] items-center justify-center rounded-[16px] bg-[#3b82f6] text-white shadow-[0_12px_22px_rgba(59,130,246,0.22)]">
-                                    <ClipboardList className="h-6 w-6" />
+                                <div className="flex h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#3b82f6] text-white shadow-[0_12px_22px_rgba(59,130,246,0.22)]">
+                                    <ClipboardList className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <h3 className="text-[1rem] font-semibold text-[#16213f] dark:text-white">Basic Information</h3>
-                                    <p className="text-[0.9rem] text-[#5f6f98] dark:text-[#93a4d1]">Company details and contact information</p>
+                                    <h3 className="text-[0.95rem] font-semibold text-[#16213f] dark:text-white">Basic Information</h3>
+                                    <p className="text-[0.85rem] text-[#5f6f98] dark:text-[#93a4d1]">Company details and contact information</p>
                                 </div>
                             </div>
                             <Button type="button" variant="ghost" size="sm" className="self-start px-1 text-[#2f65cb] hover:text-[#1f54ba] dark:text-[#8fb5ff] dark:hover:text-white sm:self-auto" onClick={() => setEditing("basic")}>
@@ -355,7 +355,7 @@ export default function CorporateProfilePage() {
                             </Button>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-4">
+                        <div className="grid grid-cols-1 gap-3.5">
                             {editing === "basic" ? (
                                 <>
                                     <EditableCard label="Company Name">
@@ -403,15 +403,15 @@ export default function CorporateProfilePage() {
                         </div>
                     </div>
                 ) : (
-                    <div className="rounded-[20px] border border-[#d9e3f8] bg-white p-4 shadow-[0_14px_30px_rgba(66,98,170,0.08)] dark:border-[#223067] dark:bg-[#10193a]">
-                        <div className="mb-5 flex flex-col gap-3 border-b border-[#e8eefb] pb-4 sm:flex-row sm:items-center sm:justify-between dark:border-[#1d294d]">
+                    <div className="rounded-[20px] border border-[#d9e3f8] bg-white p-3.5 shadow-[0_14px_30px_rgba(66,98,170,0.08)] dark:border-[#223067] dark:bg-[#10193a]">
+                        <div className="mb-4 flex flex-col gap-3 border-b border-[#e8eefb] pb-3.5 sm:flex-row sm:items-center sm:justify-between dark:border-[#1d294d]">
                             <div className="flex items-center gap-3">
-                                <div className="flex h-[48px] w-[48px] items-center justify-center rounded-[16px] bg-[#3b82f6] text-white shadow-[0_12px_22px_rgba(59,130,246,0.22)]">
-                                    <Building2 className="h-6 w-6" />
+                                <div className="flex h-[42px] w-[42px] items-center justify-center rounded-[14px] bg-[#3b82f6] text-white shadow-[0_12px_22px_rgba(59,130,246,0.22)]">
+                                    <Building2 className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <h3 className="text-[1rem] font-semibold text-[#16213f] dark:text-white">Company Information</h3>
-                                    <p className="text-[0.9rem] text-[#5f6f98] dark:text-[#93a4d1]">Business details and company profile</p>
+                                    <h3 className="text-[0.95rem] font-semibold text-[#16213f] dark:text-white">Company Information</h3>
+                                    <p className="text-[0.85rem] text-[#5f6f98] dark:text-[#93a4d1]">Business details and company profile</p>
                                 </div>
                             </div>
                             <Button type="button" variant="ghost" size="sm" className="self-start px-1 text-[#2f65cb] hover:text-[#1f54ba] dark:text-[#8fb5ff] dark:hover:text-white sm:self-auto" onClick={() => setEditing("company")}>
@@ -420,7 +420,7 @@ export default function CorporateProfilePage() {
                             </Button>
                         </div>
 
-                        <div className="grid grid-cols-1 gap-4">
+                        <div className="grid grid-cols-1 gap-3.5">
                             {editing === "company" ? (
                                 <>
                                     <EditableCard label="Company Name">
