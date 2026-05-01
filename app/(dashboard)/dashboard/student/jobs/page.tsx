@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react"
 import { apiClient, JobItem } from "@/lib/api"
-import { Search, MapPin, Briefcase, DollarSign, Users, ExternalLink, ChevronRight, Heart } from "lucide-react"
+import { Search, MapPin, Briefcase, Users, ExternalLink, ChevronRight, Heart, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import JobCard from "@/components/cards/JobCard"
 import { motion } from "framer-motion"
+import { useRouter } from "next/navigation"
 
 export default function StudentJobsPage() {
+    const router = useRouter()
     const [jobs, setJobs] = useState<JobItem[]>([])
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
@@ -204,139 +207,41 @@ export default function StudentJobsPage() {
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ delay: idx * 0.1 }}
-                                        className="group rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden hover:shadow-lg dark:hover:shadow-xl transition-all duration-300"
                                     >
-                                        {/* Card Header - Company Info */}
-                                        <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-blue-50/50 to-purple-50/50 dark:from-blue-900/10 dark:to-purple-900/10">
-                                            <div className="flex items-start justify-between gap-3 mb-3">
-                                                <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                    <div className="relative">
-                                                        {job.company_logo && job.company_logo !== 'hgvuiihukb.com' ? (
-                                                            <img 
-                                                                src={job.company_logo} 
-                                                                alt={job.company_name}
-                                                                className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg object-cover flex-shrink-0"
-                                                                onError={(e) => {
-                                                                    (e.target as HTMLImageElement).style.display = 'none'
-                                                                    const fallback = (e.target as HTMLImageElement).nextElementSibling as HTMLElement
-                                                                    if (fallback) fallback.style.display = 'flex'
-                                                                }}
-                                                            />
-                                                        ) : null}
-                                                        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center flex-shrink-0" style={{display: job.company_logo && job.company_logo !== 'hgvuiihukb.com' ? 'none' : 'flex'}}>
-                                                            <span className="text-white font-bold text-lg">
-                                                                {job.company_name?.[0]?.toUpperCase() || "J"}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <h3 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white truncate">
-                                                            {job.company_name || "Company"}
-                                                        </h3>
-                                                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-1">
-                                                            {job.company_type} • {job.company_size}
-                                                        </p>
-                                                    </div>
+                                        <JobCard
+                                            companyLogo={job.company_logo}
+                                            companyLogoAlt={job.company_name}
+                                            companyName={job.company_name}
+                                            companyType={job.company_type}
+                                            companySize={job.company_size}
+                                            jobType={job.job_type}
+                                            industry={job.industry}
+                                            salaryRange={salaryRange}
+                                            remoteWork={job.remote_work}
+                                            title={job.title}
+                                            companyWebsite={job.company_website}
+                                            location={job.location}
+                                            createdDate={createdDate}
+                                            ctc={ctc}
+                                            experienceRange={experienceRange}
+                                            openings={job.number_of_openings || 0}
+                                            skillsRequired={job.skills_required}
+                                            actions={
+                                                <div className="flex gap-2 mt-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        className="flex-1 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"
+                                                        onClick={() => router.push(`/dashboard/student/jobs/${job.id}`)}
+                                                    >
+                                                        <Eye className="h-4 w-4 mr-2" />
+                                                        View Details
+                                                    </Button>
+                                                    <Button className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold">
+                                                        {job.status === "active" ? 'Apply Now' : 'Applications Closed'}
+                                                    </Button>
                                                 </div>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    className="flex-shrink-0 text-gray-400 hover:text-red-500"
-                                                >
-                                                    <Heart className="h-4 w-4 sm:h-5 sm:w-5" />
-                                                </Button>
-                                            </div>
-
-                                            {/* Badges - Job Type, Salary, Industry */}
-                                            <div className="flex flex-wrap gap-2">
-                                                <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs sm:text-sm font-medium capitalize">
-                                                    <Users className="h-3 w-3 sm:h-4 sm:w-4" />
-                                                    {job.job_type?.replace('_', ' ') || "Full-time"}
-                                                </span>
-                                                <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300 text-xs sm:text-sm font-medium">
-                                                    💼 {job.industry || "Technology"}
-                                                </span>
-                                                <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs sm:text-sm font-medium">
-                                                    💰 {salaryRange}
-                                                </span>
-                                                {job.remote_work && (
-                                                    <span className="inline-flex items-center gap-1 px-2 sm:px-3 py-1 rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-xs sm:text-sm font-medium">
-                                                        🌐 Remote
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Job Details */}
-                                        <div className="p-4 sm:p-5 space-y-4">
-                                            {/* Primary Job Listing */}
-                                            <div className="space-y-2">
-                                                <div className="flex items-center justify-between gap-2">
-                                                    <h4 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white">
-                                                        {job.title || "Job Title"}
-                                                    </h4>
-                                                    {job.company_website && (
-                                                        <a href={job.company_website} target="_blank" rel="noopener noreferrer">
-                                                            <ExternalLink className="h-4 w-4 text-gray-400 hover:text-blue-500 transition-colors flex-shrink-0" />
-                                                        </a>
-                                                    )}
-                                                </div>
-                                                <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                                                    <span className="flex items-center gap-1">
-                                                        <MapPin className="h-3 w-3 sm:h-4 sm:w-4" />
-                                                        {job.location || "Location"}
-                                                    </span>
-                                                    <span>•</span>
-                                                    {job.remote_work && (
-                                                        <>
-                                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800">
-                                                                🌐 Remote
-                                                            </span>
-                                                            <span>•</span>
-                                                        </>
-                                                    )}
-                                                    <span className="text-gray-500 dark:text-gray-500">{createdDate}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Job Info Row */}
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
-                                                <div className="text-xs">
-                                                    <p className="text-gray-500 dark:text-gray-400 font-medium">CTC</p>
-                                                    <p className="text-gray-900 dark:text-white font-semibold">{ctc}</p>
-                                                </div>
-                                                <div className="text-xs">
-                                                    <p className="text-gray-500 dark:text-gray-400 font-medium">Experience</p>
-                                                    <p className="text-gray-900 dark:text-white font-semibold">{experienceRange}</p>
-                                                </div>
-                                                <div className="text-xs">
-                                                    <p className="text-gray-500 dark:text-gray-400 font-medium">Openings</p>
-                                                    <p className="text-gray-900 dark:text-white font-semibold">{job.number_of_openings || 0}</p>
-                                                </div>
-                                            </div>
-
-                                            {/* Skills */}
-                                            {job.skills_required && job.skills_required.length > 0 && (
-                                                <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-                                                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Required Skills</p>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {job.skills_required.slice(0, 5).map((skill, idx) => (
-                                                            <span key={idx} className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
-                                                                {skill}
-                                                            </span>
-                                                        ))}
-                                                        {job.skills_required.length > 5 && (
-                                                            <span className="text-xs text-gray-500 dark:text-gray-400">+{job.skills_required.length - 5} more</span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            )}
-
-                                            {/* Apply Button */}
-                                            <Button className="w-full mt-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold">
-                                                {job.status === "active" ? 'Apply Now' : 'Applications Closed'}
-                                            </Button>
-                                        </div>
+                                            }
+                                        />
                                     </motion.div>
                                 )
                             })}
