@@ -771,7 +771,7 @@ export default function StudentProfile() {
     ]
 
     return (
-        <div className="w-full font-sans text-gray-900 dark:text-gray-100">
+        <div className="w-full font-sans text-gray-900 dark:text-gray-100 dashboard-page">
             {/* Profile Completeness Nudge */}
             <AnimatePresence>
                 {showNudge && (
@@ -830,7 +830,7 @@ export default function StudentProfile() {
                 <div className="lg:col-span-8 flex flex-col gap-8">
                     
                     {/* Personal Details */}
-                    <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-[#243056] dark:bg-[#121C46]">
+                    <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-white/10 dark:bg-[#0B1739] dark:text-white">
                         <h3 className="text-xl font-bold mb-8 flex items-center gap-3">
                             <div className="rounded-xl bg-blue-50 p-2 text-blue-600 dark:bg-[#241A52] dark:text-[#8B5CF6]">
                                 <User className="w-5 h-5" />
@@ -915,7 +915,7 @@ export default function StudentProfile() {
                     </div>
 
                     {/* Education */}
-                    <div id="resume" className="scroll-mt-24 rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-[#243056] dark:bg-[#121C46]">
+                    <div id="resume" className="scroll-mt-24 rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-white/10 dark:bg-[#0B1739] dark:text-white">
                         <div className="flex items-start justify-between gap-4 mb-8">
                             <h3 className="text-xl font-bold flex items-center gap-3">
                                 <div className="rounded-xl bg-emerald-50 p-2 text-emerald-600 dark:bg-[#1A2348] dark:text-[#8B5CF6]">
@@ -942,7 +942,7 @@ export default function StudentProfile() {
                                     <button
                                         type="button"
                                         onClick={cancelEducationEdit}
-                                        className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-red-600 transition-colors"
+                                        className="inline-flex items-center gap-2 text-xs font-bold text-gray-500 hover:text-[#6D28D9] transition-colors"
                                     >
                                         <X className="w-4 h-4" />
                                         Cancel
@@ -1220,7 +1220,7 @@ export default function StudentProfile() {
                     </div>
 
                     {/* Skills & Experience */}
-                    <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-[#243056] dark:bg-[#121C46]">
+                    <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-white/10 dark:bg-[#0B1739] dark:text-white">
                         <h3 className="text-xl font-bold mb-8 flex items-center gap-3">
                             <div className="rounded-xl bg-purple-50 p-2 text-purple-600 dark:bg-[#241A52] dark:text-[#8B5CF6]">
                                 <Code2 className="w-5 h-5" />
@@ -1607,10 +1607,10 @@ export default function StudentProfile() {
                     </div>
 
                     {/* Projects */}
-                    <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-[#243056] dark:bg-[#121C46]">
+                    <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-white/10 dark:bg-[#0B1739] dark:text-white">
                         <div className="flex items-start justify-between gap-4 mb-8">
                             <h3 className="text-xl font-bold flex items-center gap-3">
-                                <div className="p-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-indigo-600">
+                                <div className="p-2 bg-purple-50 dark:bg-purple-900/20 rounded-xl text-purple-600">
                                     <BookOpen className="w-5 h-5" />
                                 </div>
                                 Projects
@@ -1809,7 +1809,7 @@ export default function StudentProfile() {
                     </div>
 
                     {/* Custom Achievements */}
-                    <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-[#243056] dark:bg-[#121C46]">
+                    <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-white/10 dark:bg-[#0B1739] dark:text-white">
                         <div className="flex items-start justify-between gap-4 mb-8">
                             <h3 className="text-xl font-bold flex items-center gap-3">
                                 <div className="rounded-xl bg-amber-50 p-2 text-amber-600 dark:bg-[#241A52] dark:text-[#8B5CF6]">
@@ -1967,7 +1967,7 @@ export default function StudentProfile() {
                 <div className="lg:col-span-4 flex flex-col gap-8">
 
                     {/* Additional Profile Details */}
-                    <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-[#243056] dark:bg-[#121C46]">
+                    <div className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-8 shadow-sm dark:border-white/10 dark:bg-[#0B1739] dark:text-white">
                         <h3 className="text-xl font-bold mb-6 flex items-center gap-3">
                             <div className="rounded-xl bg-[#E9E7FF] p-2 text-[#7C3AED] dark:bg-[#241A52] dark:text-[#8B5CF6]">
                                 <MapPin className="w-5 h-5" />

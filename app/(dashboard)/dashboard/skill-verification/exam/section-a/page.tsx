@@ -283,14 +283,14 @@ export default function SectionAPage() {
     return (
         <div className="flex min-h-0 flex-1 flex-col w-full max-w-none box-border px-4 py-4 text-gray-900 dark:text-white sm:px-6 lg:px-8 lg:py-6">
             <div className="grid w-full min-h-0 flex-1 grid-cols-1 lg:grid-cols-12 lg:grid-rows-1 gap-4 lg:gap-6 items-stretch lg:h-full min-h-0">
-                <div className="lg:col-span-5 min-w-0 min-h-0 lg:h-full flex flex-col rounded-[1.5rem] border border-[#E2E8F0] bg-white p-6 shadow-[0_20px_60px_rgba(15,23,42,0.08)] dark:border-[#22315F] dark:bg-[#121C46] dark:shadow-[0_20px_60px_rgba(0,0,0,0.28)] md:p-8">
+                <div className="lg:col-span-5 min-w-0 min-h-0 lg:h-full flex flex-col bg-white rounded-[1.5rem] border border-gray-200 p-6 md:p-8 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:bg-[#0B1739] dark:border-white/10 dark:shadow-[0_8px_30px_rgba(0,0,0,0.18)]">
                     <div className="flex items-center gap-3 mb-5">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#7C3AED]/20 text-[#A855F7]">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#7C3AED] to-[#A855F7] text-white flex items-center justify-center">
                             <Video className="w-5 h-5" />
                         </div>
                         <div>
-                            <h2 className="text-2xl font-extrabold tracking-tight">Section A: Introduction</h2>
-                            <p className="text-sm text-[#64748B] dark:text-[#A8B3CF]">
+                            <h2 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">Section A: Introduction</h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">
                                 Record a 5-10 minute self-introduction to begin the evaluator.
                             </p>
                         </div>
