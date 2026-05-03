@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
+import { useTheme } from 'next-themes'
 
 interface ATSKeywordAnalysisProps {
   foundKeywords: string[]
@@ -19,6 +20,9 @@ export const ATSKeywordAnalysis: React.FC<ATSKeywordAnalysisProps> = ({
   foundKeywords,
   missingKeywords
 }) => {
+  const { resolvedTheme } = useTheme()
+  const isDark = resolvedTheme === 'dark'
+
   const keywordData = [
     { name: 'Found', count: foundKeywords.length, fill: '#10b981' },
     { name: 'Missing', count: missingKeywords.length, fill: '#ef4444' }
@@ -53,15 +57,25 @@ export const ATSKeywordAnalysis: React.FC<ATSKeywordAnalysisProps> = ({
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={keywordData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="name" stroke="#6b7280" />
-                <YAxis stroke="#6b7280" />
+                <CartesianGrid 
+                  strokeDasharray="3 3" 
+                  stroke={isDark ? '#374151' : '#e5e7eb'} 
+                />
+                <XAxis 
+                  dataKey="name" 
+                  stroke={isDark ? '#9ca3af' : '#6b7280'} 
+                  tick={{ fill: isDark ? '#9ca3af' : '#6b7280' }}
+                />
+                <YAxis 
+                  stroke={isDark ? '#9ca3af' : '#6b7280'} 
+                  tick={{ fill: isDark ? '#9ca3af' : '#6b7280' }}
+                />
                 <Tooltip 
                   contentStyle={{
-                    backgroundColor: '#f9fafb',
-                    border: '1px solid #e5e7eb',
+                    backgroundColor: isDark ? '#1f2937' : '#f9fafb',
+                    border: `1px solid ${isDark ? '#374151' : '#e5e7eb'}`,
                     borderRadius: '8px',
-                    color: '#111827'
+                    color: isDark ? '#f9fafb' : '#111827'
                   }}
                 />
                 <Bar dataKey="count" radius={[8, 8, 0, 0]}>

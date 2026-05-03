@@ -4,7 +4,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
-    timeout: 15000,
+    timeout: 30000,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -399,7 +399,7 @@ export const apiClient = {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
-                timeout: 60000,
+                timeout: 180000,
                 onUploadProgress: (progressEvent: any) => {
                     if (progressEvent.total && onProgress) {
                         const percentCompleted = Math.round(
@@ -414,7 +414,9 @@ export const apiClient = {
     },
 
     async getResumeStatus(): Promise<any> {
-        const response = await axiosInstance.get("/student/resume/status")
+        const response = await axiosInstance.get("/student/resume/status", {
+            timeout: 45000,
+        })
         return response.data
     },
 
@@ -422,7 +424,10 @@ export const apiClient = {
         const params = jobDescription ? { job_description: jobDescription } : {}
         const response = await axiosInstance.get(
             "/student/resume/ats-score",
-            { params },
+            {
+                params,
+                timeout: 120000,
+            },
         )
         return response.data
     }

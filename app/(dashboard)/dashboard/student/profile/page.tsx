@@ -394,11 +394,14 @@ export default function StudentProfile() {
         } catch (error: any) {
             console.error("Error fetching profile:", error)
             const status = error?.response?.status
+            const isTimeout = error?.code === 'ECONNABORTED'
             const isNetworkError = error?.message === 'Network Error' || !error?.response
             const fallback = user?.email ? { email: user.email } : {}
             setProfileData(hydrateDynamicSections(fallback))
             if (status === 404) {
                 toast("No profile yet—fill the form and save.", { icon: "📝" })
+            } else if (isTimeout) {
+                toast.error("Profile request timed out. Check backend and database connectivity.", { id: "profile-load-error", duration: 6000 })
             } else if (isNetworkError) {
                 toast.error("Cannot reach backend. Start it on port 8000: in server folder run run.bat", { id: "profile-load-error", duration: 6000 })
             } else {
