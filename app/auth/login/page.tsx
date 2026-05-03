@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Building2, GraduationCap, BriefcaseBusiness, X } from 'lucide-react'
 import { PiCompassRoseFill } from "react-icons/pi";
 import Link from 'next/link'
 import LoginIllustration from './LoginIllustration'
@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input'
 import { apiClient } from '@/lib/api'
 import { UserType } from '@/types/auth'
 import { useAuth } from '@/hooks/useAuth'
+import Image from 'next/image'
 
 const loginSchema = z.object({
     email: z.string().email('Please enter a valid email address'),
@@ -33,6 +34,14 @@ function LoginContent() {
     const { redirectIfAuthenticated, login } = useAuth()
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false)
+
+    const userTypeOptions = [
+        { value: 'student', label: 'Student', icon: User },
+        { value: 'mentor', label: 'Mentor', icon: BriefcaseBusiness },
+        { value: 'corporate', label: 'Corporate', icon: Building2 },
+        { value: 'college', label: 'College', icon: GraduationCap },
+    ]
 
     useEffect(() => {
         const hasRedirectUrl = searchParams.get('redirect') || (typeof window !== 'undefined' && localStorage.getItem('redirect_after_login'))
@@ -158,8 +167,8 @@ function LoginContent() {
                         {/* Header Area */}
                         <div className="mb-6 flex flex-col items-center">
                             <h2 className="text-lg font-bold flex items-center gap-2 text-[#7199D6] dark:text-[#7199D6] mb-5">
-                                <span className="w-8 h-8 rounded-full bg-[#7199D6] dark:bg-[#7199D6] flex items-center justify-center text-white">
-                                    <PiCompassRoseFill size={20} />
+                                <span className="w-10 h-10 rounded-full bg-[#7199D6] dark:bg-[#7199D6] flex items-center justify-center text-white">
+                                    <Image src={`/images/dishasetu_logo.png`} width={16} height={16} alt="icon" />
                                 </span>
                                 Dishasetu
                             </h2>
@@ -289,12 +298,13 @@ function LoginContent() {
                         {/* REGISTER */}
                         <p className="text-center text-sm text-gray-500 dark:text-[#AAB5D1]">
                             Don't have an account?{" "}
-                            <Link
-                                href="/auth/register"
+                            <button
+                                type="button"
+                                onClick={() => setIsRegisterModalOpen(true)}
                                 className="text-[#7199D6] dark:text-[#7199D6] font-bold hover:underline"
                             >
                                 Create Account
-                            </Link>
+                            </button>
                         </p>
 
                         {/* FOOTER */}
@@ -308,6 +318,43 @@ function LoginContent() {
                 <LoginIllustration />
 
             </div>
+
+            {/* REGISTER MODAL */}
+            {isRegisterModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white dark:bg-[#121C46] rounded-2xl w-full max-w-md p-6 relative shadow-xl"
+                    >
+                        <button
+                            onClick={() => setIsRegisterModalOpen(false)}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-[#9AA8C8] dark:hover:text-white transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 text-center">Join Dishasetu</h3>
+                        <p className="text-sm text-gray-500 dark:text-[#D5DCEF] mb-6 text-center">Please select your role to continue</p>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                            {userTypeOptions.map((option) => {
+                                const Icon = option.icon
+                                return (
+                                    <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => router.push(`/auth/register?type=${option.value}`)}
+                                        className="rounded-xl border border-gray-200 dark:border-[#31406B] px-4 py-6 transition-all duration-200 flex flex-col items-center space-y-3 hover:border-[#7199D6] dark:hover:border-[#7199D6] hover:bg-blue-50 dark:hover:bg-[#17213F] text-gray-600 dark:text-[#D3DCF6] hover:text-[#7199D6] dark:hover:text-[#7199D6]"
+                                    >
+                                        <Icon className="w-8 h-8" />
+                                        <span className="text-sm font-semibold uppercase tracking-widest">{option.label}</span>
+                                    </button>
+                                )
+                            })}
+                        </div>
+                    </motion.div>
+                </div>
+            )}
         </div>
     )
 }
