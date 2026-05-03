@@ -59,13 +59,13 @@ export function Modal({
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto overscroll-none p-4 pt-6 pointer-events-none sm:items-center sm:p-6">
+                <div className="fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto overscroll-none bg-black/50 p-4 pt-6 pointer-events-none backdrop-blur-sm sm:items-center sm:p-6">
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-auto"
+                        className="fixed inset-0 pointer-events-auto"
                         onClick={handleBackdropClick}
                     />
 

@@ -220,17 +220,128 @@ function formatApplications(current?: number | null, max?: number | null) {
     return `${safeCurrent} / ${safeMax}`
 }
 
-function getDateStatus(value?: string | null) {
-    if (!value) return null
+function getDeadlineMeta(value?: string | null, emptyLabel = "No deadline") {
+    const formattedDate = formatDate(value)
+    if (!value) {
+        return {
+            label: emptyLabel,
+            value: emptyLabel,
+            cardClass: "border-[#d8e1f2] bg-[#edf3ff] text-[#42548d] dark:border-[#3a4778] dark:bg-[#182554] dark:text-[#c7d2f4]",
+            blockClass: "border-[#d8e1f2] bg-[#edf3ff] text-[#42548d] dark:border-[#3a4778] dark:bg-[#182554] dark:text-[#c7d2f4]",
+        }
+    }
 
     const parsed = new Date(value)
-    if (Number.isNaN(parsed.getTime())) return null
+    if (Number.isNaN(parsed.getTime())) {
+        return {
+            label: "Invalid date",
+            value: formattedDate,
+            cardClass: "border-[#ffd7a8] bg-[#fff7ed] text-[#b45309] dark:border-[#8a4c16] dark:bg-[#3a2410] dark:text-[#fdba74]",
+            blockClass: "border-[#ffd7a8] bg-[#fff7ed] text-[#b45309] dark:border-[#8a4c16] dark:bg-[#3a2410] dark:text-[#fdba74]",
+        }
+    }
 
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     parsed.setHours(0, 0, 0, 0)
+    const daysUntilDeadline = Math.round((parsed.getTime() - today.getTime()) / 86400000)
 
-    return parsed < today ? "Expired" : "Active"
+    if (daysUntilDeadline < 0) {
+        return {
+            label: "Expired",
+            value: formattedDate,
+            cardClass: "border-[#fecaca] bg-[#fff1f2] text-[#b91c1c] dark:border-[#7f1d1d] dark:bg-[#3b1518] dark:text-[#fca5a5]",
+            blockClass: "border-[#ffc1bc] bg-[#fff1f0] text-[#c12e24] dark:border-[#7e2d2b] dark:bg-[#311716] dark:text-[#ffb2ab]",
+        }
+    }
+
+    if (daysUntilDeadline === 0) {
+        return {
+            label: "Due today",
+            value: formattedDate,
+            cardClass: "border-[#fed7aa] bg-[#fff7ed] text-[#c2410c] dark:border-[#9a3412] dark:bg-[#3b2413] dark:text-[#fdba74]",
+            blockClass: "border-[#fed7aa] bg-[#fff7ed] text-[#c2410c] dark:border-[#9a3412] dark:bg-[#3b2413] dark:text-[#fdba74]",
+        }
+    }
+
+    if (daysUntilDeadline <= 3) {
+        return {
+            label: `${daysUntilDeadline} day${daysUntilDeadline === 1 ? "" : "s"} left`,
+            value: formattedDate,
+            cardClass: "border-[#fde68a] bg-[#fffbeb] text-[#a16207] dark:border-[#854d0e] dark:bg-[#33270d] dark:text-[#facc15]",
+            blockClass: "border-[#fde68a] bg-[#fffbeb] text-[#a16207] dark:border-[#854d0e] dark:bg-[#33270d] dark:text-[#facc15]",
+        }
+    }
+
+    return {
+        label: "Open",
+        value: formattedDate,
+        cardClass: "border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d] dark:border-[#166534] dark:bg-[#122f20] dark:text-[#86efac]",
+        blockClass: "border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d] dark:border-[#166534] dark:bg-[#122f20] dark:text-[#86efac]",
+    }
+}
+
+function getPostedDateMeta(value?: string | null) {
+    const formattedDate = formatDate(value)
+    if (!value) {
+        return {
+            label: "Not posted",
+            value: formattedDate,
+            cardClass: "border-[#d8e1f2] bg-[#edf3ff] text-[#42548d] dark:border-[#3a4778] dark:bg-[#182554] dark:text-[#c7d2f4]",
+        }
+    }
+
+    const parsed = new Date(value)
+    if (Number.isNaN(parsed.getTime())) {
+        return {
+            label: "Invalid date",
+            value: formattedDate,
+            cardClass: "border-[#ffd7a8] bg-[#fff7ed] text-[#b45309] dark:border-[#8a4c16] dark:bg-[#3a2410] dark:text-[#fdba74]",
+        }
+    }
+
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    parsed.setHours(0, 0, 0, 0)
+    const daysSincePosted = Math.round((today.getTime() - parsed.getTime()) / 86400000)
+
+    if (daysSincePosted < 0) {
+        return {
+            label: "Scheduled",
+            value: formattedDate,
+            cardClass: "border-[#bfdbfe] bg-[#eff6ff] text-[#1d4ed8] dark:border-[#1d4ed8] dark:bg-[#12284d] dark:text-[#93c5fd]",
+        }
+    }
+
+    if (daysSincePosted === 0) {
+        return {
+            label: "Today",
+            value: formattedDate,
+            cardClass: "border-[#bbf7d0] bg-[#f0fdf4] text-[#15803d] dark:border-[#166534] dark:bg-[#122f20] dark:text-[#86efac]",
+        }
+    }
+
+    if (daysSincePosted <= 7) {
+        return {
+            label: "New",
+            value: formattedDate,
+            cardClass: "border-[#bae6fd] bg-[#f0f9ff] text-[#0369a1] dark:border-[#0e7490] dark:bg-[#103044] dark:text-[#67e8f9]",
+        }
+    }
+
+    if (daysSincePosted <= 30) {
+        return {
+            label: `${daysSincePosted} days ago`,
+            value: formattedDate,
+            cardClass: "border-[#c7d2fe] bg-[#eef2ff] text-[#4338ca] dark:border-[#4f46e5] dark:bg-[#1f2355] dark:text-[#c4b5fd]",
+        }
+    }
+
+    return {
+        label: "Older",
+        value: formattedDate,
+        cardClass: "border-[#d8e1f2] bg-[#f8fafc] text-[#64748b] dark:border-[#334155] dark:bg-[#172033] dark:text-[#cbd5e1]",
+    }
 }
 
 function DateInfoBlock({
@@ -238,16 +349,16 @@ function DateInfoBlock({
     value,
     prefix,
     icon,
+    emptyLabel = "Not specified",
 }: {
     title: string
     value?: string | null
     prefix?: string
     icon: ReactNode
+    emptyLabel?: string
 }) {
-    const formattedDate = formatDate(value)
-    const status = getDateStatus(value)
-    const isExpired = status === "Expired"
-    const hasValue = formattedDate !== "Not specified"
+    const deadlineMeta = getDeadlineMeta(value, emptyLabel)
+    const hasValue = deadlineMeta.value !== "Not specified"
 
     return (
         <div className="space-y-3">
@@ -258,12 +369,10 @@ function DateInfoBlock({
             <div
                 className={[
                     "rounded-[18px] border px-5 py-5 text-base font-medium",
-                    isExpired
-                        ? "border-[#ffc1bc] bg-[#fff1f0] text-[#c12e24] dark:border-[#7e2d2b] dark:bg-[#311716] dark:text-[#ffb2ab]"
-                        : "border-[#b7d3ff] bg-[#edf4ff] text-[#2b52ba] dark:border-[#2f4f8b] dark:bg-[#101e46] dark:text-[#a9c4ff]",
+                    deadlineMeta.blockClass,
                 ].join(" ")}
             >
-                {hasValue ? `${prefix ? `${prefix}: ` : ""}${formattedDate}${status ? ` (${status})` : ""}` : "Not specified"}
+                {hasValue ? `${prefix ? `${prefix}: ` : ""}${deadlineMeta.value} (${deadlineMeta.label})` : deadlineMeta.label}
             </div>
         </div>
     )
@@ -532,25 +641,27 @@ export default function CorporateJobsPage() {
                         const safeCurrentApplications = Number.isFinite(currentApplications) ? currentApplications : 0
                         const safeMaxApplications = Number.isFinite(maxApplicationsValue) && maxApplicationsValue > 0 ? maxApplicationsValue : 1
                         const completionPercent = getJobCompletionPercent(job)
+                        const deadlineMeta = getDeadlineMeta(job.application_deadline)
+                        const postedMeta = getPostedDateMeta(job.created_at)
 
                         return (
-                            <div key={job.id} className="rounded-[18px] border border-[#dbcfd4] bg-[#fff4f1] shadow-[0_8px_18px_rgba(122,118,145,0.16)] dark:border-[#314176] dark:bg-[#101d49] dark:shadow-[0_18px_30px_rgba(5,10,30,0.34)]">
-                                <div className="border-b border-[#eadbdf] p-3.5 dark:border-[#4658a8]">
+                            <div key={job.id} className="rounded-[12px] border border-[#dbcfd4] bg-[#fff4f1] shadow-[0_4px_12px_rgba(122,118,145,0.12)] dark:border-[#314176] dark:bg-[#101d49] dark:shadow-[0_8px_16px_rgba(5,10,30,0.24)]">
+                                <div className="border-b border-[#eadbdf] p-2.5 dark:border-[#4658a8]">
                                     <div className="flex items-start justify-between gap-3">
                                         <div>
-                                            <h3 className="text-[0.98rem] font-bold text-[#171717] dark:text-white">{job.title}</h3>
-                                            <div className="mt-1.5 inline-flex items-center gap-2 text-[0.88rem] text-[#5f6f98] dark:text-[#c7d2f4]">
+                                            <h3 className="text-[0.9rem] font-bold text-[#171717] dark:text-white">{job.title}</h3>
+                                            <div className="mt-1 inline-flex items-center gap-2 text-[0.8rem] text-[#5f6f98] dark:text-[#c7d2f4]">
                                                 <Building className="h-3.5 w-3.5" />
                                                 <span>{job.company_name || "Not specified"}</span>
                                             </div>
-                                            <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                                                <span className="rounded-full bg-[#875ad8] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wide text-white dark:bg-[#8c5ce5]">
+                                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+                                                <span className="rounded-full bg-[#875ad8] px-2 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-white dark:bg-[#8c5ce5]">
                                                     {job.job_type.replace("_", " ")}
                                                 </span>
-                                                <span className="rounded-full bg-[#d8ffde] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-wide text-[#1baf52] dark:bg-[#dcfce7] dark:text-[#17803d]">
+                                                <span className="rounded-full bg-[#d8ffde] px-2 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-[#1baf52] dark:bg-[#dcfce7] dark:text-[#17803d]">
                                                     {job.status}
                                                 </span>
-                                                <span className="inline-flex items-center gap-1 rounded-xl bg-[#e8f2ff] px-2.5 py-1 text-[9px] font-semibold text-[#355fbe] dark:bg-[#1377db] dark:text-white">
+                                                <span className="inline-flex items-center gap-1 rounded-xl bg-[#e8f2ff] px-2 py-0.5 text-[8px] font-semibold text-[#355fbe] dark:bg-[#1377db] dark:text-white">
                                                     <Clock3 className="h-2.5 w-2.5" />
                                                     {job.mode_of_work ?? "onsite"}
                                                 </span>
@@ -583,30 +694,30 @@ export default function CorporateJobsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="mt-3 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                                        <div className="rounded-xl bg-[#e7fff1] p-2.5 dark:flex dark:min-h-[74px] dark:flex-col dark:justify-between dark:border dark:border-[#23914f] dark:bg-[linear-gradient(180deg,_#1f9448_0%,_#1b863f_100%)]">
-                                            <div className="mb-1 inline-flex items-center gap-2 text-[#19bb5b] dark:text-[#d8ffe7]">
-                                                <MapPin className="h-3 w-3" />
-                                                <span className="text-xs font-medium text-[#5b668e] dark:text-white">Location</span>
+                                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                        <div className="rounded-lg bg-[#e7fff1] p-2 dark:flex dark:min-h-[60px] dark:flex-col dark:justify-between dark:border dark:border-[#23914f] dark:bg-[linear-gradient(180deg,_#1f9448_0%,_#1b863f_100%)]">
+                                            <div className="mb-0.5 inline-flex items-center gap-1.5 text-[#19bb5b] dark:text-[#d8ffe7]">
+                                                <MapPin className="h-2.5 w-2.5" />
+                                                <span className="text-[10px] font-medium text-[#5b668e] dark:text-white">Location</span>
                                             </div>
-                                            <p className="text-[0.9rem] font-semibold text-[#1d2755] dark:text-white">{job.location || "Not specified"}</p>
+                                            <p className="text-[0.8rem] font-semibold text-[#1d2755] dark:text-white">{job.location || "Not specified"}</p>
                                         </div>
-                                        <div className="rounded-xl bg-[#f5eefe] p-2.5 dark:flex dark:min-h-[74px] dark:flex-col dark:justify-between dark:border dark:border-[#9633e1] dark:bg-[linear-gradient(180deg,_#952ee1_0%,_#7e28c7_100%)]">
-                                            <div className="mb-1 inline-flex items-center gap-2 text-[#8b5cf6] dark:text-[#f1ddff]">
-                                                <Users className="h-3 w-3" />
-                                                <span className="text-xs font-medium text-[#5b668e] dark:text-white">Applications</span>
+                                        <div className="rounded-lg bg-[#f5eefe] p-2 dark:flex dark:min-h-[60px] dark:flex-col dark:justify-between dark:border dark:border-[#9633e1] dark:bg-[linear-gradient(180deg,_#952ee1_0%,_#7e28c7_100%)]">
+                                            <div className="mb-0.5 inline-flex items-center gap-1.5 text-[#8b5cf6] dark:text-[#f1ddff]">
+                                                <Users className="h-2.5 w-2.5" />
+                                                <span className="text-[10px] font-medium text-[#5b668e] dark:text-white">Applications</span>
                                             </div>
-                                            <p className="text-[0.9rem] font-semibold text-[#1d2755] dark:text-white">{safeCurrentApplications}/{safeMaxApplications}</p>
+                                            <p className="text-[0.8rem] font-semibold text-[#1d2755] dark:text-white">{safeCurrentApplications}/{safeMaxApplications}</p>
                                         </div>
                                     </div>
 
-                                    <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                        <div className="inline-flex items-center gap-2 text-[0.9rem] text-[#42548d] dark:text-[#dfe7ff]">
-                                            <Briefcase className="h-3.5 w-3.5" />
+                                    <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                                        <div className="inline-flex items-center gap-1.5 text-[0.8rem] text-[#42548d] dark:text-[#dfe7ff]">
+                                            <Briefcase className="h-3 w-3" />
                                             <span>{job.experience_min ?? 0}-{job.experience_max ?? "Any"} years</span>
                                         </div>
-                                        <div className="inline-flex items-center gap-2 text-[0.9rem] text-[#42548d] dark:text-[#dfe7ff]">
-                                            <IndianRupee className="h-3.5 w-3.5" />
+                                        <div className="inline-flex items-center gap-1.5 text-[0.8rem] text-[#42548d] dark:text-[#dfe7ff]">
+                                            <IndianRupee className="h-3 w-3" />
                                             <span>{formatSalary(job)}</span>
                                         </div>
                                     </div>
@@ -624,21 +735,31 @@ export default function CorporateJobsPage() {
                                         </div>
                                     ) : null}
 
-                                    <p className="mt-3 line-clamp-3 text-[0.9rem] leading-7 text-[#42548d] dark:text-[#edf1ff]">{job.description}</p>
+                                    <p className="mt-2.5 line-clamp-3 text-[0.8rem] leading-6 text-[#42548d] dark:text-[#edf1ff]">{job.description}</p>
 
-                                    <div className="mt-3 grid grid-cols-1 gap-1.5 text-[0.88rem] text-[#5f6f98] sm:grid-cols-2 sm:gap-3 dark:text-[#c7d2f4]">
-                                        <div className="inline-flex min-w-0 items-center gap-2">
-                                            <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-                                            <span className="truncate">Deadline: {formatDate(job.application_deadline)}</span>
+                                    <div className="mt-2.5 grid grid-cols-1 gap-1.5 text-[0.75rem] text-[#5f6f98] min-[420px]:grid-cols-2 dark:text-[#c7d2f4]">
+                                        <div className={`relative flex min-w-0 items-center gap-2 rounded-lg border px-2 py-1 font-semibold ${deadlineMeta.cardClass}`}>
+                                            <CalendarDays className="h-3 w-3 shrink-0" />
+                                            <div className="min-w-0 flex-1 pr-36 leading-tight">
+                                                <span className="block text-[8px] uppercase tracking-wide opacity-80">Deadline</span>
+                                                <span className="block whitespace-nowrap text-[0.75rem]">{deadlineMeta.value}</span>
+                                            </div>
+                                            {deadlineMeta.label !== deadlineMeta.value ? (
+                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/60 px-1 py-0.5 text-[8px] uppercase tracking-wide dark:bg-white/10">{deadlineMeta.label}</span>
+                                            ) : null}
                                         </div>
-                                        <div className="inline-flex min-w-0 items-center gap-2 sm:justify-end">
-                                            <Clock className="h-3.5 w-3.5 shrink-0" />
-                                            <span className="truncate">Posted {formatDate(job.created_at)}</span>
+                                        <div className={`relative flex min-w-0 items-center gap-2 rounded-lg border px-2 py-1 font-semibold ${postedMeta.cardClass}`}>
+                                            <Clock className="h-3 w-3 shrink-0" />
+                                            <div className="min-w-0 flex-1 pr-36 leading-tight">
+                                                <span className="block text-[8px] uppercase tracking-wide opacity-80">Posted</span>
+                                                <span className="block whitespace-nowrap text-[0.75rem]">{postedMeta.value}</span>
+                                            </div>
+                                            <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/60 px-1 py-0.5 text-[8px] uppercase tracking-wide dark:bg-white/10">{postedMeta.label}</span>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="p-3.5">
+                                <div className="p-2.5">
                                     <div className="flex items-end justify-between gap-3">
                                         <div className="flex-1">
                                             <p className="text-xs text-[#7c839c] dark:text-[#d8e0ff]">Job Completion</p>
@@ -891,6 +1012,7 @@ export default function CorporateJobsPage() {
                             <DateInfoBlock
                                 title="Application Deadline"
                                 value={selectedJob.application_deadline}
+                                emptyLabel="No deadline"
                                 icon={<CalendarDays className="h-5 w-5" />}
                             />
                             <DateInfoBlock

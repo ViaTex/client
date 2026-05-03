@@ -301,6 +301,10 @@ body {
   z-index: 0;
 }
 
+.dark .step-line::after {
+  background: rgba(255, 255, 255, 0.2);
+}
+
 @keyframes meshGradient {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }

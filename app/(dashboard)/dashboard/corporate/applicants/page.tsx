@@ -15,6 +15,7 @@ import {
     IndianRupee,
     Search,
     SlidersHorizontal,
+    Upload,
     UserRound,
     UserRoundCheck,
     XCircle,
@@ -167,7 +168,9 @@ export default function CorporateApplicantsPage() {
     const [selectedApplication, setSelectedApplication] = useState<JobApplicationItem | null>(null)
     const [draftStatus, setDraftStatus] = useState<ApplicationStatus>("applied")
     const [corporateNotes, setCorporateNotes] = useState("")
+    const [offerLetterFile, setOfferLetterFile] = useState<File | null>(null)
     const [updatingStatus, setUpdatingStatus] = useState(false)
+    const [sendingOffer, setSendingOffer] = useState(false)
 
     const currentBannerDate = useMemo(
         () =>
@@ -245,13 +248,16 @@ export default function CorporateApplicantsPage() {
         setSelectedApplication(application)
         setDraftStatus((application.status as ApplicationStatus) || "applied")
         setCorporateNotes("")
+        setOfferLetterFile(null)
         setSuccessMessage("")
     }
 
     const closeStatusModal = () => {
         setSelectedApplication(null)
         setCorporateNotes("")
+        setOfferLetterFile(null)
         setUpdatingStatus(false)
+        setSendingOffer(false)
     }
 
     const handleStatusUpdate = async () => {
@@ -269,6 +275,40 @@ export default function CorporateApplicantsPage() {
             setError(e?.response?.data?.detail || "Failed to update application status")
         } finally {
             setUpdatingStatus(false)
+        }
+    }
+
+    const handleSendOfferLetter = async () => {
+        if (!selectedApplication) return
+
+        if (!offerLetterFile) {
+            setError("Choose an offer letter PDF before sending.")
+            return
+        }
+
+        if (offerLetterFile.type && offerLetterFile.type !== "application/pdf") {
+            setError("Only PDF offer letters are supported.")
+            return
+        }
+
+        if (offerLetterFile.size > 5 * 1024 * 1024) {
+            setError("Offer letter PDF must be 5MB or smaller.")
+            return
+        }
+
+        setSendingOffer(true)
+        setError("")
+        setSuccessMessage("")
+        try {
+            const updated = await apiClient.uploadCorporateOfferLetter(selectedApplication.id, offerLetterFile)
+            setApplications((current) => current.map((item) => (item.id === updated.id ? updated : item)))
+            setSelectedApplication(updated)
+            setOfferLetterFile(null)
+            setSuccessMessage("Offer letter PDF sent to the student.")
+        } catch (e: any) {
+            setError(e?.response?.data?.detail || "Failed to send offer letter")
+        } finally {
+            setSendingOffer(false)
         }
     }
 
@@ -515,16 +555,69 @@ export default function CorporateApplicantsPage() {
                                     />
                                 </div>
                             </div>
-                            {selectedApplication.resume_url ? (
-                                <a
-                                    href={selectedApplication.resume_url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="inline-flex text-sm font-medium text-[#2856b6] hover:underline dark:text-[#bcd3ff]"
-                                >
-                                    Open submitted resume
-                                </a>
-                            ) : null}
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                {selectedApplication.resume_url ? (
+                                    <a
+                                        href={selectedApplication.resume_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex text-sm font-medium text-[#2856b6] hover:underline dark:text-[#bcd3ff]"
+                                    >
+                                        Open submitted resume
+                                    </a>
+                                ) : (
+                                    <span className="text-sm text-[#5f6f98] dark:text-[#b8c5e6]">No resume attached</span>
+                                )}
+                                {selectedApplication.offer_letter_sent_at ? (
+                                    <span className="text-xs font-medium text-[#166534] dark:text-[#bbf7d0]">
+                                        Offer sent on {formatDate(selectedApplication.offer_letter_sent_at)}
+                                    </span>
+                                ) : null}
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <p className="text-[1rem] font-semibold text-[#374151] dark:text-white">Offer Letter</p>
+                            <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[14px] border-2 border-dashed border-[#c9d7f1] bg-[#f8fbff] px-5 py-8 text-center transition hover:border-[#2856b6] hover:bg-[#edf3ff] dark:border-[#3b456b] dark:bg-[#1a213a] dark:hover:border-[#6b8de8]">
+                                <Upload className="h-8 w-8 text-[#2856b6] dark:text-[#bcd3ff]" />
+                                <span className="text-[0.98rem] font-semibold text-[#1f2937] dark:text-white">
+                                    {offerLetterFile ? offerLetterFile.name : "Choose offer letter PDF"}
+                                </span>
+                                <span className="text-xs text-[#5f6f98] dark:text-[#b8c5e6]">
+                                    PDF only, maximum 5MB
+                                </span>
+                                <input
+                                    type="file"
+                                    accept="application/pdf,.pdf"
+                                    className="sr-only"
+                                    onChange={(event) => setOfferLetterFile(event.target.files?.[0] || null)}
+                                />
+                            </label>
+                            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                {selectedApplication.offer_letter ? (
+                                    <a
+                                        href={selectedApplication.offer_letter}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex text-sm font-medium text-[#2856b6] hover:underline dark:text-[#bcd3ff]"
+                                    >
+                                        Open sent offer PDF
+                                    </a>
+                                ) : (
+                                    <span className="text-sm text-[#5f6f98] dark:text-[#b8c5e6]">No offer PDF sent yet</span>
+                                )}
+                                <div className="flex justify-end">
+                                    <Button
+                                        type="button"
+                                        onClick={handleSendOfferLetter}
+                                        loading={sendingOffer}
+                                        disabled={!offerLetterFile || sendingOffer}
+                                        className="rounded-xl bg-[#16a34a] px-5 text-white hover:bg-[#15803d]"
+                                    >
+                                        Send Offer PDF
+                                    </Button>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="flex flex-col gap-3 border-t border-[#e6ebf7] pt-5 dark:border-[#2a3969] sm:flex-row sm:justify-end">

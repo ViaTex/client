@@ -76,8 +76,20 @@ export default function CreateJobPage() {
         if (currentStepId === "job_basics") {
             return Boolean(title.trim() && description.trim() && location.trim() && jobType)
         }
+        if (currentStepId === "candidate_eligibility") {
+            return Boolean(experienceMin || experienceMax || skillsRequired || educationLevel || educationDegree || educationBranch || eligibilityCriteria)
+        }
+        if (currentStepId === "compensation_company") {
+            return Boolean(companyName.trim() || industry.trim() || openings.trim())
+        }
         return true
-    }, [currentStepId, title, description, location, jobType])
+    }, [currentStepId, title, description, location, jobType, experienceMin, experienceMax, skillsRequired, educationLevel, educationDegree, educationBranch, eligibilityCriteria, companyName, industry, openings])
+
+    // Debug logging for step navigation
+    useEffect(() => {
+        console.log('Current step:', currentStep, 'Step ID:', currentStepId)
+        console.log('Can go next:', canGoNext)
+    }, [currentStep, currentStepId, canGoNext])
 
     useEffect(() => {
         apiClient
@@ -181,7 +193,10 @@ export default function CreateJobPage() {
                             <button
                                 key={step.id}
                                 type="button"
-                                onClick={() => setCurrentStep(index)}
+                                onClick={() => {
+                                console.log('Step button clicked:', index, step.id)
+                                setCurrentStep(index)
+                            }}
                                 className={`border-r border-[#d7ddf8] px-3 py-3 text-sm font-semibold last:border-r-0 dark:border-[#3a4677] ${
                                     isActive ? "bg-[#e9eeff] text-[#2a52d6]" : isDone ? "bg-[#eafaf1] text-[#1e9d63] dark:bg-[#1b3b34] dark:text-[#71e0aa]" : "bg-white text-[#5f6f98] dark:bg-[#182247] dark:text-[#dbe3ff]"
                                 }`}
@@ -382,7 +397,10 @@ export default function CreateJobPage() {
                                 {success ? <p className="text-sm text-green-600 dark:text-green-400">{success}</p> : null}
                                 {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
                                 {currentStep < STEPS.length - 1 ? (
-                                    <Button type="button" className="bg-[#2f7fff] text-white hover:bg-[#246dea] dark:bg-[#8b5cf6] dark:hover:bg-[#7c46ee]" disabled={!canGoNext} onClick={() => setCurrentStep((p) => p + 1)}>
+                                    <Button type="button" className="bg-[#2f7fff] text-white hover:bg-[#246dea] dark:bg-[#8b5cf6] dark:hover:bg-[#7c46ee]" disabled={!canGoNext} onClick={() => {
+                                        console.log('Next button clicked, current step:', currentStep, 'canGoNext:', canGoNext)
+                                        setCurrentStep((p) => p + 1)
+                                    }}>
                                         Next
                                     </Button>
                                 ) : (

@@ -4,7 +4,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v
 
 const axiosInstance = axios.create({
     baseURL: BASE_URL,
-    timeout: 15000,
+    timeout: 45000,
     headers: {
         'Content-Type': 'application/json',
     },
@@ -78,6 +78,8 @@ export interface JobApplicationItem {
     expected_salary?: number | string | null
     cover_letter?: string | null
     resume_url?: string | null
+    offer_letter?: string | null
+    offer_letter_sent_at?: string | null
     created_at: string
     updated_at?: string | null
     student_name?: string | null
@@ -144,21 +146,70 @@ export interface SkillEvaluationItem {
     updated_at?: string | null
 }
 
-// Request interceptor to add auth token
-axiosInstance.interceptors.request.use((config) => {
-    if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('access_token')
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`
-        }
-    }
-    return config
-})
+// Network error detection
+const isNetworkError = (error: any): boolean => {
+    return !error.response && 
+        (error.code === 'ERR_NETWORK' || 
+         error.code === 'ERR_INTERNET_DISCONNECTED' ||
+         (error.message && error.message.includes('Network Error')) ||
+         (error.message && error.message.includes('fetch')))
+}
 
-// Response interceptor to handle 401 Unauthorized globally
+const retryRequest = async (originalRequest: any, retryCount = 0, maxRetries = 3) => {
+    if (retryCount >= maxRetries) {
+        throw originalRequest
+    }
+    
+    // Wait before retrying (exponential backoff)
+    const delay = Math.pow(2, retryCount) * 1000
+    await new Promise(resolve => setTimeout(resolve, delay))
+    
+    try {
+        return await axiosInstance(originalRequest)
+    } catch (error) {
+        if (isNetworkError(error)) {
+            return retryRequest(originalRequest, retryCount + 1, maxRetries)
+        }
+        throw error
+    }
+}
+
+// Request interceptor to add auth token
+axiosInstance.interceptors.request.use(
+    (config) => {
+        if (typeof window !== 'undefined') {
+            const token = localStorage.getItem('access_token')
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`
+            }
+        }
+        return config
+    },
+    (error) => Promise.reject(error)
+)
+
+// Response interceptor with retry logic
 axiosInstance.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
+        const originalRequest = error.config
+        
+        // Handle network errors with retry logic
+        if (isNetworkError(error) && !originalRequest._retry) {
+            originalRequest._retry = true
+            try {
+                return await retryRequest(originalRequest)
+            } catch (retryError) {
+                // If all retries fail, create a more user-friendly error
+                const networkError = new Error(
+                    'Network connection failed. Please check your internet connection and try again.'
+                ) as any
+                networkError.code = 'NETWORK_ERROR'
+                return Promise.reject(networkError)
+            }
+        }
+        
+        // Handle 401 Unauthorized
         if (typeof window !== 'undefined' && error?.response?.status === 401) {
             // Clear all auth state and redirect to login
             localStorage.removeItem('access_token')
@@ -171,6 +222,7 @@ axiosInstance.interceptors.response.use(
                 window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`
             }
         }
+        
         return Promise.reject(error)
     }
 )
@@ -308,8 +360,20 @@ export const apiClient = {
         return response.data as JobApplicationItem[]
     },
 
-    updateCorporateApplicant: async (applicationId: string, data: { status: string }) => {
+    updateCorporateApplicant: async (applicationId: string, data: { status?: string; offer_letter?: string }) => {
         const response = await axiosInstance.patch(`/corporate/applicants/${applicationId}`, data)
+        return response.data as JobApplicationItem
+    },
+
+    uploadCorporateOfferLetter: async (applicationId: string, file: File) => {
+        const formData = new FormData()
+        formData.append("file", file)
+        const response = await axiosInstance.post(`/corporate/applicants/${applicationId}/offer-letter`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+            timeout: 60000,
+        })
         return response.data as JobApplicationItem
     },
 

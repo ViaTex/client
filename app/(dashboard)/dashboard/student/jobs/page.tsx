@@ -5,16 +5,74 @@ import { apiClient, JobApplicationItem, JobItem } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Modal } from "@/components/ui/modal"
-import { Briefcase, Building2, CalendarDays, Clock3, ExternalLink, Heart, MapPin, Search, Users } from "lucide-react"
+import { AnimatePresence, motion, type Variants } from "framer-motion"
+import { Briefcase, Building2, CalendarDays, Clock3, ExternalLink, FileText, Heart, MapPin, Search, Sparkles, Users } from "lucide-react"
 
 type JobFilter = "all" | "jobs" | "internships"
 type JobAvailability = "all" | "open" | "closed"
+
+const pageIntroVariants: Variants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+}
+
+const filterPanelVariants: Variants = {
+    hidden: { opacity: 0, x: -8 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.25, delay: 0.1, ease: "easeOut" } },
+}
+
+const listVariants: Variants = {
+    hidden: {},
+    visible: {
+        transition: {
+            staggerChildren: 0.03,
+        },
+    },
+}
+
+const cardVariants: Variants = {
+    hidden: { opacity: 0, y: 10, scale: 0.98 },
+    visible: (index = 0) => ({
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        transition: { duration: 0.25, delay: Math.min(index * 0.02, 0.15), ease: "easeOut" },
+    }),
+    exit: { opacity: 0, y: 5, scale: 0.98, transition: { duration: 0.15, ease: "easeIn" } },
+}
+
+function getErrorMessage(error: any, fallback: string) {
+    const detail = error?.response?.data?.detail
+    if (typeof detail === "string" && detail.trim()) return detail
+    if (Array.isArray(detail) && detail.length) {
+        return detail
+            .map((item) => (typeof item === "string" ? item : item?.msg))
+            .filter(Boolean)
+            .join(", ")
+    }
+    if (error?.response?.status) return `${fallback} (${error.response.status})`
+    return error?.message || fallback
+}
 
 function formatLabel(value?: string | null) {
     if (!value) return "Not specified"
     return value
         .replace(/_/g, " ")
         .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+function getApplicationStatusButton(status?: string | null) {
+    const label = formatLabel(status || "applied")
+    const tone =
+        status === "selected"
+            ? "bg-[#16A34A] text-white hover:bg-[#15803D]"
+            : status === "shortlisted"
+              ? "bg-[#EAB308] text-white hover:bg-[#CA8A04]"
+              : status === "rejected"
+                ? "bg-[#EF4444] text-white hover:bg-[#DC2626]"
+                : "bg-[#7C3AED] text-white hover:bg-[#6D28D9]"
+
+    return { label, tone }
 }
 
 function formatValue(value?: string | number | null) {
@@ -83,26 +141,73 @@ export default function StudentJobsPage() {
     const [applyingJobId, setApplyingJobId] = useState("")
 
     useEffect(() => {
-        const loadJobs = async () => {
+        const loadData = async () => {
+            // Check if user is authenticated
+            if (typeof window !== 'undefined') {
+                const token = localStorage.getItem('access_token')
+                if (!token) {
+                    setError("Please log in to view jobs and internships.")
+                    setLoading(false)
+                    return
+                }
+            }
             setLoading(true)
             setError("")
+            
+            // Create timeout promise with longer duration
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Request timeout')), 30000)
+            )
+            
             try {
-                const [jobsData, applicationsData] = await Promise.all([
-                    apiClient.getJobs(false),
-                    apiClient.getMyApplications(),
-                ])
+                // Load jobs with timeout
+                const jobsPromise = apiClient.getJobs(false)
+                const jobsData = await Promise.race([jobsPromise, timeoutPromise]) as JobItem[]
                 setJobs(jobsData || [])
-                setApplications(applicationsData || [])
+                
+                // If jobs loaded successfully but no data, provide helpful message
+                if (jobsData && jobsData.length === 0) {
+                    console.log('No jobs available from API')
+                }
+                
+                // Load applications with timeout
+                try {
+                    const applicationsPromise = apiClient.getMyApplications()
+                    const applicationsData = await Promise.race([applicationsPromise, timeoutPromise]) as JobApplicationItem[]
+                    setApplications(applicationsData || [])
+                } catch (e: any) {
+                    setApplications([])
+                    // Don't set action message for applications error to avoid blocking the page
+                    // But log for debugging
+                    console.error('Failed to load applications:', e)
+                    if (e?.response?.status === 401) {
+                        // Applications endpoint also requires auth, but main error handling will redirect
+                        console.log('Authentication required for applications')
+                    }
+                }
             } catch (e: any) {
-                setError(e?.response?.data?.detail || "Failed to load jobs")
+                if (e.code === 'NETWORK_ERROR') {
+                    setError(e.message)
+                } else if (e.message === 'Request timeout') {
+                    setError("The server is taking too long to respond. Please try again later.")
+                } else if (e?.response?.status === 401) {
+                    setError("Your session has expired. Please log in again.")
+                    // The interceptor will handle redirect, but we provide a clear message
+                } else {
+                    setError(getErrorMessage(e, "Failed to load jobs"))
+                }
             } finally {
                 setLoading(false)
             }
         }
-        loadJobs()
+
+        loadData()
     }, [])
 
     const filteredJobs = useMemo(() => {
+        // Early return if no jobs
+        if (!jobs.length) return []
+        
         const query = searchTerm.trim().toLowerCase()
         const company = selectedCompany.trim().toLowerCase()
         const role = selectedRole.trim().toLowerCase()
@@ -118,21 +223,20 @@ export default function StudentJobsPage() {
             if (industry && !job.industry?.toLowerCase().includes(industry)) return false
             if (!query) return true
 
-            return [
-                job.title,
-                job.description,
-                job.location,
-                job.company_name,
-                job.company_description,
-                job.industry,
-                ...(job.skills_required || []),
-            ]
-                .filter(Boolean)
-                .some((value) => String(value).toLowerCase().includes(query))
+            // Optimize search by checking most likely fields first
+            return job.title?.toLowerCase().includes(query) ||
+                   job.company_name?.toLowerCase().includes(query) ||
+                   job.location?.toLowerCase().includes(query) ||
+                   job.industry?.toLowerCase().includes(query) ||
+                   (job.skills_required || []).some(skill => skill.toLowerCase().includes(query))
         })
     }, [availability, filter, jobs, searchTerm, selectedCompany, selectedIndustry, selectedLocation, selectedRole])
 
     const appliedJobIds = useMemo(() => new Set(applications.map((application) => application.job_id)), [applications])
+    const applicationByJobId = useMemo(
+        () => new Map(applications.map((application) => [application.job_id, application])),
+        [applications]
+    )
 
     const stats = useMemo(
         () => ({
@@ -152,8 +256,16 @@ export default function StudentJobsPage() {
         setApplyingJobId(job.id)
         setError("")
         setActionMessage("")
+        
+        // Create timeout promise
+        const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Application request timeout')), 20000)
+        )
+        
         try {
-            const application = await apiClient.applyToJob(job.id)
+            const applyPromise = apiClient.applyToJob(job.id)
+            const application = await Promise.race([applyPromise, timeoutPromise])
+            
             setApplications((current) => [application, ...current])
             const nextApplications = (job.current_applications || 0) + 1
             const patch = {
@@ -164,7 +276,13 @@ export default function StudentJobsPage() {
             setSelectedJob((current) => (current?.id === job.id ? { ...current, ...patch } : current))
             setActionMessage(`Application submitted for ${job.title}.`)
         } catch (e: any) {
-            setError(e?.response?.data?.detail || "Failed to apply for this job")
+            if (e.message === 'Application request timeout') {
+                setError("Application request is taking too long. Please try again.")
+            } else if (e.code === 'NETWORK_ERROR') {
+                setError(e.message)
+            } else {
+                setError(e?.response?.data?.detail || "Failed to apply for this job")
+            }
         } finally {
             setApplyingJobId("")
         }
@@ -172,9 +290,24 @@ export default function StudentJobsPage() {
 
     return (
         <div className="mx-auto w-full max-w-7xl space-y-5 px-3 text-gray-900 dark:text-gray-100 sm:px-4 md:px-6">
-            <section className="rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-5 shadow-sm dark:border-[#243056] dark:bg-[#121C46]">
-                <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+            <motion.section
+                variants={pageIntroVariants}
+                initial="hidden"
+                animate="visible"
+                className="relative overflow-hidden rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-5 shadow-sm dark:border-[#243056] dark:bg-[#121C46]"
+            >
+                <div
+                    aria-hidden="true"
+                    className="absolute right-5 top-4 hidden h-24 w-48 rounded-full bg-gradient-to-r from-[#38BDF8]/20 via-[#7C3AED]/20 to-[#F59E0B]/20 blur-2xl sm:block"
+                />
+                <div className="relative flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
                     <div className="max-w-2xl">
+                        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#D5CCFF] bg-white/80 px-3 py-1 text-xs font-bold text-[#6D28D9] shadow-sm dark:border-[#4C3D88] dark:bg-white/10 dark:text-[#C4B5FD]">
+                            <span className="inline-flex" aria-hidden="true">
+                                <Sparkles className="h-3.5 w-3.5" />
+                            </span>
+                            Fresh career matches
+                        </div>
                         <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-[2rem]">Jobs & Internships</h1>
                         <p className="mt-1 max-w-xl text-sm leading-6 text-gray-500 dark:text-[#A8B3CF]">
                             Explore career opportunities, filter by your goals, and apply directly from your student dashboard.
@@ -191,10 +324,15 @@ export default function StudentJobsPage() {
                         />
                     </div>
                 </div>
-            </section>
+            </motion.section>
 
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-4">
-                <aside className="space-y-4 lg:col-span-1">
+                <motion.aside
+                    variants={filterPanelVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="space-y-4 lg:col-span-1"
+                >
                     <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm dark:border-[#243056] dark:bg-[#121C46]">
                         <p className="mb-3 text-sm font-bold text-gray-900 dark:text-white">Opportunity type</p>
                         <div className="grid grid-cols-3 rounded-xl border border-gray-200 bg-gray-50 p-1 dark:border-[#31406B] dark:bg-[#0C1430]">
@@ -207,13 +345,18 @@ export default function StudentJobsPage() {
                                     key={item.id}
                                     type="button"
                                     onClick={() => setFilter(item.id as JobFilter)}
-                                    className={`min-w-0 rounded-lg px-2 py-2 text-center text-xs font-semibold transition-colors ${
+                                    className={`relative min-w-0 rounded-lg px-2 py-2 text-center text-xs font-semibold transition-colors ${
                                         filter === item.id
-                                            ? "bg-[#7C3AED] text-white"
+                                            ? "text-white"
                                             : "text-gray-600 hover:bg-white dark:text-[#A8B3CF] dark:hover:bg-white/10"
                                     }`}
                                 >
-                                    {item.label}
+                                    {filter === item.id ? (
+                                        <span
+                                            className="absolute inset-0 rounded-lg bg-[#7C3AED]"
+                                        />
+                                    ) : null}
+                                    <span className="relative">{item.label}</span>
                                 </button>
                             ))}
                         </div>
@@ -258,9 +401,14 @@ export default function StudentJobsPage() {
                             />
                         </div>
                     ))}
-                </aside>
+                </motion.aside>
 
-                <div className="space-y-4 lg:col-span-3">
+                <motion.div
+                    variants={listVariants}
+                    initial="hidden"
+                    animate="visible"
+                    className="space-y-4 lg:col-span-3"
+                >
                     {loading ? <p className="text-sm text-gray-500">Loading opportunities...</p> : null}
                     {error ? <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">{error}</p> : null}
                     {actionMessage ? <p className="rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-300">{actionMessage}</p> : null}
@@ -271,19 +419,30 @@ export default function StudentJobsPage() {
                         </div>
                     ) : null}
 
-                    {filteredJobs.map((job) => {
-                        const isApplied = appliedJobIds.has(job.id)
-                        const isClosed = job.status !== "active" || job.can_apply === false
+                    <AnimatePresence mode="popLayout">
+                        {filteredJobs.map((job, index) => {
+                            const application = applicationByJobId.get(job.id)
+                            const isApplied = Boolean(application)
+                            const isClosed = job.status !== "active" || job.can_apply === false
+                            const applicationStatus = getApplicationStatusButton(application?.status)
 
-                        return (
-                            <article
+                            return (
+                            <motion.article
                                 key={job.id}
-                                className="overflow-hidden rounded-3xl border border-[#DCE5F8] bg-white shadow-sm transition-shadow hover:shadow-md dark:border-[#243056] dark:bg-[#121C46]"
+                                custom={index}
+                                layout
+                                variants={cardVariants}
+                                initial="hidden"
+                                animate="visible"
+                                exit="exit"
+                                className="group overflow-hidden rounded-3xl border border-[#DCE5F8] bg-white shadow-sm transition-shadow hover:shadow-md dark:border-[#243056] dark:bg-[#121C46]"
                             >
                                 <div className="border-b border-gray-100 bg-[#F7F8FF] p-5 dark:border-[#243056] dark:bg-[#0C1430]">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex min-w-0 items-center gap-3">
-                                            <div className="flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-[#2563EB] to-[#7C3AED] text-lg font-bold text-white">
+                                            <div
+                                                className="flex h-12 w-12 flex-none items-center justify-center rounded-xl bg-gradient-to-br from-[#2563EB] to-[#7C3AED] text-lg font-bold text-white shadow-sm"
+                                            >
                                                 {job.company_name?.[0]?.toUpperCase() || "J"}
                                             </div>
                                             <div className="min-w-0">
@@ -375,49 +534,65 @@ export default function StudentJobsPage() {
                                     ) : null}
 
                                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                        {job.company_website ? (
-                                            <a
-                                                href={job.company_website}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 text-sm font-semibold text-[#7C3AED] hover:underline dark:text-[#C4B5FD]"
-                                            >
-                                                Company website
-                                                <ExternalLink className="h-4 w-4" />
-                                            </a>
-                                        ) : (
-                                            <span />
-                                        )}
+                                        <div className="flex flex-col gap-2">
+                                            {job.company_website ? (
+                                                <a
+                                                    href={job.company_website}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#7C3AED] hover:underline dark:text-[#C4B5FD]"
+                                                >
+                                                    Company website
+                                                    <ExternalLink className="h-4 w-4" />
+                                                </a>
+                                            ) : null}
+                                            {application?.offer_letter ? (
+                                                <a
+                                                    href={application.offer_letter}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="inline-flex items-center gap-2 text-left text-sm font-semibold text-[#166534] hover:underline dark:text-[#86efac]"
+                                                >
+                                                    <FileText className="h-4 w-4" />
+                                                    Open offer letter PDF
+                                                </a>
+                                            ) : null}
+                                        </div>
                                         <div className="flex flex-col gap-3 sm:flex-row">
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                onClick={() => setSelectedJob(job)}
-                                                className="h-11 rounded-xl border-[#D5CCFF] px-5 text-[#7C3AED] hover:bg-[#F3EEFF] dark:border-[#4C3D88] dark:text-[#C4B5FD] dark:hover:bg-[#1C2752]"
-                                            >
-                                                View Full Details
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                onClick={() => handleApply(job)}
-                                                disabled={isApplied || applyingJobId === job.id || isClosed}
-                                                className="h-11 rounded-xl bg-[#7C3AED] px-5 text-white hover:bg-[#6D28D9] disabled:cursor-not-allowed disabled:opacity-70"
-                                            >
-                                                {isApplied ? "Applied" : applyingJobId === job.id ? "Applying..." : isClosed ? "Applications Closed" : "Apply Now"}
-                                            </Button>
+                                            <div>
+                                                <Button
+                                                    type="button"
+                                                    variant="outline"
+                                                    onClick={() => setSelectedJob(job)}
+                                                    className="h-11 w-full rounded-xl border-[#D5CCFF] px-5 text-[#7C3AED] hover:bg-[#F3EEFF] dark:border-[#4C3D88] dark:text-[#C4B5FD] dark:hover:bg-[#1C2752] sm:w-auto"
+                                                >
+                                                    View Full Details
+                                                </Button>
+                                            </div>
+                                            <div>
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => handleApply(job)}
+                                                    disabled={isApplied || applyingJobId === job.id || isClosed}
+                                                    className={`h-11 w-full rounded-xl px-5 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto ${isApplied ? applicationStatus.tone : "bg-[#7C3AED] text-white hover:bg-[#6D28D9]"}`}
+                                                >
+                                                    {isApplied ? applicationStatus.label : applyingJobId === job.id ? "Applying..." : isClosed ? "Applications Closed" : "Apply Now"}
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </article>
-                        )
-                    })}
+                            </motion.article>
+                            )
+                        })}
+                    </AnimatePresence>
 
                     {filteredJobs.length > 0 ? (
                         <p className="text-sm text-gray-600 dark:text-[#A8B3CF]">
                             Jobs: <span className="font-semibold">{filteredJobs.length}</span> of <span className="font-semibold">{jobs.length}</span> results
                         </p>
                     ) : null}
-                </div>
+                </motion.div>
             </div>
 
             {selectedJob ? (
@@ -526,14 +701,19 @@ export default function StudentJobsPage() {
                                 type="button"
                                 onClick={() => handleApply(selectedJob)}
                                 disabled={appliedJobIds.has(selectedJob.id) || applyingJobId === selectedJob.id || selectedJob.status !== "active" || selectedJob.can_apply === false}
-                                className="rounded-xl bg-[#7C3AED] text-white hover:bg-[#6D28D9] disabled:cursor-not-allowed disabled:opacity-70"
+                                className={`rounded-xl disabled:cursor-not-allowed disabled:opacity-70 ${
+                                    applicationByJobId.has(selectedJob.id)
+                                        ? getApplicationStatusButton(applicationByJobId.get(selectedJob.id)?.status).tone
+                                        : "bg-[#7C3AED] text-white hover:bg-[#6D28D9]"
+                                }`}
                             >
-                                {appliedJobIds.has(selectedJob.id) ? "Applied" : applyingJobId === selectedJob.id ? "Applying..." : selectedJob.status !== "active" || selectedJob.can_apply === false ? "Applications Closed" : "Apply Now"}
+                                {applicationByJobId.has(selectedJob.id) ? getApplicationStatusButton(applicationByJobId.get(selectedJob.id)?.status).label : applyingJobId === selectedJob.id ? "Applying..." : selectedJob.status !== "active" || selectedJob.can_apply === false ? "Applications Closed" : "Apply Now"}
                             </Button>
                         </div>
                     </div>
                 </Modal>
             ) : null}
+
         </div>
     )
 }
