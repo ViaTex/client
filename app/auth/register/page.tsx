@@ -7,6 +7,8 @@ import { useForm, type SubmitHandler } from 'react-hook-form'
 import { toast } from 'react-hot-toast'
 import { Eye, EyeOff, Mail, Lock, User, Building2, GraduationCap, Phone, Globe, BriefcaseBusiness } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
+import LoginIllustration from '../login/LoginIllustration'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -155,8 +157,8 @@ function RegisterContent() {
         }
     }
 
-    const labelClassName = "mb-2 block text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-[#A8B3CF]"
-    const inputClassName = "h-12 rounded-xl border border-transparent bg-gray-100 text-gray-900 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-[#2536B8]/20 dark:border-[#31406B] dark:bg-[#24345D] dark:text-white dark:placeholder:text-[#9AA8C8] dark:focus-visible:border-[#7C3AED] dark:focus-visible:ring-[#7C3AED]/20"
+    const labelClassName = "mb-1 block text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-[#A8B3CF]"
+    const inputClassName = "mt-1 h-12 rounded-lg bg-white dark:bg-[#17213F] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-[#9AA8C8] border border-gray-200 dark:border-[#2A375E] focus:border-[#7199D6] dark:focus:border-[#7199D6] focus:ring-1 focus:ring-[#7199D6]"
 
     const renderStudentForm = () => (
         <div className="space-y-4">
@@ -353,52 +355,33 @@ function RegisterContent() {
     }
 
     return (
-        <div className="min-h-screen bg-[#f3f3f3] dark:bg-[#0A1020] flex items-center justify-center py-12">
-            <div className="container mx-auto px-4">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="max-w-2xl mx-auto"
-                >
-                    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-xl dark:border-[#243056] dark:bg-[#121C46]">
+        <div className="min-h-screen flex items-center justify-center bg-[#f0f4fc] dark:bg-[#0A1020] p-4 md:p-8">
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="w-full max-w-[1000px] rounded-3xl overflow-hidden border border-gray-100 dark:border-[#243056] shadow-2xl bg-white dark:bg-[#121C46] grid lg:grid-cols-2 min-h-[330px]"
+            >
+                {/* LEFT SIDE (REGISTER FORM) */}
+                <div className="p-8 md:p-10 flex flex-col bg-white dark:bg-[#121C46] overflow-y-auto max-h-[85vh]">
+                    <div className="w-full max-w-md mx-auto my-auto">
+                        {/* Header Area */}
+                        <div className="mb-6 flex flex-col items-center">
+                            <h2 className="text-lg font-bold flex items-center gap-2 text-[#7199D6] dark:text-[#7199D6] mb-5">
+                                <span className="w-10 h-10 rounded-full bg-[#7199D6] dark:bg-[#7199D6] flex items-center justify-center text-white">
+                                    <Image src={`/images/dishasetu_logo.png`} width={16} height={16} alt="icon" />
+                                </span>
+                                Dishasetu
+                            </h2>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                Create your account
+                            </h1>
+                            <p className="text-gray-500 dark:text-[#D5DCEF] mt-1 text-sm text-center">
+                                Fill in your details to start your professional transformation.
+                            </p>
+                        </div>
 
-                        {/* RIGHT SIDE (FORM) */}
-                        <div className="px-8 py-10 sm:px-12 sm:py-12">
-                            <div className="mx-auto w-full max-w-md">
-                                <div className="mb-8">
-                                    <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Create your account</h2>
-                                    <p className="mt-2 text-sm text-gray-600 dark:text-[#A8B3CF]">
-                                        Fill in your details to start your professional transformation.
-                                    </p>
-                                </div>
 
-                                {/* User Type Selector */}
-                                <div className="mb-6">
-                                    <label className="mb-3 block text-xs font-semibold uppercase tracking-widest text-gray-600 dark:text-[#A8B3CF]">
-                                        I am a
-                                    </label>
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                                        {userTypeOptions.map((option) => {
-                                            const Icon = option.icon
-                                            const isSelected = selectedUserType === option.value
-                                            return (
-                                                <button
-                                                    key={option.value}
-                                                    type="button"
-                                                    onClick={() => handleUserTypeChange(option.value)}
-                                                    className={`rounded-xl border px-3 py-3 transition-all duration-200 flex flex-col items-center space-y-2 ${isSelected
-                                                        ? 'border-[#2536B8] bg-blue-50 text-[#2536B8] shadow-sm dark:border-[#7C3AED] dark:bg-[#EEF2FF] dark:text-[#2536B8]'
-                                                        : 'border-gray-200 text-gray-600 hover:border-[#2536B8]/40 dark:border-[#31406B] dark:bg-[#121C46] dark:text-[#D3DCF6] dark:hover:border-[#7C3AED]'
-                                                        }`}
-                                                >
-                                                    <Icon className={`w-5 h-5 ${isSelected ? 'text-[#2536B8]' : 'dark:text-[#D3DCF6]'}`} />
-                                                    <span className="text-xs font-semibold uppercase tracking-widest">{option.label}</span>
-                                                </button>
-                                            )
-                                        })}
-                                    </div>
-                                </div>
 
                                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                                     {/* Dynamic Form Fields */}
@@ -469,7 +452,7 @@ function RegisterContent() {
 
                                     <Button
                                         type="submit"
-                                        className="w-full h-12 rounded-xl bg-[#2536B8] text-white hover:bg-[#1F2FA2] transition-colors dark:bg-gradient-to-r dark:from-[#7C3AED] dark:to-[#8B5CF6] dark:hover:from-[#6D28D9] dark:hover:to-[#7C3AED]"
+                                        className="w-full h-12 rounded-lg bg-[#7199D6] text-white hover:bg-[#5C86C9] dark:bg-[#7199D6] dark:hover:bg-[#5C86C9] mt-5 font-medium tracking-wide shadow-md transition-all"
                                         loading={isLoading}
                                     >
                                         Aage Badhein →
@@ -481,7 +464,7 @@ function RegisterContent() {
                                         Already have an account?{' '}
                                         <Link
                                             href={`/auth/login`}
-                                            className="font-semibold text-[#2536B8] hover:text-blue-700 dark:text-[#8B5CF6] dark:hover:text-[#A78BFA]"
+                                            className="text-[#7199D6] dark:text-[#7199D6] font-bold hover:underline"
                                         >
                                             Log in
                                         </Link>
@@ -489,10 +472,11 @@ function RegisterContent() {
                                 </div>
                             </div>
                         </div>
-                    </div>
+
+                        {/* RIGHT SIDE (ILLUSTRATION) */}
+                        <LoginIllustration />
                 </motion.div>
             </div>
-        </div>
     )
 }
 
