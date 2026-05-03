@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { toast } from 'react-hot-toast'
-import { Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react'
 import { PiCompassRoseFill } from "react-icons/pi";
 import Link from 'next/link'
 import LoginIllustration from './LoginIllustration'
@@ -25,7 +25,7 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>
 
-const fieldLabelClassName = "text-sm font-medium text-gray-600 dark:!text-[#7F8DB3]"
+
 
 function LoginContent() {
     const router = useRouter()
