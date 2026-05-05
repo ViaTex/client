@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { apiClient, JobItem } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Filter, MoreVertical, Plus, Briefcase, MapPin, IndianRupee, Clock, Clock3, Building, Users, CalendarDays, BadgeCheck, GraduationCap, Globe, Contact, FileText, BookOpen, ClipboardList, CheckSquare, Gift, ShieldCheck, FolderKanban, FileBadge2, Download } from "lucide-react"
+import { Filter, MoreVertical, Plus, Briefcase, MapPin, IndianRupee, Clock, Clock3, Building, Users, CalendarDays, BadgeCheck, GraduationCap, Globe, Contact, FileText, BookOpen, ClipboardList, CheckSquare, Gift, ShieldCheck, FolderKanban, FileBadge2, Download, Trash2 } from "lucide-react"
 import { Modal } from "@/components/ui/modal"
 
 function getErrorMessage(detail: unknown, fallback: string) {
@@ -506,6 +506,7 @@ export default function CorporateJobsPage() {
     const [error, setError] = useState("")
     const [openMenuJobId, setOpenMenuJobId] = useState<string | null>(null)
     const [selectedJob, setSelectedJob] = useState<JobItem | null>(null)
+    const [deletingJobId, setDeletingJobId] = useState<string | null>(null)
     const [searchTerm, setSearchTerm] = useState("")
     const currentBannerDate = useMemo(
         () =>
@@ -529,6 +530,24 @@ export default function CorporateJobsPage() {
         link.click()
         link.remove()
         URL.revokeObjectURL(url)
+    }
+
+    const handleDeleteJob = async (job: JobItem) => {
+        const confirmed = window.confirm(`Delete "${job.title}"? This will remove the job posting and its applications.`)
+        if (!confirmed) return
+
+        setDeletingJobId(job.id)
+        setOpenMenuJobId(null)
+        setError("")
+        try {
+            await apiClient.deleteJob(job.id)
+            setJobs((current) => current.filter((item) => item.id !== job.id))
+            if (selectedJob?.id === job.id) setSelectedJob(null)
+        } catch (e: any) {
+            setError(getErrorMessage(e?.response?.data?.detail, "Failed to delete job"))
+        } finally {
+            setDeletingJobId(null)
+        }
     }
 
     const filteredJobs = useMemo(() => {
@@ -688,6 +707,15 @@ export default function CorporateJobsPage() {
                                                         }}
                                                     >
                                                         Edit Job
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-[#dc2626] hover:bg-[#fee2e2] disabled:cursor-not-allowed disabled:opacity-60 dark:text-[#fca5a5] dark:hover:bg-[#5f1f2b]"
+                                                        onClick={() => handleDeleteJob(job)}
+                                                        disabled={deletingJobId === job.id}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                        {deletingJobId === job.id ? "Deleting..." : "Delete Job"}
                                                     </button>
                                                 </div>
                                             ) : null}

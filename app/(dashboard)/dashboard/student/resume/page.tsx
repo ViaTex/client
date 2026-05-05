@@ -135,7 +135,15 @@ export default function ResumePage() {
                 setAtsScore(null)
             }
         } catch (error) {
-            console.error('Error fetching resume status:', error)
+            const axiosError = error as AxiosError<{ detail?: string }>
+            const isNetworkIssue = axiosError.code === 'NETWORK_ERROR' || !axiosError.response
+            setShowUploadSection(true)
+            setAtsScore(null)
+            setError(
+                isNetworkIssue
+                    ? 'Unable to load resume status right now. Please check that the server is running and try again.'
+                    : axiosError.response?.data?.detail || axiosError.message || 'Unable to load resume status.'
+            )
         } finally {
             setLoadingStatus(false)
         }

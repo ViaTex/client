@@ -6,10 +6,38 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Modal } from "@/components/ui/modal"
 import { AnimatePresence, motion, type Variants } from "framer-motion"
-import { Briefcase, Building2, CalendarDays, Clock3, ExternalLink, FileText, Heart, MapPin, Search, Sparkles, Users } from "lucide-react"
+import { ArrowLeft, Briefcase, Building2, CalendarDays, Clock3, ExternalLink, FileText, Heart, IndianRupee, MapPin, Search, Send, ShieldCheck, Sparkles, User, Users } from "lucide-react"
 
 type JobFilter = "all" | "jobs" | "internships"
 type JobAvailability = "all" | "open" | "closed"
+
+type StudentProfileSummary = {
+    name?: string | null
+    phone?: string | null
+    bio?: string | null
+    education?: unknown
+    technical_skills?: string | null
+    soft_skills?: string | null
+    preferred_industry?: string | null
+    job_roles_of_interest?: string | null
+    gender?: string | null
+    country?: string | null
+    state?: string | null
+    city?: string | null
+    location_preferences?: string | null
+    language_proficiency?: string | null
+    linkedin_profile?: string | null
+    github_profile?: string | null
+    personal_website?: string | null
+    resume_url?: string | null
+    current_des_score?: number | string | null
+}
+
+type ResumeStatusSummary = {
+    has_resume?: boolean
+    resume_uploaded?: boolean
+    ats_score?: number | null
+}
 
 const pageIntroVariants: Variants = {
     hidden: { opacity: 0, y: 10 },
@@ -52,6 +80,15 @@ function getErrorMessage(error: any, fallback: string) {
     }
     if (error?.response?.status) return `${fallback} (${error.response.status})`
     return error?.message || fallback
+}
+
+function withRequestTimeout<T>(promise: Promise<T>, timeoutMs: number, message: string) {
+    let timeoutId: ReturnType<typeof setTimeout>
+    const timeoutPromise = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(() => reject(new Error(message)), timeoutMs)
+    })
+
+    return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId))
 }
 
 function formatLabel(value?: string | null) {
@@ -112,6 +149,73 @@ function formatSalary(job: JobItem) {
     return job.ctc_after_probation || job.ctc_with_probation || "Not specified"
 }
 
+function hasNonEmptyValue(value: unknown) {
+    if (typeof value === "string") return value.trim().length > 0
+    if (Array.isArray(value)) return value.length > 0
+    return Boolean(value)
+}
+
+function hasEducationEntries(value: unknown) {
+    if (!Array.isArray(value)) return false
+    return value.some((entry: any) => Boolean(entry?.institution) && Boolean(entry?.level))
+}
+
+function calculateProfileStrength(data: StudentProfileSummary | null) {
+    if (!data) return 0
+    const checks = [
+        hasNonEmptyValue(data.name) && hasNonEmptyValue(data.phone) && hasNonEmptyValue(data.bio),
+        hasEducationEntries(data.education),
+        hasNonEmptyValue(data.technical_skills),
+        hasNonEmptyValue(data.soft_skills),
+        hasNonEmptyValue(data.preferred_industry) && hasNonEmptyValue(data.job_roles_of_interest),
+        hasNonEmptyValue(data.gender) && hasNonEmptyValue(data.country) && hasNonEmptyValue(data.state) && hasNonEmptyValue(data.city),
+        hasNonEmptyValue(data.location_preferences) && hasNonEmptyValue(data.language_proficiency),
+        hasNonEmptyValue(data.linkedin_profile) || hasNonEmptyValue(data.github_profile) || hasNonEmptyValue(data.personal_website),
+        hasNonEmptyValue(data.resume_url),
+    ]
+    return Math.round((checks.filter(Boolean).length / checks.length) * 100)
+}
+
+function getDefaultExpectedSalary(job: JobItem) {
+    const value = job.salary_min ?? job.salary_max
+    if (value == null) return ""
+    return String(value).replace(/\.00$/, "")
+}
+
+function getJobDepartment(job: JobItem) {
+    return job.industry?.trim() || ""
+}
+
+function getJobLocationLabel(job: JobItem) {
+    const location = job.location?.trim()
+    const workMode = formatLabel(job.mode_of_work || "onsite")
+    return location ? `${location} (${workMode})` : ""
+}
+
+function buildApplicationCoverLetter({
+    role,
+    department,
+    location,
+    salaryPeriod,
+    about,
+}: {
+    role: string
+    department: string
+    location: string
+    salaryPeriod: string
+    about: string
+}) {
+    return [
+        `Job Role: ${role || "Not specified"}`,
+        `Department: ${department || "Not specified"}`,
+        `Location: ${location || "Not specified"}`,
+        `Salary Period: ${salaryPeriod || "Not specified"}`,
+        "",
+        "About:",
+        about || "Not specified",
+    ].join("\n")
+}
+
 function matchesTypeFilter(job: JobItem, filter: JobFilter) {
     if (filter === "all") return true
     if (filter === "internships") return job.job_type === "internship"
@@ -127,6 +231,8 @@ function matchesAvailability(job: JobItem, availability: JobAvailability) {
 export default function StudentJobsPage() {
     const [jobs, setJobs] = useState<JobItem[]>([])
     const [applications, setApplications] = useState<JobApplicationItem[]>([])
+    const [studentProfile, setStudentProfile] = useState<StudentProfileSummary | null>(null)
+    const [resumeStatus, setResumeStatus] = useState<ResumeStatusSummary | null>(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
     const [actionMessage, setActionMessage] = useState("")
@@ -138,7 +244,16 @@ export default function StudentJobsPage() {
     const [selectedLocation, setSelectedLocation] = useState("")
     const [selectedIndustry, setSelectedIndustry] = useState("")
     const [selectedJob, setSelectedJob] = useState<JobItem | null>(null)
+    const [applyJob, setApplyJob] = useState<JobItem | null>(null)
     const [applyingJobId, setApplyingJobId] = useState("")
+    const [applyRole, setApplyRole] = useState("")
+    const [applyDepartment, setApplyDepartment] = useState("")
+    const [applyLocation, setApplyLocation] = useState("")
+    const [expectedSalary, setExpectedSalary] = useState("")
+    const [salaryPeriod, setSalaryPeriod] = useState("Per Annum")
+    const [coverLetter, setCoverLetter] = useState("")
+    const [termsAccepted, setTermsAccepted] = useState([true, true, true, true])
+    const [showTermsModal, setShowTermsModal] = useState(false)
 
     useEffect(() => {
         const loadData = async () => {
@@ -154,15 +269,8 @@ export default function StudentJobsPage() {
             setLoading(true)
             setError("")
             
-            // Create timeout promise with longer duration
-            const timeoutPromise = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Request timeout')), 30000)
-            )
-            
             try {
-                // Load jobs with timeout
-                const jobsPromise = apiClient.getJobs(false)
-                const jobsData = await Promise.race([jobsPromise, timeoutPromise]) as JobItem[]
+                const jobsData = await withRequestTimeout(apiClient.getJobs(false), 45000, "Request timeout")
                 setJobs(jobsData || [])
                 
                 // If jobs loaded successfully but no data, provide helpful message
@@ -172,8 +280,7 @@ export default function StudentJobsPage() {
                 
                 // Load applications with timeout
                 try {
-                    const applicationsPromise = apiClient.getMyApplications()
-                    const applicationsData = await Promise.race([applicationsPromise, timeoutPromise]) as JobApplicationItem[]
+                    const applicationsData = await withRequestTimeout(apiClient.getMyApplications(), 45000, "Applications request timeout")
                     setApplications(applicationsData || [])
                 } catch (e: any) {
                     setApplications([])
@@ -184,6 +291,19 @@ export default function StudentJobsPage() {
                         // Applications endpoint also requires auth, but main error handling will redirect
                         console.log('Authentication required for applications')
                     }
+                }
+
+                try {
+                    const [profileData, resumeData] = await Promise.all([
+                        apiClient.getStudentProfile(),
+                        apiClient.getResumeStatus().catch(() => null),
+                    ])
+                    setStudentProfile(profileData || null)
+                    setResumeStatus(resumeData || null)
+                } catch (e) {
+                    setStudentProfile(null)
+                    setResumeStatus(null)
+                    console.error('Failed to load application eligibility:', e)
                 }
             } catch (e: any) {
                 if (e.code === 'NETWORK_ERROR') {
@@ -247,7 +367,63 @@ export default function StudentJobsPage() {
         [jobs]
     )
 
-    const handleApply = async (job: JobItem) => {
+    const applicationEligibility = useMemo(() => {
+        const profileCompletion = calculateProfileStrength(studentProfile)
+        const desScore = Number(studentProfile?.current_des_score ?? 0)
+        const atsScore = typeof resumeStatus?.ats_score === "number" ? resumeStatus.ats_score : null
+        const hasResume = Boolean(resumeStatus?.has_resume || resumeStatus?.resume_uploaded || studentProfile?.resume_url)
+        const checks = [
+            {
+                label: "Resume uploaded",
+                passed: hasResume,
+                value: hasResume ? "Uploaded" : "Missing",
+                fix: "Upload your resume from the Resume page.",
+            },
+            {
+                label: "ATS score greater than 70",
+                passed: typeof atsScore === "number" && atsScore > 70,
+                value: typeof atsScore === "number" ? `${atsScore}/100` : "Not calculated",
+                fix: "Calculate your ATS score after uploading resume.",
+            },
+            {
+                label: "DES/exam score at least 50",
+                passed: Number.isFinite(desScore) && desScore >= 50,
+                value: `${Number.isFinite(desScore) ? Math.round(desScore) : 0}/100`,
+                fix: "Complete the skill verification exam and score 50 or above.",
+            },
+            {
+                label: "Profile completion at least 90%",
+                passed: profileCompletion >= 90,
+                value: `${profileCompletion}%`,
+                fix: "Complete your student profile to 90% or more.",
+            },
+        ]
+        return {
+            checks,
+            canApply: checks.every((check) => check.passed),
+        }
+    }, [resumeStatus, studentProfile])
+
+    const openApplyModal = (job: JobItem) => {
+        setApplyJob(job)
+        setSelectedJob(null)
+        setApplyRole(job.title || "")
+        setApplyDepartment(getJobDepartment(job))
+        setApplyLocation(getJobLocationLabel(job))
+        setExpectedSalary(getDefaultExpectedSalary(job))
+        setSalaryPeriod("Per Annum")
+        setCoverLetter("")
+        setTermsAccepted([false, false, false, false])
+        setError("")
+        setActionMessage("")
+    }
+
+    const closeApplyModal = () => {
+        if (applyingJobId) return
+        setApplyJob(null)
+    }
+
+    const handleApply = async (job: JobItem, applicationData?: { expected_salary?: number; cover_letter?: string }) => {
         if (appliedJobIds.has(job.id)) {
             setActionMessage("You have already applied to this job.")
             return
@@ -257,14 +433,12 @@ export default function StudentJobsPage() {
         setError("")
         setActionMessage("")
         
-        // Create timeout promise
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Application request timeout')), 20000)
-        )
-        
         try {
-            const applyPromise = apiClient.applyToJob(job.id)
-            const application = await Promise.race([applyPromise, timeoutPromise])
+            const application = await withRequestTimeout(
+                apiClient.applyToJob(job.id, applicationData),
+                30000,
+                "Application request timeout"
+            )
             
             setApplications((current) => [application, ...current])
             const nextApplications = (job.current_applications || 0) + 1
@@ -274,6 +448,7 @@ export default function StudentJobsPage() {
             }
             setJobs((current) => current.map((item) => (item.id === job.id ? { ...item, ...patch } : item)))
             setSelectedJob((current) => (current?.id === job.id ? { ...current, ...patch } : current))
+            setApplyJob(null)
             setActionMessage(`Application submitted for ${job.title}.`)
         } catch (e: any) {
             if (e.message === 'Application request timeout') {
@@ -286,6 +461,36 @@ export default function StudentJobsPage() {
         } finally {
             setApplyingJobId("")
         }
+    }
+
+    const handleSubmitApplication = () => {
+        if (!applyJob) return
+        if (!applicationEligibility.canApply) {
+            setShowTermsModal(true)
+            setError("You are not eligible to apply yet. Please complete the requirements in Terms & Conditions.")
+            return
+        }
+        if (!termsAccepted.every(Boolean)) {
+            setError("Please accept all terms and conditions before applying.")
+            return
+        }
+
+        const numericSalary = expectedSalary ? Number(expectedSalary.replace(/,/g, "")) : undefined
+        if (numericSalary !== undefined && Number.isNaN(numericSalary)) {
+            setError("Enter a valid expected salary.")
+            return
+        }
+
+        handleApply(applyJob, {
+            expected_salary: numericSalary,
+            cover_letter: buildApplicationCoverLetter({
+                role: applyRole,
+                department: applyDepartment,
+                location: applyLocation,
+                salaryPeriod,
+                about: coverLetter.trim(),
+            }),
+        })
     }
 
     return (
@@ -409,7 +614,7 @@ export default function StudentJobsPage() {
                     animate="visible"
                     className="space-y-4 lg:col-span-3"
                 >
-                    {loading ? <p className="text-sm text-gray-500">Loading opportunities...</p> : null}
+                    {loading ? <p className="text-sm text-gray-500">Finding matching jobs for you...</p> : null}
                     {error ? <p className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-300">{error}</p> : null}
                     {actionMessage ? <p className="rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-900/60 dark:bg-green-950/30 dark:text-green-300">{actionMessage}</p> : null}
                     {!loading && !error && filteredJobs.length === 0 ? (
@@ -551,7 +756,7 @@ export default function StudentJobsPage() {
                                                     href={application.offer_letter}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="inline-flex items-center gap-2 text-left text-sm font-semibold text-[#166534] hover:underline dark:text-[#86efac]"
+                                                    className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-[#99F6E4] px-5 text-sm font-semibold text-[#0F766E] transition-colors hover:bg-[#ECFDF5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 dark:border-[#2DD4BF]/70 dark:text-[#5EEAD4] dark:hover:bg-[#123B45] dark:focus-visible:ring-[#5EEAD4] dark:focus-visible:ring-offset-[#11183A] sm:w-auto"
                                                 >
                                                     <FileText className="h-4 w-4" />
                                                     Open offer letter PDF
@@ -572,7 +777,7 @@ export default function StudentJobsPage() {
                                             <div>
                                                 <Button
                                                     type="button"
-                                                    onClick={() => handleApply(job)}
+                                                    onClick={() => openApplyModal(job)}
                                                     disabled={isApplied || applyingJobId === job.id || isClosed}
                                                     className={`h-11 w-full rounded-xl px-5 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto ${isApplied ? applicationStatus.tone : "bg-[#7C3AED] text-white hover:bg-[#6D28D9]"}`}
                                                 >
@@ -594,6 +799,255 @@ export default function StudentJobsPage() {
                     ) : null}
                 </motion.div>
             </div>
+
+            {applyJob ? (
+                <Modal
+                    isOpen={Boolean(applyJob)}
+                    onClose={closeApplyModal}
+                    title="Job Applied"
+                    maxWidth="2xl"
+                    className="max-w-6xl border-[#c5c9ef] bg-[#E3E5FB] dark:border-[#26364d] dark:bg-[#121C46]"
+                >
+                    <div className="space-y-5 rounded-xl border border-[#c5c9ef] bg-[#E3E5FB] p-4 text-[#121a3a] shadow-sm dark:border-[#26364d] dark:bg-[#121C46] dark:text-white sm:p-5">
+                        <div className="flex items-start gap-4">
+                            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-[#cfe0ff] bg-[#eff6ff] text-[#0f65df] dark:border-[#4f46e5] dark:bg-[#161943] dark:text-[#8b5cf6]">
+                                <Briefcase className="h-7 w-7" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-extrabold text-[#0f1738] dark:text-white">Job Applied</h2>
+                                <p className="mt-1 text-sm font-medium text-[#4b5578] dark:text-[#cbd5e1]">
+                                    Please fill in the details below to apply for the position.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 lg:grid-cols-3">
+                            <div className="rounded-xl border border-[#c5c9ef] bg-white/45 p-5 dark:border-[#26364d] dark:bg-[#0b1420]">
+                                <div className="mb-4 flex items-center gap-3 text-[#0f65df] dark:text-[#8b5cf6]">
+                                    <User className="h-6 w-6" />
+                                    <p className="text-base font-bold text-[#0f1738] dark:text-white">Job Role</p>
+                                </div>
+                                <input
+                                    value={applyRole}
+                                    onChange={(event) => setApplyRole(event.target.value)}
+                                    className="h-12 w-full rounded-lg border border-[#cbd6ea] bg-transparent px-4 text-sm font-medium text-[#121a3a] outline-none dark:border-[#31445e] dark:bg-[#07101a] dark:text-white"
+                                    placeholder="Type job role"
+                                />
+                            </div>
+
+                            <div className="rounded-xl border border-[#c5c9ef] bg-white/45 p-5 dark:border-[#26364d] dark:bg-[#0b1420]">
+                                <div className="mb-4 flex items-center gap-3 text-[#0f65df] dark:text-[#8b5cf6]">
+                                    <Building2 className="h-6 w-6" />
+                                    <p className="text-base font-bold text-[#0f1738] dark:text-white">Department</p>
+                                </div>
+                                <input
+                                    value={applyDepartment}
+                                    onChange={(event) => setApplyDepartment(event.target.value)}
+                                    className="h-12 w-full rounded-lg border border-[#cbd6ea] bg-transparent px-4 text-sm font-medium text-[#121a3a] outline-none dark:border-[#31445e] dark:bg-[#07101a] dark:text-white"
+                                    placeholder="Type department"
+                                />
+                            </div>
+
+                            <div className="rounded-xl border border-[#c5c9ef] bg-white/45 p-5 dark:border-[#26364d] dark:bg-[#0b1420]">
+                                <div className="mb-4 flex items-center gap-3 text-[#0f65df] dark:text-[#8b5cf6]">
+                                    <MapPin className="h-6 w-6" />
+                                    <p className="text-base font-bold text-[#0f1738] dark:text-white">Location</p>
+                                </div>
+                                <input
+                                    value={applyLocation}
+                                    onChange={(event) => setApplyLocation(event.target.value)}
+                                    className="h-12 w-full rounded-lg border border-[#cbd6ea] bg-transparent px-4 text-sm font-medium text-[#121a3a] outline-none dark:border-[#31445e] dark:bg-[#07101a] dark:text-white"
+                                    placeholder="Type location"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 lg:grid-cols-2">
+                            <div className="rounded-xl border border-[#c5c9ef] bg-white/45 p-5 dark:border-[#26364d] dark:bg-[#0b1420]">
+                                <div className="mb-5 flex items-center gap-3 text-[#0f65df] dark:text-[#8b5cf6]">
+                                    <IndianRupee className="h-6 w-6" />
+                                    <p className="text-base font-bold text-[#0f1738] dark:text-white">Expected Salary</p>
+                                </div>
+                                <div className="grid gap-3 sm:grid-cols-[1fr_220px]">
+                                    <div className="flex h-12 overflow-hidden rounded-lg border border-[#cbd6ea] dark:border-[#31445e]">
+                                        <span className="flex w-14 items-center justify-center border-r border-[#dbe3ef] text-xl font-bold dark:border-[#31445e]">₹</span>
+                                        <input
+                                            value={expectedSalary}
+                                            onChange={(event) => setExpectedSalary(event.target.value)}
+                                            inputMode="numeric"
+                                            placeholder="6,00,000"
+                                            className="min-w-0 flex-1 bg-transparent px-4 text-sm font-medium outline-none dark:text-white"
+                                        />
+                                    </div>
+                                    <div className="h-12 rounded-lg border border-[#cbd6ea] text-sm font-medium dark:border-[#31445e] dark:bg-[#07101a]">
+                                        <input
+                                            value={salaryPeriod}
+                                            onChange={(event) => setSalaryPeriod(event.target.value)}
+                                            className="h-full w-full rounded-lg border-0 bg-transparent px-4 outline-none dark:text-white"
+                                            placeholder="Per Annum"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="rounded-xl border border-[#c5c9ef] bg-white/45 p-5 dark:border-[#26364d] dark:bg-[#0b1420]">
+                                <div className="mb-4 flex items-center gap-3 text-[#0f65df] dark:text-[#8b5cf6]">
+                                    <User className="h-6 w-6" />
+                                    <p className="text-base font-bold text-[#0f1738] dark:text-white">Say About Yourself</p>
+                                </div>
+                                <div className="relative">
+                                    <textarea
+                                        value={coverLetter}
+                                        onChange={(event) => setCoverLetter(event.target.value.slice(0, 1000))}
+                                        placeholder="Tell the company why you are a good fit for this role..."
+                                        className="min-h-40 w-full resize-none rounded-lg border border-[#cbd6ea] bg-transparent p-4 pb-9 text-sm leading-6 outline-none placeholder:text-[#7c86a4] dark:border-[#31445e] dark:bg-[#07101a] dark:text-white dark:placeholder:text-[#8f9bb2]"
+                                    />
+                                    <span className="absolute bottom-3 right-4 text-xs font-medium text-[#4b5578] dark:text-[#cbd5e1]">
+                                        {coverLetter.length} / 1000
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="rounded-xl border border-[#c5c9ef] bg-white/45 p-5 dark:border-[#26364d] dark:bg-[#0b1420]">
+                            <div className="mb-4 flex items-center gap-3 text-[#0f65df] dark:text-[#8b5cf6]">
+                                <ShieldCheck className="h-6 w-6" />
+                                <p className="text-base font-bold text-[#0f1738] dark:text-white">Terms & Conditions</p>
+                            </div>
+                            <div className="mb-4 rounded-lg border border-[#cbd6ea] bg-[#f8fbff] p-4 dark:border-[#31445e] dark:bg-[#07101a]">
+                                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                    <div>
+                                        <p className="text-sm font-bold text-[#0f1738] dark:text-white">
+                                            Application eligibility
+                                        </p>
+                                        <p className="mt-1 text-xs font-medium text-[#4b5578] dark:text-[#cbd5e1]">
+                                            Resume, ATS, DES score, and profile completion are checked before applying.
+                                        </p>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() => setShowTermsModal(true)}
+                                        className="rounded-lg border-[#0f65df] text-[#0f65df] hover:bg-[#eff6ff] dark:border-[#8b5cf6] dark:text-[#c4b5fd] dark:hover:bg-[#161943]"
+                                    >
+                                        View Terms
+                                    </Button>
+                                </div>
+                                {!applicationEligibility.canApply ? (
+                                    <p className="mt-3 rounded-md bg-[#fff7ed] px-3 py-2 text-xs font-semibold text-[#c2410c] dark:bg-[#2b1a0d] dark:text-[#fdba74]">
+                                        You cannot apply until all eligibility checks pass.
+                                    </p>
+                                ) : (
+                                    <p className="mt-3 rounded-md bg-[#f0fdf4] px-3 py-2 text-xs font-semibold text-[#166534] dark:bg-[#10251a] dark:text-[#86efac]">
+                                        All eligibility checks passed. You can apply now.
+                                    </p>
+                                )}
+                            </div>
+                            <div className="space-y-3 text-sm font-medium text-[#33405f] dark:text-[#d6deed]">
+                                {[
+                                    "I confirm that all the information provided by me is true and accurate to the best of my knowledge.",
+                                    "I understand that any false information may lead to disqualification at any stage of the selection process.",
+                                    "I agree to the processing of my personal data for recruitment purposes.",
+                                    "I have read and agree to the company's Privacy Policy and Terms of Service.",
+                                ].map((term, index) => (
+                                    <label key={term} className="flex items-start gap-3">
+                                        <input
+                                            type="checkbox"
+                                            checked={termsAccepted[index]}
+                                            onChange={(event) => {
+                                                setTermsAccepted((current) => current.map((value, itemIndex) => (itemIndex === index ? event.target.checked : value)))
+                                            }}
+                                            className="mt-0.5 h-5 w-5 rounded border-[#cbd6ea] accent-[#0f65df]"
+                                        />
+                                        <span>{term}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex flex-col-reverse gap-3 rounded-xl border border-[#c5c9ef] bg-white/45 p-3 dark:border-[#26364d] dark:bg-[#0b1420] sm:flex-row sm:items-center sm:justify-between">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={closeApplyModal}
+                                disabled={Boolean(applyingJobId)}
+                                className="h-12 rounded-lg border-[#cbd6ea] px-8 text-[#33405f] hover:bg-[#f5f8ff] dark:border-[#31445e] dark:bg-[#172132] dark:text-white dark:hover:bg-[#1f2b3f]"
+                            >
+                                <ArrowLeft className="mr-2 h-5 w-5" />
+                                Back
+                            </Button>
+                            <Button
+                                type="button"
+                                onClick={handleSubmitApplication}
+                                loading={applyingJobId === applyJob.id}
+                                disabled={applyingJobId === applyJob.id}
+                                className="h-12 rounded-lg bg-[#0f65df] px-10 text-base font-bold text-white hover:bg-[#0b57c4] dark:bg-gradient-to-r dark:from-[#2563eb] dark:to-[#8b5cf6]"
+                            >
+                                <Send className="mr-2 h-5 w-5" />
+                                Apply Now
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+            ) : null}
+
+            {showTermsModal ? (
+                <Modal
+                    isOpen={showTermsModal}
+                    onClose={() => setShowTermsModal(false)}
+                    title="Terms & Conditions"
+                    maxWidth="lg"
+                    className="dark:border-[#26364d] dark:bg-[#07101a]"
+                >
+                    <div className="space-y-4 text-[#121a3a] dark:text-white">
+                        <div className="rounded-xl border border-[#dbe3ef] bg-[#f8fbff] p-4 dark:border-[#26364d] dark:bg-[#0b1420]">
+                            <p className="text-base font-bold">Required before applying</p>
+                            <p className="mt-1 text-sm text-[#4b5578] dark:text-[#cbd5e1]">
+                                Students can apply only after meeting every requirement below.
+                            </p>
+                        </div>
+
+                        <div className="space-y-3">
+                            {applicationEligibility.checks.map((check) => (
+                                <div
+                                    key={check.label}
+                                    className={`rounded-xl border p-4 ${
+                                        check.passed
+                                            ? "border-[#bbf7d0] bg-[#f0fdf4] dark:border-[#166534] dark:bg-[#10251a]"
+                                            : "border-[#fed7aa] bg-[#fff7ed] dark:border-[#9a3412] dark:bg-[#2b1a0d]"
+                                    }`}
+                                >
+                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <p className="font-bold">{check.label}</p>
+                                            <p className="mt-1 text-sm text-[#4b5578] dark:text-[#cbd5e1]">{check.fix}</p>
+                                        </div>
+                                        <span
+                                            className={`rounded-full px-3 py-1 text-xs font-bold ${
+                                                check.passed
+                                                    ? "bg-[#dcfce7] text-[#166534] dark:bg-[#14532d] dark:text-[#bbf7d0]"
+                                                    : "bg-[#ffedd5] text-[#c2410c] dark:bg-[#7c2d12] dark:text-[#fed7aa]"
+                                            }`}
+                                        >
+                                            {check.value}
+                                        </span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="flex justify-end">
+                            <Button
+                                type="button"
+                                onClick={() => setShowTermsModal(false)}
+                                className="rounded-lg bg-[#0f65df] text-white hover:bg-[#0b57c4]"
+                            >
+                                Done
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+            ) : null}
 
             {selectedJob ? (
                 <Modal
@@ -699,7 +1153,7 @@ export default function StudentJobsPage() {
                             </Button>
                             <Button
                                 type="button"
-                                onClick={() => handleApply(selectedJob)}
+                                onClick={() => openApplyModal(selectedJob)}
                                 disabled={appliedJobIds.has(selectedJob.id) || applyingJobId === selectedJob.id || selectedJob.status !== "active" || selectedJob.can_apply === false}
                                 className={`rounded-xl disabled:cursor-not-allowed disabled:opacity-70 ${
                                     applicationByJobId.has(selectedJob.id)

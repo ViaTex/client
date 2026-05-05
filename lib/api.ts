@@ -85,6 +85,9 @@ export interface JobApplicationItem {
     student_name?: string | null
     student_email?: string | null
     student_phone?: string | null
+    student_technical_skills?: string | null
+    student_des_score?: number | string | null
+    student_ats_score?: number | null
     job_title?: string | null
     company_name?: string | null
     salary_min?: number | string | null
@@ -324,6 +327,11 @@ export const apiClient = {
         return response.data as JobItem
     },
 
+    deleteJob: async (jobId: string) => {
+        const response = await axiosInstance.delete(`/jobs/${jobId}`)
+        return response.data as { message: string; id: string }
+    },
+
     applyToJob: async (
         jobId: string,
         data?: {
@@ -363,6 +371,11 @@ export const apiClient = {
     updateCorporateApplicant: async (applicationId: string, data: { status?: string; offer_letter?: string }) => {
         const response = await axiosInstance.patch(`/corporate/applicants/${applicationId}`, data)
         return response.data as JobApplicationItem
+    },
+
+    deleteCorporateApplicant: async (applicationId: string) => {
+        const response = await axiosInstance.delete(`/corporate/applicants/${applicationId}`)
+        return response.data as { message: string; id: string }
     },
 
     uploadCorporateOfferLetter: async (applicationId: string, file: File) => {

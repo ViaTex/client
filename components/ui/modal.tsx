@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -31,6 +32,12 @@ export function Modal({
     className,
     maxWidth = "lg"
 }: ModalProps) {
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
     React.useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === "Escape") {
@@ -56,10 +63,10 @@ export function Modal({
         onClose()
     }
 
-    return (
+    const modal = (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[999] flex items-start justify-center overflow-y-auto overscroll-none bg-black/50 p-4 pt-6 pointer-events-none backdrop-blur-sm sm:items-center sm:p-6">
+                <div className="fixed inset-0 z-[9999] flex min-h-dvh items-start justify-center overflow-y-auto overscroll-none bg-black/60 p-4 pt-6 pointer-events-none backdrop-blur-sm sm:items-center sm:p-6">
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -106,6 +113,8 @@ export function Modal({
             )}
         </AnimatePresence>
     )
+
+    return mounted ? createPortal(modal, document.body) : null
 }
 
 export function TermsModalContent() {
