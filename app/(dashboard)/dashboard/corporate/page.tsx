@@ -1,245 +1,404 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { motion } from 'framer-motion'
+import { useMemo, useState } from 'react'
 import {
-    LayoutDashboard,
-    Briefcase,
-    Users,
-    CheckCircle2,
-    WalletCards,
-    MessageCircle,
     ArrowRight,
-    Brush,
-    FileText,
-    Share2,
+    BadgeCheck,
+    Briefcase,
+    Building2,
+    CalendarDays,
+    Check,
+    CircleAlert,
+    Clock3,
+    FileSearch,
+    Filter,
+    HandCoins,
+    MapPin,
+    ShieldCheck,
+    Sparkles,
+    UserCheck,
+    Users,
 } from 'lucide-react'
 
-const gigItems = [
+type ViewMode = 'recruiter' | 'admin'
+
+const stats = {
+    recruiter: [
+        {
+            label: 'Total Open Positions',
+            value: '12',
+            hint: 'Across 4 active teams',
+            icon: Briefcase,
+        },
+        {
+            label: 'New Candidates (Unreviewed)',
+            value: '38',
+            hint: '+9 in last 24h',
+            icon: FileSearch,
+            emphasis: true,
+        },
+        {
+            label: 'Average Time-to-Hire',
+            value: '16.4 days',
+            hint: '5.1 days faster vs last quarter',
+            icon: Clock3,
+        },
+        {
+            label: 'Verified Talent Pool',
+            value: '145',
+            hint: 'DES > 75 or mentor verified',
+            icon: ShieldCheck,
+        },
+    ],
+    admin: [
+        {
+            label: 'Total Open Positions',
+            value: '27',
+            hint: 'Across 7 business units',
+            icon: Briefcase,
+        },
+        {
+            label: 'New Candidates (Unreviewed)',
+            value: '84',
+            hint: '42 tagged as priority',
+            icon: FileSearch,
+            emphasis: true,
+        },
+        {
+            label: 'Average Time-to-Hire',
+            value: '18.1 days',
+            hint: 'Talent ops target: < 20 days',
+            icon: Clock3,
+        },
+        {
+            label: 'Verified Talent Pool',
+            value: '462',
+            hint: 'DES > 75 or mentor verified',
+            icon: ShieldCheck,
+        },
+    ],
+}
+
+const hiringFunnel = [
+    { stage: 'Total Sourced / Applied', count: 382, color: 'bg-[#4f8cff]' },
+    { stage: 'Screened / Shortlisted', count: 146, color: 'bg-[#17cf73]' },
+    { stage: 'Interviews Scheduled', count: 51, color: 'bg-[#f59e0b]' },
+    { stage: 'Offers Extended / Accepted', count: 19, color: 'bg-[#8b5cf6]' },
+]
+
+const topCandidates = [
     {
-        title: 'Logo Design for New Branch',
-        tag: 'Design',
-        progress: 65,
-        assignee: 'Amit S.',
+        name: 'Rahul Sharma',
+        location: 'Bengaluru',
+        role: 'Frontend Developer',
+        des: 88,
+        skills: ['React', 'Node.js'],
     },
     {
-        title: 'Data Entry: Inventory Sheets',
-        tag: 'Operations',
-        progress: 20,
-        assignee: 'Priya D.',
+        name: 'Priya Menon',
+        location: 'Pune',
+        role: 'Data Analyst',
+        des: 84,
+        skills: ['SQL', 'Power BI'],
     },
     {
-        title: 'Instagram Reel Marketing',
-        tag: 'Marketing',
-        progress: 95,
-        assignee: 'Karan L.',
+        name: 'Siddharth Verma',
+        location: 'Hyderabad',
+        role: 'ML Engineer',
+        des: 91,
+        skills: ['Python', 'PyTorch'],
+    },
+    {
+        name: 'Meera Reddy',
+        location: 'Chennai',
+        role: 'UI/UX Designer',
+        des: 86,
+        skills: ['Figma', 'Design Systems'],
     },
 ]
 
-const recommendedCandidates = [
-    { name: 'Rahul Sharma', role: 'React Specialist', match: '98%' },
-    { name: 'Sneha Gupta', role: 'Graphic Designer', match: '94%' },
-    { name: 'Vikram Singh', role: 'Video Editor', match: '92%' },
+const campusEngagements = [
+    {
+        drive: 'Virtual Frontend Hiring Drive',
+        date: 'May 24, 2026 • 10:30 AM',
+        institution: 'ABC Institute of Technology',
+        preAssessed: 126,
+    },
+    {
+        drive: 'On-Campus Data Science Sprint',
+        date: 'May 27, 2026 • 11:00 AM',
+        institution: 'Nexus University',
+        preAssessed: 93,
+    },
+    {
+        drive: 'Graduate Talent Connect',
+        date: 'May 30, 2026 • 02:00 PM',
+        institution: 'Stellar College of Engineering',
+        preAssessed: 148,
+    },
+]
+
+const tasks = [
+    {
+        tone: 'alert',
+        text: '5 new applications received for Senior Java Developer role.',
+    },
+    {
+        tone: 'action',
+        text: 'Review 3 candidate projects submitted for the recent assignment.',
+    },
+    {
+        tone: 'info',
+        text: 'Interview scheduled with Rahul Sharma at 2:00 PM.',
+    },
 ]
 
 export default function CorporateDashboard() {
+    const [mode, setMode] = useState<ViewMode>('recruiter')
+
+    const funnelMax = useMemo(
+        () => Math.max(...hiringFunnel.map((item) => item.count)),
+        []
+    )
+
     return (
-        <div className="min-h-[calc(100vh-80px)] rounded-[1.25rem] bg-[#eef3ff] p-3 shadow-sm sm:rounded-[1.5rem] sm:p-4 md:rounded-[2rem] md:p-6 lg:p-4 dark:bg-[#101d49]">
-            <div className="mx-auto grid max-w-[1400px] grid-cols-12 gap-4 md:gap-6">
-                <div className="col-span-12 space-y-6 lg:col-span-8">
-                    <motion.div
-                        initial={{ opacity: 0, y: 16 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="group relative flex flex-col items-start gap-6 overflow-hidden rounded-[1.75rem] border border-[#d4def8] bg-white px-4 py-5 shadow-[0_10px_30px_rgba(66,98,170,0.12)] sm:px-6 sm:py-6 md:rounded-[2rem] md:px-8 lg:min-h-[18rem] lg:flex-row lg:items-center lg:px-10 lg:py-0 dark:border-[#223067] dark:bg-[#111d49] dark:shadow-[0_8px_32px_rgba(3,8,26,0.35)]"
-                    >
-                        <div className="relative z-10 w-full space-y-4 lg:w-2/3 lg:pr-6">
-                            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-[#5c73b5] dark:text-[#8ea1d6]">
-                                <LayoutDashboard className="h-4 w-4 text-[#ee8c2b]" />
-                                MSME Dashboard
+        <div className="min-h-[calc(100vh-80px)] rounded-[1.25rem] bg-[#eef3ff] p-4 shadow-sm sm:rounded-[1.5rem] sm:p-5 md:rounded-[2rem] md:p-6 dark:bg-[#101d49]">
+            <div className="mx-auto max-w-[1450px] space-y-6">
+                <section className="rounded-3xl border border-[#d4def8] bg-white p-5 shadow-[0_10px_28px_rgba(66,98,170,0.12)] sm:p-6 dark:border-[#223067] dark:bg-[#111d49] dark:shadow-[0_8px_24px_rgba(3,8,26,0.28)]">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#5c73b5] dark:text-[#8ea1d6]">
+                                <Sparkles className="h-4 w-4 text-[#17cf73]" />
+                                Dishasetu Employer Console
                             </p>
-                            <h1 className="text-2xl font-extrabold tracking-tight text-[#16213f] sm:text-3xl md:text-4xl dark:text-white">
-                                Kaam Post Karein
+                            <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[#16213f] sm:text-3xl dark:text-white">
+                                Corporate Hiring Dashboard
                             </h1>
-                            <p className="max-w-xl text-sm text-[#5f6f98] md:text-base dark:text-[#93a4d1]">
-                                Start a new micro-internship today and get tasks completed by top student talent in 48 hours.
+                            <p className="mt-1 text-sm text-[#5f6f98] dark:text-[#93a4d1]">
+                                Verified skills + DES intelligence to reduce screening effort and improve hiring quality.
                             </p>
-                            <Button className="flex w-full items-center justify-center gap-2 rounded-full bg-[#ee8c2b] px-6 py-3 font-bold text-white shadow-xl shadow-[#ee8c2b]/30 hover:bg-[#d97a1f] sm:w-auto md:px-8 md:py-4">
-                                <Briefcase className="h-5 w-5" />
-                                Start Hiring Now
-                            </Button>
-                        </div>
-                        <div
-                            className="relative h-52 w-full rounded-3xl bg-cover bg-center opacity-90 transition-transform duration-700 group-hover:scale-105 sm:h-60 lg:absolute lg:right-0 lg:top-0 lg:h-full lg:w-[34%] lg:rounded-l-[3rem]"
-                            style={{
-                                backgroundImage:
-                                    'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDKH4bTQ1JLTQ2Jj7kUKgG4nJMlGio-g6n0v806jmqUDsQwRKL7Ad7-8YgxcJufiKjm_a8aPxesCsMnviGm_La5ec0S3uLntmYkmUYtY4hyotTDNZNzbHnxe0sHogQKS2SSSKgyI78QbrUioIOJ8RCLAi84tKWqiysQUC_-Fis98ohQx9VFTBzqt_wgouguZ8Vsat9DWpx8P9V_cVcIk2EpixFgxJD1O6gwh5eqfujasH9gowdhwzxxg7tYAmDhEzAYdj5_CHNiVnKr")',
-                            }}
-                        />
-                    </motion.div>
-
-                    <section className="space-y-4">
-                        <div className="flex items-center justify-between gap-3 px-1">
-                            <h2 className="text-lg font-bold text-[#16213f] md:text-xl dark:text-white">
-                                Current Gigs Tracking
-                            </h2>
-                            <button className="shrink-0 flex items-center gap-1 text-xs font-bold text-[#ee8c2b] md:text-sm">
-                                View All
-                                <ArrowRight className="h-3 w-3" />
-                            </button>
                         </div>
 
-                        <div className="space-y-4">
-                            {gigItems.map((gig, index) => (
-                                <div
-                                    key={gig.title}
-                                    className="flex flex-col items-start gap-4 rounded-3xl border border-[#d4def8] bg-white px-4 py-4 shadow-[0_10px_28px_rgba(66,98,170,0.12)] sm:px-5 md:flex-row md:items-center md:gap-6 md:p-5 dark:border-[#223067] dark:bg-[#111d49] dark:shadow-[0_8px_24px_rgba(3,8,26,0.28)]"
-                                >
-                                    <div className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-tr from-[#ee8c2b] to-[#f2b261] text-white sm:size-14">
-                                        {index === 0 && <Brush className="h-7 w-7" />}
-                                        {index === 1 && <FileText className="h-7 w-7" />}
-                                        {index === 2 && <Share2 className="h-7 w-7" />}
-                                    </div>
-                                    <div className="flex-1 space-y-2">
-                                        <div className="flex flex-wrap items-center justify-between gap-2">
-                                            <h3 className="text-sm font-semibold text-[#16213f] md:text-base dark:text-white">
-                                                {gig.title}
-                                            </h3>
-                                            <span className="rounded-full bg-[#edf3ff] px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-[#5c73b5] md:text-[11px] dark:bg-[#1a2858] dark:text-[#8ea1d6]">
-                                                {gig.tag}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-3 sm:gap-4">
-                                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#dfe8fb] dark:bg-[#07112e]">
-                                                <div
-                                                    className={`h-full rounded-full ${
-                                                        index === 0
-                                                            ? 'bg-[#ee8c2b]'
-                                                            : index === 1
-                                                              ? 'bg-blue-600'
-                                                              : 'bg-green-600'
-                                                    }`}
-                                                    style={{ width: `${gig.progress}%` }}
-                                                />
-                                            </div>
-                                            <span className="text-xs font-bold text-[#5f6f98] md:text-sm dark:text-[#93a4d1]">
-                                                {gig.progress}%
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="flex w-full flex-col items-start md:w-auto md:items-end">
-                                        <p className="mb-1 text-[10px] font-bold uppercase text-[#7d8db7] dark:text-[#7183b6]">
-                                            Assigned to
-                                        </p>
-                                        <p className="text-xs font-semibold text-[#16213f] dark:text-white">
-                                            {gig.assignee}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-                </div>
-
-                <div className="col-span-12 space-y-6 lg:col-span-4">
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                        <div className="flex flex-col justify-between rounded-3xl border border-[#d4def8] bg-white p-5 shadow-[0_10px_28px_rgba(66,98,170,0.12)] dark:border-[#223067] dark:bg-[#111d49] dark:shadow-[0_8px_24px_rgba(3,8,26,0.28)]">
-                            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#e8f0ff] text-[#4b74f0] dark:bg-[#1a2858] dark:text-[#7aa2ff]">
-                                <Briefcase className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <p className="text-xs font-medium text-[#7d8db7] dark:text-[#7183b6]">Active</p>
-                                <p className="text-2xl font-bold text-[#16213f] md:text-3xl dark:text-white">12</p>
-                                <p className="mt-1 text-[11px] font-bold text-emerald-600">+2 this week</p>
-                            </div>
-                        </div>
-                        <div className="flex flex-col justify-between rounded-3xl border border-[#d4def8] bg-white p-5 shadow-[0_10px_28px_rgba(66,98,170,0.12)] dark:border-[#223067] dark:bg-[#111d49] dark:shadow-[0_8px_24px_rgba(3,8,26,0.28)]">
-                            <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#e8faf0] text-emerald-500 dark:bg-[#16342f] dark:text-emerald-400">
-                                <CheckCircle2 className="h-5 w-5" />
-                            </div>
-                            <div>
-                                <p className="text-xs font-medium text-[#7d8db7] dark:text-[#7183b6]">Completed</p>
-                                <p className="text-2xl font-bold text-[#16213f] md:text-3xl dark:text-white">48</p>
-                                <p className="mt-1 text-[11px] font-bold text-emerald-600">+5 new</p>
-                            </div>
-                        </div>
-                        <div className="flex flex-col gap-4 rounded-3xl border border-[#d4def8] bg-white p-5 shadow-[0_10px_28px_rgba(66,98,170,0.12)] sm:col-span-2 sm:flex-row sm:items-center sm:justify-between dark:border-[#223067] dark:bg-[#111d49] dark:shadow-[0_8px_24px_rgba(3,8,26,0.28)]">
-                            <div className="flex items-center gap-3">
-                                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#ee8c2b]/10 text-[#ee8c2b]">
-                                    <WalletCards className="h-6 w-6" />
-                                </div>
-                                <div>
-                                    <p className="text-xs font-medium text-[#7d8db7] dark:text-[#7183b6]">Budget Spent</p>
-                                    <p className="text-xl font-bold text-[#16213f] md:text-2xl dark:text-white">Rs. 12,400</p>
-                                </div>
-                            </div>
-                            <span className="text-[11px] font-bold text-[#7d8db7] dark:text-[#7183b6] sm:text-right">ROI: 3.4x</span>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col gap-3 rounded-3xl border border-[#b9e6d0] bg-[#effcf4] p-5 shadow-[0_10px_28px_rgba(66,98,170,0.12)] dark:border-[#28506a] dark:bg-[#16314f] dark:shadow-[0_8px_24px_rgba(3,8,26,0.28)]">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#25D366] text-white">
-                                    <MessageCircle className="h-4 w-4" />
-                                </div>
-                                <p className="font-bold text-[#16213f] dark:text-white">WhatsApp Alert</p>
-                            </div>
+                        <div className="inline-flex rounded-xl bg-[#edf3ff] p-1 dark:bg-[#1a2858]">
                             <button
                                 type="button"
-                                className="relative inline-flex h-6 w-11 items-center rounded-full bg-[#25D366]"
-                                aria-label="WhatsApp alerts enabled"
+                                onClick={() => setMode('recruiter')}
+                                className={`rounded-lg px-4 py-2 text-xs font-bold transition-colors sm:text-sm ${
+                                    mode === 'recruiter'
+                                        ? 'bg-white text-[#16213f] shadow-sm dark:bg-[#101d49] dark:text-white'
+                                        : 'text-[#5872b6] dark:text-[#9db0df]'
+                                }`}
                             >
-                                <span className="inline-block h-5 w-5 translate-x-5 rounded-full bg-white shadow" />
+                                Day-to-Day Recruiter
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setMode('admin')}
+                                className={`rounded-lg px-4 py-2 text-xs font-bold transition-colors sm:text-sm ${
+                                    mode === 'admin'
+                                        ? 'bg-white text-[#16213f] shadow-sm dark:bg-[#101d49] dark:text-white'
+                                        : 'text-[#5872b6] dark:text-[#9db0df]'
+                                }`}
+                            >
+                                HR Admin / Manager
                             </button>
                         </div>
-                        <p className="text-xs text-[#5f6f98] md:text-sm dark:text-[#93a4d1]">
-                            Get instant updates on gig progress and candidate questions directly on your phone.
-                        </p>
                     </div>
+                </section>
 
-                    <div className="rounded-3xl border border-[#d4def8] bg-white p-5 shadow-[0_10px_28px_rgba(66,98,170,0.12)] dark:border-[#223067] dark:bg-[#111d49] dark:shadow-[0_8px_24px_rgba(3,8,26,0.28)]">
-                        <h2 className="mb-4 font-bold text-[#16213f] dark:text-white">Recommended for You</h2>
-                        <div className="space-y-4">
-                            {recommendedCandidates.map((candidate) => (
-                                <div key={candidate.name} className="flex items-center justify-between gap-3">
-                                    <div className="flex items-center gap-3">
-                                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-tr from-[#ee8c2b] to-[#f2b261] font-bold text-white">
-                                            {candidate.name.charAt(0)}
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-semibold text-[#16213f] dark:text-white">
-                                                {candidate.name}
+                <section className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                    {stats[mode].map((item) => {
+                        const Icon = item.icon
+                        return (
+                            <article
+                                key={item.label}
+                                className={`rounded-3xl border p-5 shadow-[0_10px_28px_rgba(66,98,170,0.12)] transition-colors dark:shadow-[0_8px_24px_rgba(3,8,26,0.28)] ${
+                                    item.emphasis
+                                        ? 'border-[#17cf73]/40 bg-[#effcf4] dark:border-[#17cf73]/50 dark:bg-[#113226]'
+                                        : 'border-[#d4def8] bg-white dark:border-[#223067] dark:bg-[#111d49]'
+                                }`}
+                            >
+                                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#edf3ff] text-[#4f8cff] dark:bg-[#1a2858] dark:text-[#8aa9ff]">
+                                    <Icon className="h-5 w-5" />
+                                </div>
+                                <p className="text-xs font-semibold uppercase tracking-wide text-[#7d8db7] dark:text-[#7f92c6]">
+                                    {item.label}
+                                </p>
+                                <p className="mt-1 text-3xl font-black tracking-tight text-[#16213f] dark:text-white">
+                                    {item.value}
+                                </p>
+                                <p className="mt-1 text-xs font-medium text-[#5f6f98] dark:text-[#93a4d1]">
+                                    {item.hint}
+                                </p>
+                            </article>
+                        )
+                    })}
+                </section>
+
+                <div className="grid grid-cols-12 gap-6">
+                    <div className="col-span-12 space-y-6 xl:col-span-8">
+                        <section className="rounded-3xl border border-[#d4def8] bg-white p-5 shadow-[0_10px_28px_rgba(66,98,170,0.12)] sm:p-6 dark:border-[#223067] dark:bg-[#111d49] dark:shadow-[0_8px_24px_rgba(3,8,26,0.28)]">
+                            <div className="mb-5 flex items-center justify-between gap-3">
+                                <h2 className="text-lg font-bold text-[#16213f] dark:text-white">
+                                    Hiring Funnel
+                                </h2>
+                                <span className="rounded-full bg-[#edf3ff] px-3 py-1 text-[11px] font-bold text-[#4f6fbc] dark:bg-[#1a2858] dark:text-[#9db0df]">
+                                    Conversion View
+                                </span>
+                            </div>
+
+                            <div className="space-y-4">
+                                {hiringFunnel.map((stage) => (
+                                    <div key={stage.stage} className="space-y-2">
+                                        <div className="flex items-center justify-between text-sm">
+                                            <p className="font-semibold text-[#22335f] dark:text-[#d7e3ff]">
+                                                {stage.stage}
                                             </p>
-                                            <p className="text-[11px] text-[#7d8db7] dark:text-[#7183b6]">{candidate.role}</p>
+                                            <p className="font-black text-[#16213f] dark:text-white">{stage.count}</p>
+                                        </div>
+                                        <div className="h-2 overflow-hidden rounded-full bg-[#deebff] dark:bg-[#13234f]">
+                                            <div
+                                                className={`h-full rounded-full ${stage.color}`}
+                                                style={{ width: `${(stage.count / funnelMax) * 100}%` }}
+                                            />
                                         </div>
                                     </div>
-                                    <span className="rounded-lg bg-[#ee8c2b]/10 px-2 py-1 text-[11px] font-bold text-[#ee8c2b]">
-                                        {candidate.match} Match
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
-                        <Button
-                            variant="outline"
-                            className="mt-6 w-full rounded-full border-[#ccd7f5] bg-transparent text-xs font-bold text-[#42548d] hover:bg-[#edf3ff] hover:text-[#16213f] md:text-sm dark:border-[#223067] dark:text-[#c4d3ff] dark:hover:bg-[#1a2858] dark:hover:text-white"
-                        >
-                            Explore Talent Pool
-                        </Button>
+                                ))}
+                            </div>
+                        </section>
+
+                        <section className="rounded-3xl border border-[#d4def8] bg-white p-5 shadow-[0_10px_28px_rgba(66,98,170,0.12)] sm:p-6 dark:border-[#223067] dark:bg-[#111d49] dark:shadow-[0_8px_24px_rgba(3,8,26,0.28)]">
+                            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+                                <h2 className="text-lg font-bold text-[#16213f] dark:text-white">
+                                    Top Recommended Candidates
+                                </h2>
+                                <button
+                                    type="button"
+                                    className="inline-flex items-center gap-2 rounded-lg border border-[#ccd7f5] px-3 py-2 text-xs font-bold text-[#42548d] hover:bg-[#edf3ff] dark:border-[#2b3f7a] dark:text-[#c4d3ff] dark:hover:bg-[#1a2858]"
+                                >
+                                    <Filter className="h-3.5 w-3.5" />
+                                    Filter by Role
+                                </button>
+                            </div>
+
+                            <div className="space-y-3">
+                                {topCandidates.map((candidate) => (
+                                    <article
+                                        key={candidate.name}
+                                        className="grid grid-cols-1 gap-3 rounded-2xl border border-[#dde6ff] bg-[#f8fbff] p-4 sm:grid-cols-12 sm:items-center dark:border-[#21376f] dark:bg-[#0e1c45]"
+                                    >
+                                        <div className="sm:col-span-4">
+                                            <p className="font-bold text-[#16213f] dark:text-white">{candidate.name}</p>
+                                            <p className="mt-1 inline-flex items-center gap-1 text-xs text-[#6e80af] dark:text-[#96a9d9]">
+                                                <MapPin className="h-3.5 w-3.5" />
+                                                {candidate.location}
+                                            </p>
+                                        </div>
+
+                                        <div className="sm:col-span-3">
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-[#7d8db7] dark:text-[#7f92c6]">
+                                                Target Role
+                                            </p>
+                                            <p className="text-sm font-semibold text-[#22335f] dark:text-[#d7e3ff]">
+                                                {candidate.role}
+                                            </p>
+                                        </div>
+
+                                        <div className="sm:col-span-2">
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-[#7d8db7] dark:text-[#7f92c6]">
+                                                DES Score
+                                            </p>
+                                            <p className="inline-flex items-center gap-1 rounded-lg bg-[#17cf73]/15 px-2 py-1 text-sm font-black text-[#0f8f4f] dark:bg-[#17cf73]/20 dark:text-[#5be6a1]">
+                                                <BadgeCheck className="h-4 w-4" />
+                                                {candidate.des}/100
+                                            </p>
+                                        </div>
+
+                                        <div className="sm:col-span-2">
+                                            <p className="text-xs font-semibold uppercase tracking-wide text-[#7d8db7] dark:text-[#7f92c6]">
+                                                Verified Skills Match
+                                            </p>
+                                            <div className="mt-1 flex flex-wrap gap-1">
+                                                {candidate.skills.map((skill) => (
+                                                    <span
+                                                        key={`${candidate.name}-${skill}`}
+                                                        className="inline-flex items-center gap-1 rounded-md bg-[#edf8ff] px-2 py-0.5 text-[11px] font-bold text-[#315e9c] dark:bg-[#1b2d5e] dark:text-[#b2ccff]"
+                                                    >
+                                                        {skill}
+                                                        <Check className="h-3 w-3" />
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="sm:col-span-1 sm:text-right">
+                                            <button
+                                                type="button"
+                                                className="inline-flex items-center gap-1 rounded-lg bg-[#17cf73] px-3 py-2 text-xs font-bold text-white hover:bg-[#11b865]"
+                                            >
+                                                Shortlist
+                                                <ArrowRight className="h-3.5 w-3.5" />
+                                            </button>
+                                        </div>
+                                    </article>
+                                ))}
+                            </div>
+                        </section>
                     </div>
 
-                    <div className="flex flex-col items-start gap-4 rounded-3xl border border-[#d4def8] bg-white p-5 shadow-[0_10px_28px_rgba(66,98,170,0.12)] sm:flex-row sm:items-center dark:border-[#223067] dark:bg-[#111d49] dark:shadow-[0_8px_24px_rgba(3,8,26,0.28)]">
-                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#ee8c2b] text-white">
-                            <Users className="h-6 w-6" />
-                        </div>
-                        <div className="flex-1">
-                            <h3 className="text-sm font-bold text-[#16213f] dark:text-white">
-                                Need Help?
-                            </h3>
-                            <p className="mt-1 text-[11px] text-[#5f6f98] dark:text-[#93a4d1]">
-                                Talk to our project coordinators anytime for support with your gigs.
-                            </p>
-                        </div>
-                        <ArrowRight className="h-4 w-4 text-[#7d8db7] dark:text-[#7183b6] sm:self-center" />
+                    <div className="col-span-12 space-y-6 xl:col-span-4">
+                        <section className="rounded-3xl border border-[#d4def8] bg-white p-5 shadow-[0_10px_28px_rgba(66,98,170,0.12)] dark:border-[#223067] dark:bg-[#111d49] dark:shadow-[0_8px_24px_rgba(3,8,26,0.28)]">
+                            <h2 className="mb-4 text-lg font-bold text-[#16213f] dark:text-white">
+                                Active Campus Engagements
+                            </h2>
+                            <div className="space-y-4">
+                                {campusEngagements.map((event) => (
+                                    <article
+                                        key={event.drive}
+                                        className="rounded-2xl border border-[#dde6ff] bg-[#f8fbff] p-4 dark:border-[#21376f] dark:bg-[#0e1c45]"
+                                    >
+                                        <p className="font-semibold text-[#1d2f5c] dark:text-[#deebff]">{event.drive}</p>
+                                        <p className="mt-1 inline-flex items-center gap-1 text-xs text-[#6e80af] dark:text-[#96a9d9]">
+                                            <CalendarDays className="h-3.5 w-3.5" />
+                                            {event.date}
+                                        </p>
+                                        <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-[#4f6fbc] dark:text-[#9db0df]">
+                                            <Building2 className="h-3.5 w-3.5" />
+                                            {event.institution}
+                                        </p>
+                                        <p className="mt-2 inline-flex items-center gap-1 rounded-lg bg-[#17cf73]/15 px-2 py-1 text-xs font-bold text-[#0f8f4f] dark:bg-[#17cf73]/20 dark:text-[#5be6a1]">
+                                            <Users className="h-3.5 w-3.5" />
+                                            {event.preAssessed} pre-assessed students
+                                        </p>
+                                    </article>
+                                ))}
+                            </div>
+                        </section>
+
+                        <section className="rounded-3xl border border-[#d4def8] bg-white p-5 shadow-[0_10px_28px_rgba(66,98,170,0.12)] dark:border-[#223067] dark:bg-[#111d49] dark:shadow-[0_8px_24px_rgba(3,8,26,0.28)]">
+                            <h2 className="mb-4 text-lg font-bold text-[#16213f] dark:text-white">Tasks & Alerts</h2>
+                            <div className="space-y-3">
+                                {tasks.map((task) => (
+                                    <article
+                                        key={task.text}
+                                        className={`rounded-2xl border px-4 py-3 ${
+                                            task.tone === 'alert'
+                                                ? 'border-[#fecaca] bg-[#fff4f4] dark:border-[#7f2f3c] dark:bg-[#321521]'
+                                                : task.tone === 'action'
+                                                  ? 'border-[#fde68a] bg-[#fffbeb] dark:border-[#6e5527] dark:bg-[#2e2614]'
+                                                  : 'border-[#bfdbfe] bg-[#eff6ff] dark:border-[#274e80] dark:bg-[#132742]'
+                                        }`}
+                                    >
+                                        <p className="inline-flex items-start gap-2 text-sm font-medium text-[#22335f] dark:text-[#d7e3ff]">
+                                            {task.tone === 'alert' && <CircleAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#dc2626]" />}
+                                            {task.tone === 'action' && <HandCoins className="mt-0.5 h-4 w-4 shrink-0 text-[#ca8a04]" />}
+                                            {task.tone === 'info' && <UserCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#2563eb]" />}
+                                            {task.text}
+                                        </p>
+                                    </article>
+                                ))}
+                            </div>
+                        </section>
                     </div>
                 </div>
             </div>

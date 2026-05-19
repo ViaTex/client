@@ -37,6 +37,7 @@ const corporateNavigation = [
     { name: 'Company Profile', href: '/dashboard/corporate/profile', icon: Building },
     { name: 'Manage Jobs', href: '/dashboard/corporate/jobs', icon: Briefcase },
     { name: 'Manage Applicants', href: '/dashboard/corporate/applicants', icon: Users },
+    { name: 'Shortlisted', href: '/dashboard/corporate/shortlisted', icon: FileText },
     { name: 'Settings', href: '/dashboard/corporate/settings', icon: Settings },
 ]
 
@@ -156,7 +157,17 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
                                             }`}
                                         strokeWidth={isActive ? 2.2 : 1.8}
                                     />
-                                    {!isCollapsed && <span>{item.name}</span>}
+                                    {!isCollapsed && (
+                                        <>
+                                            <span>{item.name}</span>
+                                            {/* Show shortlisted count badge only for corporate sidebar */}
+                                            {isCorporate && item.name === 'Shortlisted' && (
+                                                <span className="ml-2 inline-flex items-center justify-center text-[11px] font-bold bg-primary text-white px-2 py-0.5 rounded-full">
+                                                    45
+                                                </span>
+                                            )}
+                                        </>
+                                    )}
 
                                 </Link>
                             )
