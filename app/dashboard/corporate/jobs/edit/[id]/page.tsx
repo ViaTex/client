@@ -36,6 +36,7 @@ export default function EditJobPage() {
     const [remoteWork, setRemoteWork] = useState(false)
     const [travelRequired, setTravelRequired] = useState(false)
     const [modeOfWork, setModeOfWork] = useState<"onsite" | "remote" | "hybrid">("onsite")
+    const [hiringStatus, setHiringStatus] = useState("Actively Hiring")
     const [salaryMin, setSalaryMin] = useState("")
     const [salaryMax, setSalaryMax] = useState("")
     const [salaryCurrency, setSalaryCurrency] = useState("INR")
@@ -97,6 +98,7 @@ export default function EditJobPage() {
                 setRemoteWork(job.remote_work || false)
                 setTravelRequired(job.travel_required || false)
                 setModeOfWork(job.mode_of_work || "onsite")
+                setHiringStatus(job.hiring_status || "Actively Hiring")
                 setSalaryMin(job.salary_min?.toString() || "")
                 setSalaryMax(job.salary_max?.toString() || "")
                 setSalaryCurrency(job.salary_currency || "INR")
@@ -163,6 +165,7 @@ export default function EditJobPage() {
                 remote_work: remoteWork,
                 travel_required: travelRequired,
                 mode_of_work: modeOfWork,
+                hiring_status: hiringStatus,
                 salary_min: salaryMin ? Number(salaryMin) : undefined,
                 salary_max: salaryMax ? Number(salaryMax) : undefined,
                 salary_currency: salaryCurrency || "INR",
@@ -303,6 +306,14 @@ export default function EditJobPage() {
                                             <option value="onsite">Onsite</option>
                                             <option value="remote">Remote</option>
                                             <option value="hybrid">Hybrid</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold mb-2">Hiring status</label>
+                                        <select className="h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 w-full dark:border-[#46517f] dark:bg-[#121938] dark:text-white" value={hiringStatus} onChange={(e) => setHiringStatus(e.target.value)}>
+                                            <option value="Actively Hiring">Actively Hiring</option>
+                                            <option value="Immediate Joiners">Immediate Joiners</option>
+                                            <option value="Urgent Opening">Urgent Opening</option>
                                         </select>
                                     </div>
                                     <div className="flex items-center gap-5">

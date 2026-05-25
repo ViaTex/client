@@ -32,6 +32,7 @@ export default function CreateJobPage() {
     const [remoteWork, setRemoteWork] = useState(false)
     const [travelRequired, setTravelRequired] = useState(false)
     const [modeOfWork, setModeOfWork] = useState<"onsite" | "remote" | "hybrid">("onsite")
+    const [hiringStatus, setHiringStatus] = useState("Actively Hiring")
     const [salaryMin, setSalaryMin] = useState("")
     const [salaryMax, setSalaryMax] = useState("")
     const [salaryCurrency, setSalaryCurrency] = useState("INR")
@@ -121,6 +122,7 @@ export default function CreateJobPage() {
                 remote_work: remoteWork,
                 travel_required: travelRequired,
                 mode_of_work: modeOfWork,
+                hiring_status: hiringStatus,
                 salary_min: salaryMin ? Number(salaryMin) : undefined,
                 salary_max: salaryMax ? Number(salaryMax) : undefined,
                 salary_currency: salaryCurrency || "INR",
@@ -263,6 +265,14 @@ export default function CreateJobPage() {
                                             <option value="onsite">Onsite</option>
                                             <option value="remote">Remote</option>
                                             <option value="hybrid">Hybrid</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-semibold mb-2">Hiring status</label>
+                                        <select className="h-10 w-full rounded-md border border-[#d7ddf8] bg-white px-3 py-2 text-sm text-[#16213f] dark:border-[#46517f] dark:bg-[#121938] dark:text-white" value={hiringStatus} onChange={(e) => setHiringStatus(e.target.value)}>
+                                            <option value="Actively Hiring">Actively Hiring</option>
+                                            <option value="Immediate Joiners">Immediate Joiners</option>
+                                            <option value="Urgent Opening">Urgent Opening</option>
                                         </select>
                                     </div>
                                     <div className="flex items-center gap-5 text-[#42548d] dark:text-[#dbe3ff]">
