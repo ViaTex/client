@@ -30,6 +30,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import ReactSelect, { StylesConfig, components, OptionProps, SingleValue } from 'react-select'
 import { apiClient } from '@/lib/api'
 import { toast } from 'react-hot-toast'
 
@@ -369,6 +370,7 @@ export default function StudentProfile() {
     const [isEditing, setIsEditing] = useState(false)
     const [profileData, setProfileData] = useState<any>({})
     const [showNudge, setShowNudge] = useState(false)
+    const [isDarkMode, setIsDarkMode] = useState(false)
     const [educationDraft, setEducationDraft] = useState<StudentEducation | null>(null)
     const [editingEducationId, setEditingEducationId] = useState<string | null>(null)
     const [isEducationSaving, setIsEducationSaving] = useState(false)
@@ -381,6 +383,10 @@ export default function StudentProfile() {
 
     useEffect(() => {
         fetchProfile()
+    }, [])
+
+    useEffect(() => {
+        setIsDarkMode(document.documentElement.classList.contains('dark'))
     }, [])
 
     const fetchProfile = async () => {
@@ -733,8 +739,812 @@ export default function StudentProfile() {
     const genderOptions = [
         { value: 'male', label: 'Male' },
         { value: 'female', label: 'Female' },
+        { value: 'transgender', label: 'Transgender' },
+        { value: 'non_binary', label: 'Non-binary' },
+        { value: 'prefer_not_to_say', label: 'Prefer not to say' },
         { value: 'other', label: 'Other' },
     ]
+
+    // Indian States & Languages Data
+    type MultiSelectOption = {
+        label: string
+        value: string
+    }
+
+    const languageOptions: MultiSelectOption[] = [
+        { value: 'english', label: 'English' },
+        { value: 'hindi', label: 'Hindi' },
+        { value: 'marathi', label: 'Marathi' },
+        { value: 'gujarati', label: 'Gujarati' },
+        { value: 'tamil', label: 'Tamil' },
+        { value: 'telugu', label: 'Telugu' },
+        { value: 'kannada', label: 'Kannada' },
+        { value: 'malayalam', label: 'Malayalam' },
+        { value: 'bengali', label: 'Bengali' },
+        { value: 'punjabi', label: 'Punjabi' },
+        { value: 'urdu', label: 'Urdu' },
+        { value: 'odia', label: 'Odia' },
+    ]
+
+    const parseCommaList = (value?: string) => {
+        if (!value) return []
+        return value
+            .split(',')
+            .map((item) => item.trim())
+            .filter(Boolean)
+    }
+
+    const toOptionArray = (options: MultiSelectOption[], value?: string) => {
+        const values = parseCommaList(value)
+        return values.map((item) => {
+            const match = options.find((option) => option.value === item || option.label.toLowerCase() === item.toLowerCase())
+            return match ?? { label: item, value: item.toLowerCase().replace(/\s+/g, '_') }
+        })
+    }
+
+    const toCsvString = (items: MultiSelectOption[]) => items.map((item) => item.label).join(', ')
+
+    const CheckboxOption = (props: OptionProps<MultiSelectOption, true>) => (
+        <components.Option {...props}>
+            <div className="flex items-center gap-2 px-1">
+                <input
+                    type="checkbox"
+                    checked={props.isSelected}
+                    readOnly
+                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>{props.label}</span>
+            </div>
+        </components.Option>
+    )
+
+    const technicalSkillOptions: MultiSelectOption[] = [
+        { label: 'React', value: 'react' },
+        { label: 'Node.js', value: 'node_js' },
+        { label: 'Python', value: 'python' },
+        { label: 'TypeScript', value: 'typescript' },
+        { label: 'JavaScript', value: 'javascript' },
+        { label: 'SQL', value: 'sql' },
+        { label: 'GraphQL', value: 'graphql' },
+        { label: 'Docker', value: 'docker' },
+        { label: 'AWS', value: 'aws' },
+        { label: 'Data Structures', value: 'data_structures' },
+    ]
+
+    const softSkillOptions: MultiSelectOption[] = [
+        { label: 'Communication', value: 'communication' },
+        { label: 'Leadership', value: 'leadership' },
+        { label: 'Teamwork', value: 'teamwork' },
+        { label: 'Problem Solving', value: 'problem_solving' },
+        { label: 'Adaptability', value: 'adaptability' },
+        { label: 'Time Management', value: 'time_management' },
+    ]
+
+    const industryOptions: MultiSelectOption[] = [
+        { label: 'Fintech', value: 'fintech' },
+        { label: 'Healthcare', value: 'healthcare' },
+        { label: 'EdTech', value: 'edtech' },
+        { label: 'E-commerce', value: 'ecommerce' },
+        { label: 'SaaS', value: 'saas' },
+        { label: 'Automotive', value: 'automotive' },
+    ]
+
+    const roleOptions: MultiSelectOption[] = [
+        { label: 'SDE', value: 'sde' },
+        { label: 'Data Analyst', value: 'data_analyst' },
+        { label: 'Product Manager', value: 'product_manager' },
+        { label: 'UX Designer', value: 'ux_designer' },
+        { label: 'QA Engineer', value: 'qa_engineer' },
+        { label: 'DevOps Engineer', value: 'devops_engineer' },
+    ]
+
+    const reactSelectStyles: StylesConfig<MultiSelectOption, boolean> = {
+        control: (provided, state) => ({
+            ...provided,
+            borderRadius: 24,
+            borderColor: state.isFocused ? '#7C3AED' : '#D1D5DB',
+            boxShadow: 'none',
+            minHeight: 54,
+            backgroundColor: isDarkMode ? '#0C1430' : '#F8FAFC',
+            color: isDarkMode ? '#E2E8F0' : '#111827',
+        }),
+        menu: (provided) => ({
+            ...provided,
+            borderRadius: 16,
+            backgroundColor: isDarkMode ? '#111827' : '#ffffff',
+            color: isDarkMode ? '#E2E8F0' : '#111827',
+        }),
+        option: (provided, state) => ({
+            ...provided,
+            backgroundColor: state.isFocused
+                ? isDarkMode ? '#1E293B' : '#EEF2FF'
+                : isDarkMode ? '#0C1430' : '#ffffff',
+            color: isDarkMode ? '#E2E8F0' : '#111827',
+        }),
+        multiValue: (provided) => ({
+            ...provided,
+            backgroundColor: isDarkMode ? '#312E81' : '#E9D5FF',
+            borderRadius: 9999,
+        }),
+        multiValueLabel: (provided) => ({
+            ...provided,
+            color: isDarkMode ? '#EDE9FE' : '#3730A3',
+        }),
+        placeholder: (provided) => ({
+            ...provided,
+            color: isDarkMode ? '#94A3B8' : '#6B7280',
+        }),
+        input: (provided) => ({
+            ...provided,
+            color: isDarkMode ? '#E2E8F0' : '#111827',
+        }),
+    }
+
+    const selectedLanguageOptions = toOptionArray(languageOptions, profileData.language_proficiency)
+    const selectedTechnicalSkills = toOptionArray(technicalSkillOptions, profileData.technical_skills)
+    const selectedSoftSkills = toOptionArray(softSkillOptions, profileData.soft_skills)
+    const selectedIndustryOptions = toOptionArray(industryOptions, profileData.preferred_industry)
+    const selectedRoleOptions = toOptionArray(roleOptions, profileData.job_roles_of_interest)
+
+    const stateOptions = [
+        { value: 'andaman_nicobar', label: 'Andaman and Nicobar Islands' },
+        { value: 'andhra_pradesh', label: 'Andhra Pradesh' },
+        { value: 'arunachal_pradesh', label: 'Arunachal Pradesh' },
+        { value: 'assam', label: 'Assam' },
+        { value: 'bihar', label: 'Bihar' },
+        { value: 'chandigarh', label: 'Chandigarh' },
+        { value: 'chhattisgarh', label: 'Chhattisgarh' },
+        { value: 'dadra_nagar_haveli', label: 'Dadra and Nagar Haveli' },
+        { value: 'daman_diu', label: 'Daman and Diu' },
+        { value: 'delhi', label: 'Delhi' },
+        { value: 'goa', label: 'Goa' },
+        { value: 'gujarat', label: 'Gujarat' },
+        { value: 'haryana', label: 'Haryana' },
+        { value: 'himachal_pradesh', label: 'Himachal Pradesh' },
+        { value: 'jharkhand', label: 'Jharkhand' },
+        { value: 'karnataka', label: 'Karnataka' },
+        { value: 'kerala', label: 'Kerala' },
+        { value: 'ladakh', label: 'Ladakh' },
+        { value: 'lakshadweep', label: 'Lakshadweep' },
+        { value: 'madhya_pradesh', label: 'Madhya Pradesh' },
+        { value: 'maharashtra', label: 'Maharashtra' },
+        { value: 'manipur', label: 'Manipur' },
+        { value: 'meghalaya', label: 'Meghalaya' },
+        { value: 'mizoram', label: 'Mizoram' },
+        { value: 'nagaland', label: 'Nagaland' },
+        { value: 'odisha', label: 'Odisha' },
+        { value: 'puducherry', label: 'Puducherry' },
+        { value: 'punjab', label: 'Punjab' },
+        { value: 'rajasthan', label: 'Rajasthan' },
+        { value: 'sikkim', label: 'Sikkim' },
+        { value: 'tamil_nadu', label: 'Tamil Nadu' },
+        { value: 'telangana', label: 'Telangana' },
+        { value: 'tripura', label: 'Tripura' },
+        { value: 'uttar_pradesh', label: 'Uttar Pradesh' },
+        { value: 'uttarakhand', label: 'Uttarakhand' },
+        { value: 'west_bengal', label: 'West Bengal' },
+    ]
+
+    const cityOptionsByState: Record<string, MultiSelectOption[]> = {
+        delhi: [
+            { label: 'Central Delhi', value: 'central_delhi' },
+            { label: 'New Delhi', value: 'new_delhi' },
+            { label: 'North Delhi', value: 'north_delhi' },
+            { label: 'South Delhi', value: 'south_delhi' },
+        ],
+        arunachal_pradesh: [
+        { label: 'Alo', value: 'alo' },
+        { label: 'Bomdila', value: 'bomdila' },
+        { label: 'Itanagar', value: 'itanagar' },
+        { label: 'Khonsa', value: 'khonsa' },
+        { label: 'Miao', value: 'miao' },
+        { label: 'Namsai', value: 'namsai' },
+        { label: 'Pasighat', value: 'pasighat' },
+        { label: 'Roing', value: 'roing' },
+        { label: 'Seppa', value: 'seppa' },
+        { label: 'Tawang', value: 'tawang' },
+        { label: 'Tezu', value: 'tezu' },
+        { label: 'Ziro', value: 'ziro' }
+    ],
+        maharashtra: [
+            { label: 'Mumbai', value: 'mumbai' },
+            { label: 'Pune', value: 'pune' },
+            { label: 'Nagpur', value: 'nagpur' },
+            { label: 'Nashik', value: 'nashik' },
+        ],
+        karnataka: [
+            { label: 'Bengaluru', value: 'bengaluru' },
+            { label: 'Mysore', value: 'mysore' },
+            { label: 'Mangalore', value: 'mangalore' },
+            { label: 'Hubli', value: 'hubli' },
+        ],
+        tamil_nadu: [
+            { label: 'Chennai', value: 'chennai' },
+            { label: 'Coimbatore', value: 'coimbatore' },
+            { label: 'Madurai', value: 'madurai' },
+            { label: 'Tiruchirappalli', value: 'tiruchirappalli' },
+        ],
+        gujarat: [
+            { label: 'Ahmedabad', value: 'ahmedabad' },
+            { label: 'Vadodara', value: 'vadodara' },
+            { label: 'Surat', value: 'surat' },
+            { label: 'Rajkot', value: 'rajkot' },
+        ],
+        west_bengal: [
+            { label: 'Kolkata', value: 'kolkata' },
+            { label: 'Howrah', value: 'howrah' },
+            { label: 'Durgapur', value: 'durgapur' },
+            { label: 'Siliguri', value: 'siliguri' },
+        ],
+        uttar_pradesh: [
+            { label: 'Lucknow', value: 'lucknow' },
+            { label: 'Noida', value: 'noida' },
+            { label: 'Kanpur', value: 'kanpur' },
+            { label: 'Varanasi', value: 'varanasi' },
+        ],
+        rajasthan: [
+            { label: 'Jaipur', value: 'jaipur' },
+            { label: 'Udaipur', value: 'udaipur' },
+            { label: 'Jodhpur', value: 'jodhpur' },
+            { label: 'Ajmer', value: 'ajmer' },
+        ],
+        telangana: [
+            { label: 'Hyderabad', value: 'hyderabad' },
+            { label: 'Warangal', value: 'warangal' },
+            { label: 'Nizamabad', value: 'nizamabad' },
+            { label: 'Karimnagar', value: 'karimnagar' },
+        ],
+        andhra_pradesh: [
+            { label: 'Visakhapatnam', value: 'visakhapatnam' },
+            { label: 'Vijayawada', value: 'vijayawada' },
+            { label: 'Guntur', value: 'guntur' },
+            { label: 'Tirupati', value: 'tirupati' },
+        ],
+        kerala: [
+            { label: 'Kochi', value: 'kochi' },
+            { label: 'Thiruvananthapuram', value: 'thiruvananthapuram' },
+            { label: 'Kozhikode', value: 'kozhikode' },
+            { label: 'Thrissur', value: 'thrissur' },
+        ],
+        bihar: [
+            { label: 'Patna', value: 'patna' },
+            { label: 'Gaya', value: 'gaya' },
+            { label: 'Bhagalpur', value: 'bhagalpur' },
+            { label: 'Muzaffarpur', value: 'muzaffarpur' },
+        ],
+        punjab: [
+    { label: 'Abohar', value: 'abohar' },
+    { label: 'Ahmedgarh', value: 'ahmedgarh' },
+    { label: 'Ajnala', value: 'ajnala' },
+    { label: 'Akrur', value: 'akrur' },
+    { label: 'Alawalpur', value: 'alawalpur' },
+    { label: 'Amloh', value: 'amloh' },
+    { label: 'Amritsar', value: 'amritsar' },
+    { label: 'Anandpur Sahib', value: 'anandpur_sahib' },
+    { label: 'Asifwala', value: 'asifwala' },
+    { label: 'Baghapurana', value: 'baghapurana' },
+    { label: 'Banga', value: 'banga' },
+    { label: 'Bareta', value: 'bareta' },
+    { label: 'Barnala', value: 'barnala' },
+    { label: 'Bassi Pathana', value: 'bassi_pathana' },
+    { label: 'Batala', value: 'batala' },
+    { label: 'Bathinda', value: 'bathinda' },
+    { label: 'Bhadiar', value: 'bhadiar' },
+    { label: 'Bhagha Purana', value: 'bhagha_purana' },
+    { label: 'Bhawanigarh', value: 'bhawanigarh' },
+    { label: 'Bhikhi', value: 'bhikhi' },
+    { label: 'Bhikhiwind', value: 'bhikhiwind' },
+    { label: 'Bhogpur', value: 'bhogpur' },
+    { label: 'Budhlada', value: 'budhlada' },
+    { label: 'Chamat', value: 'chamat' },
+    { label: 'Dasuya', value: 'dasuya' },
+    { label: 'Dera Baba Nanak', value: 'dera_baba_nanak' },
+    { label: 'Dera Bassi', value: 'dera_bassi' },
+    { label: 'Dharamkot', value: 'dharamkot' },
+    { label: 'Dhariwal', value: 'dhariwal' },
+    { label: 'Dhuri', value: 'dhuri' },
+    { label: 'Dina Nagar', value: 'dina_nagar' },
+    { label: 'Doraha', value: 'doraha' },
+    { label: 'Faridkot', value: 'faridkot' },
+    { label: 'Fatehgarh Churian', value: 'fatehgarh_churian' },
+    { label: 'Fatehgarh Sahib', value: 'fatehgarh_sahib' },
+    { label: 'Fazilka', value: 'fazilka' },
+    { label: 'Firozpur', value: 'firozpur' },
+    { label: 'Firozpur Cantt', value: 'firozpur_cantt' },
+    { label: 'Garhdiwala', value: 'garhdiwala' },
+    { label: 'Garhshankar', value: 'garhshankar' },
+    { label: 'Gharaun', value: 'gharaun' },
+    { label: 'Gidderbaha', value: 'gidderbaha' },
+    { label: 'Gurdaspur', value: 'gurdaspur' },
+    { label: 'Guru Har Sahai', value: 'guru_har_sahai' },
+    { label: 'Hajipur', value: 'hajipur' },
+    { label: 'Hoshiarpur', value: 'hoshiarpur' },
+    { label: 'Jagadhri Mandi', value: 'jagadhri_mandi' },
+    { label: 'Jagraon', value: 'jagraon' },
+    { label: 'Jaitu', value: 'jaitu' },
+    { label: 'Jalalabad', value: 'jalalabad' },
+    { label: 'Jalandhar', value: 'jalandhar' },
+    { label: 'Jandiala Guru', value: 'jandiala_guru' },
+    { label: 'Kapurthala', value: 'kapurthala' },
+    { label: 'Kartarpur', value: 'kartarpur' },
+    { label: 'Khanna', value: 'khanna' },
+    { label: 'Kharar', value: 'kharar' },
+    { label: 'Khemkaran', value: 'khemkaran' },
+    { label: 'Kot Kapura', value: 'kot_kapura' },
+    { label: 'Kurali', value: 'kurali' },
+    { label: 'Lalru', value: 'lalru' },
+    { label: 'Longowal', value: 'longowal' },
+    { label: 'Ludhiana', value: 'ludhiana' },
+    { label: 'Machhiwara', value: 'machhiwara' },
+    { label: 'Majitha', value: 'majitha' },
+    { label: 'Malerkotla', value: 'malerkotla' },
+    { label: 'Malout', value: 'malout' },
+    { label: 'Mansa', value: 'mansa' },
+    { label: 'Maur', value: 'maur' },
+    { label: 'Moga', value: 'moga' },
+    { label: 'Mohali (SAS Nagar)', value: 'mohali' },
+    { label: 'Morinda', value: 'morinda' },
+    { label: 'Mukerian', value: 'mukerian' },
+    { label: 'Muktsar', value: 'muktsar' },
+    { label: 'Mullanpur Garbadas', value: 'mullanpur_garbadas' },
+    { label: 'Nabha', value: 'nabha' },
+    { label: 'Nakodar', value: 'nakodar' },
+    { label: 'Nangal', value: 'nangal' },
+    { label: 'Nawanshahr', value: 'nawanshahr' },
+    { label: 'Neya', value: 'neya' },
+    { label: 'Pathankot', value: 'pathankot' },
+    { label: 'Patiala', value: 'patiala' },
+    { label: 'Patran', value: 'patran' },
+    { label: 'Patti', value: 'patti' },
+    { label: 'Phagwara', value: 'phagwara' },
+    { label: 'Phillaur', value: 'phillaur' },
+    { label: 'Qadian', value: 'qadian' },
+    { label: 'Raikot', value: 'raikot' },
+    { label: 'Raja Sansi', value: 'raja_sansi' },
+    { label: 'Rajpura', value: 'rajpura' },
+    { label: 'Raman Mandi', value: 'raman_mandi' },
+    { label: 'Rayya', value: 'rayya' },
+    { label: 'Rupnagar (Ropar)', value: 'rupnagar' },
+    { label: 'Sahnewal', value: 'sahnewal' },
+    { label: 'Samana', value: 'samana' },
+    { label: 'Samrala', value: 'samrala' },
+    { label: 'Sanam', value: 'sanam' },
+    { label: 'Sangrur', value: 'sangrur' },
+    { label: 'Sardulgarh', value: 'sardulgarh' },
+    { label: 'Shahkot', value: 'shahkot' },
+    { label: 'Sirhind', value: 'sirhind' },
+    { label: 'Sujjanpur', value: 'sujjanpur' },
+    { label: 'Sultanpur Lodhi', value: 'sultanpur_lodhi' },
+    { label: 'Sunam', value: 'sunam' },
+    { label: 'Talwandi Sabo', value: 'talwandi_sabo' },
+    { label: 'Tapa', value: 'tapa' },
+    { label: 'Tarn Taran', value: 'tarn_taran' },
+    { label: 'Urmar Tanda', value: 'urmar_tanda' },
+    { label: 'Zira', value: 'zira' },
+    { label: 'Zirakpur', value: 'zirakpur' }
+],
+        odisha: [
+            { label: 'Anandpur', value: 'anandpur' },
+            { label: 'Angul', value: 'angul' },
+            { label: 'Aska', value: 'aska' },
+            { label: 'Athagad', value: 'athagad' },
+            { label: 'Athamallik', value: 'athamallik' },
+            { label: 'Balangir', value: 'balangir' },
+            { label: 'Balasore', value: 'balasore' },
+            { label: 'Balimela', value: 'balimela' },
+            { label: 'Banapur', value: 'banapur' },
+            { label: 'Bangriposi', value: 'bangriposi' },
+            { label: 'Barbil', value: 'barbil' },
+            { label: 'Bargarh', value: 'bargarh' },
+            { label: 'Baripada', value: 'baripada' },
+            { label: 'Basudevpur', value: 'basudevpur' },
+            { label: 'Belguntha', value: 'belguntha' },
+            { label: 'Belpahar', value: 'belpahar' },
+            { label: 'Berhampur', value: 'berhampur' },
+            { label: 'Bhadrak', value: 'bhadrak' },
+            { label: 'Bhanjanagar', value: 'bhanjanagar' },
+            { label: 'Bhawanipatna', value: 'bhawanipatna' },
+            { label: 'Bhuban', value: 'bhuban' },
+            { label: 'Bhubaneswar', value: 'bhubaneswar' },
+            { label: 'Binamika', value: 'binamika' },
+            { label: 'Biramitrapur', value: 'biramitrapur' },
+            { label: 'Bishama Katek', value: 'bishama_katek' },
+            { label: 'Boudhgarh', value: 'boudhgarh' },
+            { label: 'Brajarajnagar', value: 'brajarajnagar' },
+            { label: 'Buguda', value: 'buguda' },
+            { label: 'Burla', value: 'burla' },
+            { label: 'Byasanagar', value: 'byasanagar' },
+            { label: 'Chhatrapur', value: 'chhatrapur' },
+            { label: 'Chikiti', value: 'chikiti' },
+            { label: 'Choudwar', value: 'choudwar' },
+            { label: 'Cuttack', value: 'cuttack' },
+            { label: 'Daringbadi', value: 'daringbadi' },
+            { label: 'Deogarh', value: 'deogarh' },
+            { label: 'Dhamnagar', value: 'dhamnagar' },
+            { label: 'Dhenkanal', value: 'dhenkanal' },
+            { label: 'Digapahandi', value: 'digapahandi' },
+            { label: 'G. Udayagiri', value: 'g_udayagiri' },
+            { label: 'Ganjam', value: 'ganjam' },
+            { label: 'Ghasipura', value: 'ghasipura' },
+            { label: 'Gopalpur', value: 'gopalpur' },
+            { label: 'Gudari', value: 'gudari' },
+            { label: 'Gunupur', value: 'gunupur' },
+            { label: 'Hindol', value: 'hindol' },
+            { label: 'Hirakud', value: 'hirakud' },
+            { label: 'Jagatsinghpur', value: 'jagatsinghpur' },
+            { label: 'Jajpur', value: 'jajpur' },
+            { label: 'Jaleswar', value: 'jaleswar' },
+            { label: 'Jatani', value: 'jatani' },
+            { label: 'Jeypore', value: 'jeypore' },
+            { label: 'Jharsuguda', value: 'jharsuguda' },
+            { label: 'Joda', value: 'joda' },
+            { label: 'Kamakshyanagar', value: 'kamakshyanagar' },
+            { label: 'Kantamal', value: 'kantamal' },
+            { label: 'Kantara', value: 'kantara' },
+            { label: 'Karanjia', value: 'karanjia' },
+            { label: 'Kashipur', value: 'kashipur' },
+            { label: 'Kendrapara', value: 'kendrapara' },
+            { label: 'Keonjhar', value: 'keonjhar' },
+            { label: 'Kesinga', value: 'kesinga' },
+            { label: 'Khariar', value: 'khariar' },
+            { label: 'Khariar Road', value: 'khariar_road' },
+            { label: 'Khordha', value: 'khordha' },
+            { label: 'Kishorenagar', value: 'kishorenagar' },
+            { label: 'Konark', value: 'konark' },
+            { label: 'Koraput', value: 'koraput' },
+            { label: 'Kotpad', value: 'kotpad' },
+            { label: 'Kuchinda', value: 'kuchinda' },
+            { label: 'Malkangiri', value: 'malkangiri' },
+            { label: 'Mohana', value: 'mohana' },
+            { label: 'Nabarangpur', value: 'nabarangpur' },
+            { label: 'Narasinghpur', value: 'narasinghpur' },
+            { label: 'Nayagarh', value: 'nayagarh' },
+            { label: 'Nilgiri', value: 'nilgiri' },
+            { label: 'Nimapada', value: 'nimapada' },
+            { label: 'Nowrangpur', value: 'nowrangpur' },
+            { label: 'Nuapada', value: 'nuapada' },
+            { label: 'Padampur', value: 'padampur' },
+            { label: 'Pallahara', value: 'pallahara' },
+            { label: 'Paradip', value: 'paradip' },
+            { label: 'Paralakhemundi', value: 'paralakhemundi' },
+            { label: 'Patnagarh', value: 'patnagarh' },
+            { label: 'Pattamundai', value: 'pattamundai' },
+            { label: 'Phulbani', value: 'phulbani' },
+            { label: 'Pipili', value: 'pipili' },
+            { label: 'Polasara', value: 'polasara' },
+            { label: 'Puri', value: 'puri' },
+            { label: 'Purushottampur', value: 'purushottampur' },
+            { label: 'Rairangpur', value: 'rairangpur' },
+            { label: 'Rairakhol', value: 'rairakhol' },
+            { label: 'Rajagangapur', value: 'rajagangapur' },
+            { label: 'Rambha', value: 'rambha' },
+            { label: 'Rayagada', value: 'rayagada' },
+            { label: 'Remuna', value: 'remuna' },
+            { label: 'Rourkela', value: 'rourkela' },
+            { label: 'Sambalpur', value: 'sambalpur' },
+            { label: 'Sonepur', value: 'sonepur' },
+            { label: 'Soro', value: 'soro' },
+            { label: 'Sunabeda', value: 'sunabeda' },
+            { label: 'Talcher', value: 'talcher' },
+            { label: 'Tarbha', value: 'tarbha' },
+            { label: 'Tenksa', value: 'tenksa' },
+            { label: 'Tirtol', value: 'tirtol' },
+            { label: 'Titlagarh', value: 'titlagarh' },
+            { label: 'Tushra', value: 'tushra' },
+            { label: 'Udaipur', value: 'udaipur' },
+            { label: 'Udala', value: 'udala' },
+            { label: 'Umarkote', value: 'umarkote' },
+            { label: 'Vani Vihar', value: 'vani_vihar' },
+            { label: 'Yusufpur', value: 'yusufpur' }
+        ],
+        haryana: [
+            { label: 'Ambala', value: 'ambala' },
+            { label: 'Ambala Cantt', value: 'ambala_cantt' },
+            { label: 'Asandh', value: 'asandh' },
+            { label: 'Assandh', value: 'assandh' },
+            { label: 'Ateli', value: 'ateli' },
+            { label: 'Babiyal', value: 'babiyal' },
+            { label: 'Bahadurgarh', value: 'bahadurgarh' },
+            { label: 'Barara', value: 'barara' },
+            { label: 'Barwala', value: 'barwala' },
+            { label: 'Bawal', value: 'bawal' },
+            { label: 'Bawani Khera', value: 'bawani_khera' },
+            { label: 'Beri', value: 'beri' },
+            { label: 'Bhiwani', value: 'bhiwani' },
+            { label: 'Bilaspur', value: 'bilaspur' },
+            { label: 'Charkhi Dadri', value: 'charkhi_dadri' },
+            { label: 'Cheeka', value: 'cheeka' },
+            { label: 'Ellenabad', value: 'ellenabad' },
+            { label: 'Faridabad', value: 'faridabad' },
+            { label: 'Fatehabad', value: 'fatehabad' },
+            { label: 'Ferozepur Jhirka', value: 'ferozepur_jhirka' },
+            { label: 'Ganaur', value: 'ganaur' },
+            { label: 'Gharaunda', value: 'gharaunda' },
+            { label: 'Gohana', value: 'gohana' },
+            { label: 'Gurugram', value: 'gurugram' },
+            { label: 'Hansi', value: 'hansi' },
+            { label: 'Hassanpur', value: 'hassanpur' },
+            { label: 'Hathin', value: 'hathin' },
+            { label: 'Hisar', value: 'hisar' },
+            { label: 'Hodal', value: 'hodal' },
+            { label: 'Indri', value: 'indri' },
+            { label: 'Jagadhri', value: 'jagadhri' },
+            { label: 'Jakhal Mandi', value: 'jakhal_mandi' },
+            { label: 'Jatusana', value: 'jatusana' },
+            { label: 'Jhajjar', value: 'jhajjar' },
+            { label: 'Jind', value: 'jind' },
+            { label: 'Julana', value: 'julana' },
+            { label: 'Kaithal', value: 'kaithal' },
+            { label: 'Kalanwali', value: 'kalanwali' },
+            { label: 'Kalanaur', value: 'kalanaur' },
+            { label: 'Kalka', value: 'kalka' },
+            { label: 'Kanina', value: 'kanina' },
+            { label: 'Karnal', value: 'karnal' },
+            { label: 'Kharkhoda', value: 'kharkhoda' },
+            { label: 'Ladwa', value: 'ladwa' },
+            { label: 'Loharu', value: 'loharu' },
+            { label: 'Mahendragarh', value: 'mahendragarh' },
+            { label: 'Meham', value: 'meham' },
+            { label: 'Mustafabad', value: 'mustafabad' },
+            { label: 'Naraingarh', value: 'naraingarh' },
+            { label: 'Narnaul', value: 'narnaul' },
+            { label: 'Narnaund', value: 'narnaund' },
+            { label: 'Narwana', value: 'narwana' },
+            { label: 'Nilokheri', value: 'nilokheri' },
+            { label: 'Nuh', value: 'nuh' },
+            { label: 'Palwal', value: 'palwal' },
+            { label: 'Panchkula', value: 'panchkula' },
+            { label: 'Panipat', value: 'panipat' },
+            { label: 'Pataudi', value: 'pataudi' },
+            { label: 'Pehowa', value: 'pehowa' },
+            { label: 'Pinjore', value: 'pinjore' },
+            { label: 'Pundri', value: 'pundri' },
+            { label: 'Radaur', value: 'radaur' },
+            { label: 'Rania', value: 'rania' },
+            { label: 'Ratia', value: 'ratia' },
+            { label: 'Rewari', value: 'rewari' },
+            { label: 'Rohtak', value: 'rohtak' },
+            { label: 'Sadaura', value: 'sadaura' },
+            { label: 'Safidon', value: 'safidon' },
+            { label: 'Samalkha', value: 'samalkha' },
+            { label: 'Shahbad', value: 'shahbad' },
+            { label: 'Sirsa', value: 'sirsa' },
+            { label: 'Siwani', value: 'siwani' },
+            { label: 'Sohna', value: 'sohna' },
+            { label: 'Sonipat', value: 'sonipat' },
+            { label: 'Taoru', value: 'taoru' },
+            { label: 'Thanesar', value: 'thanesar' },
+            { label: 'Tohana', value: 'tohana' },
+            { label: 'Tosham', value: 'tosham' },
+            { label: 'Uchana', value: 'uchana' },
+            { label: 'Yamunanagar', value: 'yamunanagar' }
+        ],
+        assam: [
+        { label: 'Barpeta', value: 'barpeta' },
+        { label: 'Bongaigaon', value: 'bongaigaon' },
+        { label: 'Dhubri', value: 'dhubri' },
+        { label: 'Dibrugarh', value: 'dibrugarh' },
+        { label: 'Diphu', value: 'diphu' },
+        { label: 'Goalpara', value: 'goalpara' },
+        { label: 'Golaghat', value: 'golaghat' },
+        { label: 'Guwahati', value: 'guwahati' },
+        { label: 'Haflong', value: 'haflong' },
+        { label: 'Jorhat', value: 'jorhat' },
+        { label: 'Karimganj', value: 'karimganj' },
+        { label: 'Kokrajhar', value: 'kokrajhar' },
+        { label: 'Lumding', value: 'lumding' },
+        { label: 'Nagaon', value: 'nagaon' },
+        { label: 'North Lakhimpur', value: 'north_lakhimpur' },
+        { label: 'Silchar', value: 'silchar' },
+        { label: 'Sivasagar', value: 'sivasagar' },
+        { label: 'Tezpur', value: 'tezpur' },
+        { label: 'Tinsukia', value: 'tinsukia' }
+    ],
+    chhattisgarh: [
+        { label: 'Ambikapur', value: 'ambikapur' },
+        { label: 'Bhilai', value: 'bhilai' },
+        { label: 'Bilaspur', value: 'bilaspur' },
+        { label: 'Dhamtari', value: 'dhamtari' },
+        { label: 'Durg', value: 'durg' },
+        { label: 'Jagdalpur', value: 'jagdalpur' },
+        { label: 'Janjgir', value: 'janjgir' },
+        { label: 'Korba', value: 'korba' },
+        { label: 'Mahasamund', value: 'mahasamund' },
+        { label: 'Raigarh', value: 'raigarh' },
+        { label: 'Raipur', value: 'raipur' },
+        { label: 'Rajnandgaon', value: 'rajnandgaon' }
+    ],
+    goa: [
+        { label: 'Bicholim', value: 'bicholim' },
+        { label: 'Canacona', value: 'canacona' },
+        { label: 'Curchorem', value: 'curchorem' },
+        { label: 'Mapusa', value: 'mapusa' },
+        { label: 'Margao', value: 'margao' },
+        { label: 'Marmagao', value: 'marmagao' },
+        { label: 'Panaji', value: 'panaji' },
+        { label: 'Ponda', value: 'ponda' },
+        { label: 'Quepem', value: 'quepem' },
+        { label: 'Sanguem', value: 'sanguem' },
+        { label: 'Sanquelim', value: 'sanquelim' },
+        { label: 'Valpoi', value: 'valpoi' }
+    ],
+    himachal_pradesh: [
+        { label: 'Baddi', value: 'baddi' },
+        { label: 'Bilaspur', value: 'bilaspur' },
+        { label: 'Chamba', value: 'chamba' },
+        { label: 'Dharamshala', value: 'dharamshala' },
+        { label: 'Hamirpur', value: 'hamirpur' },
+        { label: 'Kallu', value: 'kallu' },
+        { label: 'Mandi', value: 'mandi' },
+        { label: 'Nahan', value: 'nahan' },
+        { label: 'Paonta Sahib', value: 'paonta_sahib' },
+        { label: 'Shimla', value: 'shimla' },
+        { label: 'Solan', value: 'solan' },
+        { label: 'Una', value: 'una' }
+    ],
+    jharkhand: [
+        { label: 'Adityapur', value: 'adityapur' },
+        { label: 'Bokaro Steel City', value: 'bokaro_steel_city' },
+        { label: 'Chaibasa', value: 'chaibasa' },
+        { label: 'Chas', value: 'chas' },
+        { label: 'Deoghar', value: 'deoghar' },
+        { label: 'Dhanbad', value: 'dhanbad' },
+        { label: 'Dumka', value: 'dumka' },
+        { label: 'Giridih', value: 'giridih' },
+        { label: 'Hazaribagh', value: 'hazaribagh' },
+        { label: 'Jamshedpur', value: 'jamshedpur' },
+        { label: 'Jhumri Telaiya', value: 'jhumri_telaiya' },
+        { label: 'Medininagar', value: 'medininagar' },
+        { label: 'Phusro', value: 'phusro' },
+        { label: 'Ramgarh', value: 'ramgarh' },
+        { label: 'Ranchi', value: 'ranchi' },
+        { label: 'Sahibganj', value: 'sahibganj' }
+    ],
+    madhya_pradesh: [
+        { label: 'Betul', value: 'betul' },
+        { label: 'Bhind', value: 'bhind' },
+        { label: 'Bhopal', value: 'bhopal' },
+        { label: 'Burhanpur', value: 'burhanpur' },
+        { label: 'Chhindwara', value: 'chhindwara' },
+        { label: 'Dewas', value: 'dewas' },
+        { label: 'Guna', value: 'guna' },
+        { label: 'Gwalior', value: 'gwalior' },
+        { label: 'Indore', value: 'indore' },
+        { label: 'Jabalpur', value: 'jabalpur' },
+        { label: 'Khandwa', value: 'khandwa' },
+        { label: 'Khargone', value: 'khargone' },
+        { label: 'Mandsaur', value: 'mandsaur' },
+        { label: 'Morena', value: 'morena' },
+        { label: 'Murwara', value: 'murwara' },
+        { label: 'Neemuch', value: 'neemuch' },
+        { label: 'Ratlam', value: 'ratlam' },
+        { label: 'Rewa', value: 'rewa' },
+        { label: 'Sagar', value: 'sagar' },
+        { label: 'Satna', value: 'satna' },
+        { label: 'Sehore', value: 'sehore' },
+        { label: 'Shivpuri', value: 'shivpuri' },
+        { label: 'Singrauli', value: 'singrauli' },
+        { label: 'Ujjain', value: 'ujjain' },
+        { label: 'Vidisha', value: 'vidisha' }
+    ],
+    manipur: [
+        { label: 'Bishenpur', value: 'bishenpur' },
+        { label: 'Chandel', value: 'chandel' },
+        { label: 'Churachandpur', value: 'churachandpur' },
+        { label: 'Imphal', value: 'imphal' },
+        { label: 'Kakching', value: 'kakching' },
+        { label: 'Mayang Imphal', value: 'mayang_imphal' },
+        { label: 'Senapati', value: 'senapati' },
+        { label: 'Thoubal', value: 'thoubal' },
+        { label: 'Ukhrul', value: 'ukhrul' }
+    ],
+    meghalaya: [
+        { label: 'Cherrapunji', value: 'cherrapunji' },
+        { label: 'Jowai', value: 'jowai' },
+        { label: 'Nongstoin', value: 'nongstoin' },
+        { label: 'Resubelpara', value: 'resubelpara' },
+        { label: 'Shillong', value: 'shillong' },
+        { label: 'Tura', value: 'tura' },
+        { label: 'Williamnagar', value: 'williamnagar' }
+    ],
+    mizoram: [
+        { label: 'Aizawl', value: 'aizawl' },
+        { label: 'Champhai', value: 'champhai' },
+        { label: 'Kolasib', value: 'kolasib' },
+        { label: 'Lawngtlai', value: 'lawngtlai' },
+        { label: 'Lunglei', value: 'lunglei' },
+        { label: 'Mamit', value: 'mamit' },
+        { label: 'Saiha', value: 'saiha' },
+        { label: 'Serchhip', value: 'serchhip' }
+    ],
+    nagaland: [
+        { label: 'Dimapur', value: 'dimapur' },
+        { label: 'Kohima', value: 'kohima' },
+        { label: 'Mokokchung', value: 'mokokchung' },
+        { label: 'Mon', value: 'mon' },
+        { label: 'Phek', value: 'phek' },
+        { label: 'Tuensang', value: 'tuensang' },
+        { label: 'Wokha', value: 'wokha' },
+        { label: 'Zunheboto', value: 'zunheboto' }
+    ],
+    sikkim: [
+        { label: 'Gangtok', value: 'gangtok' },
+        { label: 'Geyzing', value: 'geyzing' },
+        { label: 'Mangan', value: 'mangan' },
+        { label: 'Namchi', value: 'namchi' },
+        { label: 'Rangpo', value: 'rangpo' },
+        { label: 'Singtam', value: 'singtam' }
+    ],
+    tripura: [
+        { label: 'Agartala', value: 'agartala' },
+        { label: 'Belonia', value: 'belonia' },
+        { label: 'Dharmanagar', value: 'dharmanagar' },
+        { label: 'Kailasahar', value: 'kailasahar' },
+        { label: 'Khowai', value: 'khowai' },
+        { label: 'Melaghar', value: 'melaghar' },
+        { label: 'Ranirbazar', value: 'ranirbazar' },
+        { label: 'Udaipur', value: 'udaipur' }
+    ],
+    uttarakhand: [
+        { label: 'Almora', value: 'almora' },
+        { label: 'Dehradun', value: 'dehradun' },
+        { label: 'Haldwani', value: 'haldwani' },
+        { label: 'Haridwar', value: 'haridwar' },
+        { label: 'Kashipur', value: 'kashipur' },
+        { label: 'Mussoorie', value: 'mussoorie' },
+        { label: 'Nainital', value: 'nainital' },
+        { label: 'Pantnagar', value: 'pantnagar' },
+        { label: 'Pauri', value: 'pauri' },
+        { label: 'Rishikesh', value: 'rishikesh' },
+        { label: 'Roorkee', value: 'roorkee' },
+        { label: 'Rudrapur', value: 'rudrapur' }
+    ],
+    jammu_and_kashmir: [
+        { label: 'Anantnag', value: 'anantnag' },
+        { label: 'Baramulla', value: 'baramulla' },
+        { label: 'Jammu', value: 'jammu' },
+        { label: 'Kathua', value: 'kathua' },
+        { label: 'Poonch', value: 'poonch' },
+        { label: 'Sopore', value: 'sopore' },
+        { label: 'Srinagar', value: 'srinagar' },
+        { label: 'Udhampur', value: 'udhampur' }
+    ]
+    }
+
+    const availableCityOptions = profileData.state ? cityOptionsByState[profileData.state] ?? [] : []
+
+    // Calculate profile completion percentage
+    const calculateProfileCompletion = (): number => {
+        const fields = {
+            name: !!profileData.name?.trim(),
+            email: !!profileData.email?.trim(),
+            phone: !!profileData.phone?.trim(),
+            dob: !!profileData.dob?.trim(),
+            gender: !!profileData.gender?.trim(),
+            city: !!profileData.city?.trim(),
+            state: !!profileData.state?.trim(),
+            bio: !!profileData.bio?.trim(),
+            technical_skills: !!profileData.technical_skills?.trim(),
+            soft_skills: !!profileData.soft_skills?.trim(),
+            preferred_industry: !!profileData.preferred_industry?.trim(),
+            job_roles_of_interest: !!profileData.job_roles_of_interest?.trim(),
+            language_proficiency: !!profileData.language_proficiency?.trim(),
+            education: Array.isArray(profileData.education) && profileData.education.length > 0,
+            experience: profileData.experience && (
+                (Array.isArray(profileData.experience?.internship) && profileData.experience.internship.length > 0) ||
+                (Array.isArray(profileData.experience?.full_time) && profileData.experience.full_time.length > 0) ||
+                (Array.isArray(profileData.experience?.other) && profileData.experience.other.length > 0)
+            ),
+            projects: Array.isArray(profileData.projects) && profileData.projects.length > 0,
+            resume_url: !!profileData.resume_url?.trim(),
+        }
+
+        const filledFields = Object.values(fields).filter(Boolean).length
+        const totalFields = Object.keys(fields).length
+        return Math.round((filledFields / totalFields) * 100)
+    }
+
+    const profileCompletion = calculateProfileCompletion()
 
     const locationPreferenceOptions = [
         { value: 'onsite', label: 'Onsite' },
@@ -744,31 +1554,50 @@ export default function StudentProfile() {
 
     return (
         <div className="w-full font-sans text-gray-900 dark:text-gray-100 dashboard-page">
-            {/* Profile Completeness Nudge */}
+            {/* Profile Completion Progress Card - Sticky Bottom-Left */}
             <AnimatePresence>
-                {showNudge && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="mb-6 overflow-hidden"
-                    >
-                        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm dark:border-amber-700/60 dark:bg-amber-950/20 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="rounded-xl bg-amber-100 p-2 text-amber-600 dark:bg-amber-900/40 dark:text-amber-300">
-                                    <AlertCircle className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <p className="font-bold text-amber-800 dark:text-amber-200">Complete your profile</p>
-                                    <p className="text-sm text-amber-700/80 dark:text-amber-300/80">A complete profile increases your chances of getting hired by 3x!</p>
-                                </div>
+                <motion.div
+                    initial={{ x: -400, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -400, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="fixed bottom-6 right-6 z-40 w-72"
+                >
+                    <div className="rounded-2xl border border-blue-200 dark:border-blue-800/50 bg-white dark:bg-[#0B1739] p-5 shadow-lg dark:shadow-2xl">
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between gap-2">
+                                <h4 className="text-sm font-bold text-gray-900 dark:text-white">Profile Completion</h4>
+                                <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 text-blue-700 dark:text-blue-300">
+                                    {profileCompletion}%
+                                </span>
                             </div>
-                            <button onClick={() => setShowNudge(false)} className="text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 transition-colors">
-                                <X className="w-5 h-5" />
+                            
+                            {/* Progress Bar */}
+                            <div className="w-full h-2 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
+                                <motion.div
+                                    animate={{ width: `${profileCompletion}%` }}
+                                    transition={{ duration: 0.5, ease: "easeOut" }}
+                                    className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
+                                />
+                            </div>
+
+                            {/* Status message */}
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                                {profileCompletion === 100 
+                                    ? "✨ Your profile is complete!" 
+                                    : `${100 - profileCompletion}% more to complete your profile`}
+                            </p>
+
+                            {/* Hide button */}
+                            <button
+                                onClick={() => setShowNudge(false)}
+                                className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                            >
+                                Hide for now
                             </button>
                         </div>
-                    </motion.div>
-                )}
+                    </div>
+                </motion.div>
             </AnimatePresence>
 
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
@@ -842,15 +1671,20 @@ export default function StudentProfile() {
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Phone Number</label>
                                 {isEditing ? (
-                                    <Input 
-                                        name="phone"
-                                        value={profileData.phone || ''}
-                                        onChange={handleInputChange}
-                                        className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:border-[#31406B] dark:bg-[#0C1430]"
-                                        placeholder="+91 XXXXX XXXXX"
-                                    />
+                                    <div className="flex gap-2">
+                                        <div className="w-20 bg-gray-100 dark:bg-black/40 rounded-xl border border-gray-200 dark:border-[#31406B] flex items-center justify-center text-sm font-semibold text-gray-600 dark:text-gray-400">
+                                            +91
+                                        </div>
+                                        <Input 
+                                            name="phone"
+                                            value={profileData.phone || ''}
+                                            onChange={handleInputChange}
+                                            className="flex-1 pl-4 rounded-xl border-gray-200 bg-gray-50 dark:border-[#31406B] dark:bg-[#0C1430]"
+                                            placeholder="XXXXX XXXXX"
+                                        />
+                                    </div>
                                 ) : (
-                                    <ReadonlyField value={profileData.phone} placeholder="+91 XXXXX XXXXX" />
+                                    <ReadonlyField value={profileData.phone ? `+91 ${profileData.phone}` : undefined} placeholder="+91 XXXXX XXXXX" />
                                 )}
                             </div>
                             <div className="space-y-2">
@@ -867,6 +1701,33 @@ export default function StudentProfile() {
                                     <ReadonlyField value={profileData.dob} placeholder="Date of birth" />
                                 )}
                             </div>
+                        </div>
+
+                        {/* Location Section */}
+
+
+                        <div className="mt-6 space-y-2">
+                            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Languages Known</label>
+                            {isEditing ? (
+                                <ReactSelect
+                                    isMulti
+                                    options={languageOptions}
+                                    value={selectedLanguageOptions}
+                                    onChange={(selected) =>
+                                        setProfileData((prev: any) => ({
+                                            ...prev,
+                                            language_proficiency: toCsvString(selected as MultiSelectOption[]),
+                                        }))
+                                    }
+                                    className="react-select-container"
+                                    classNamePrefix="react-select"
+                                    styles={reactSelectStyles}
+                                    placeholder="Search and select languages"
+                                    isClearable
+                                />
+                            ) : (
+                                <ReadonlyParagraph value={profileData.language_proficiency} placeholder="Not specified" />
+                            )}
                         </div>
 
                         <div className="mt-6 space-y-2">
@@ -1204,13 +2065,23 @@ export default function StudentProfile() {
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Technical Skills</label>
                                 {isEditing ? (
-                                    <textarea 
-                                        name="technical_skills"
-                                        value={profileData.technical_skills || ''}
-                                        onChange={handleInputChange}
-                                        rows={2}
-                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all focus:outline-none focus:ring-2 focus:ring-[#7C3AED] dark:border-[#31406B] dark:bg-[#0C1430]"
-                                        placeholder="React, Node.js, Python, SQL..."
+                                    <ReactSelect
+                                        isMulti
+                                        options={technicalSkillOptions}
+                                        value={selectedTechnicalSkills}
+                                        onChange={(selected) =>
+                                            setProfileData((prev: any) => ({
+                                                ...prev,
+                                                technical_skills: toCsvString(selected as MultiSelectOption[]),
+                                            }))
+                                        }
+                                        components={{ Option: CheckboxOption }}
+                                        closeMenuOnSelect={false}
+                                        hideSelectedOptions={false}
+                                        styles={reactSelectStyles}
+                                        className="react-select-container"
+                                        classNamePrefix="react-select"
+                                        placeholder="Search technical skills"
                                     />
                                 ) : (
                                     <ReadonlyParagraph value={profileData.technical_skills} placeholder="React, Node.js, Python, SQL..." />
@@ -1219,13 +2090,23 @@ export default function StudentProfile() {
                             <div className="space-y-2">
                                 <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Soft Skills</label>
                                 {isEditing ? (
-                                    <textarea 
-                                        name="soft_skills"
-                                        value={profileData.soft_skills || ''}
-                                        onChange={handleInputChange}
-                                        rows={2}
-                                        className="w-full rounded-xl border border-gray-200 bg-gray-50 p-4 transition-all focus:outline-none focus:ring-2 focus:ring-[#7C3AED] dark:border-[#31406B] dark:bg-[#0C1430]"
-                                        placeholder="Communication, Leadership, Teamwork..."
+                                    <ReactSelect
+                                        isMulti
+                                        options={softSkillOptions}
+                                        value={selectedSoftSkills}
+                                        onChange={(selected) =>
+                                            setProfileData((prev: any) => ({
+                                                ...prev,
+                                                soft_skills: toCsvString(selected as MultiSelectOption[]),
+                                            }))
+                                        }
+                                        components={{ Option: CheckboxOption }}
+                                        closeMenuOnSelect={false}
+                                        hideSelectedOptions={false}
+                                        styles={reactSelectStyles}
+                                        className="react-select-container"
+                                        classNamePrefix="react-select"
+                                        placeholder="Search soft skills"
                                     />
                                 ) : (
                                     <ReadonlyParagraph value={profileData.soft_skills} placeholder="Communication, Leadership, Teamwork..." />
@@ -1235,12 +2116,23 @@ export default function StudentProfile() {
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Preferred Industry</label>
                                     {isEditing ? (
-                                        <Input 
-                                            name="preferred_industry"
-                                            value={profileData.preferred_industry || ''}
-                                            onChange={handleInputChange}
-                                            className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:border-[#31406B] dark:bg-[#0C1430]"
-                                            placeholder="e.g. Fintech, Healthcare"
+                                        <ReactSelect
+                                            isMulti
+                                            options={industryOptions}
+                                            value={selectedIndustryOptions}
+                                            onChange={(selected) =>
+                                                setProfileData((prev: any) => ({
+                                                    ...prev,
+                                                    preferred_industry: toCsvString(selected as MultiSelectOption[]),
+                                                }))
+                                            }
+                                            components={{ Option: CheckboxOption }}
+                                            closeMenuOnSelect={false}
+                                            hideSelectedOptions={false}
+                                            styles={reactSelectStyles}
+                                            className="react-select-container"
+                                            classNamePrefix="react-select"
+                                            placeholder="Search industries"
                                         />
                                     ) : (
                                         <ReadonlyField value={profileData.preferred_industry} placeholder="e.g. Fintech, Healthcare" />
@@ -1249,12 +2141,23 @@ export default function StudentProfile() {
                                 <div className="space-y-2">
                                     <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Roles of Interest</label>
                                     {isEditing ? (
-                                        <Input 
-                                            name="job_roles_of_interest"
-                                            value={profileData.job_roles_of_interest || ''}
-                                            onChange={handleInputChange}
-                                            className="pl-4 rounded-xl border-gray-200 bg-gray-50 dark:border-[#31406B] dark:bg-[#0C1430]"
-                                            placeholder="e.g. SDE, Data Analyst"
+                                        <ReactSelect
+                                            isMulti
+                                            options={roleOptions}
+                                            value={selectedRoleOptions}
+                                            onChange={(selected) =>
+                                                setProfileData((prev: any) => ({
+                                                    ...prev,
+                                                    job_roles_of_interest: toCsvString(selected as MultiSelectOption[]),
+                                                }))
+                                            }
+                                            components={{ Option: CheckboxOption }}
+                                            closeMenuOnSelect={false}
+                                            hideSelectedOptions={false}
+                                            styles={reactSelectStyles}
+                                            className="react-select-container"
+                                            classNamePrefix="react-select"
+                                            placeholder="Search roles"
                                         />
                                     ) : (
                                         <ReadonlyField value={profileData.job_roles_of_interest} placeholder="e.g. SDE, Data Analyst" />
@@ -1962,8 +2865,8 @@ export default function StudentProfile() {
                                 )}
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Country</label>
+                            {/* <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Countryi</label>
                                 {isEditing ? (
                                     <Input
                                         name="country"
@@ -1975,35 +2878,63 @@ export default function StudentProfile() {
                                 ) : (
                                     <ReadonlyField value={profileData.country} placeholder="Country" />
                                 )}
+                            </div> */}
+                            <div className="space-y-2">
+                                <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Country</label>
+                                {isEditing ? (
+                                    <Select 
+                                        name="country"
+                                        value={profileData.country || 'india'}
+                                        onChange={handleInputChange}
+                                        className="rounded-xl border-gray-200 bg-gray-50 dark:border-[#31406B] dark:bg-[#0C1430]"
+                                        options={[{ value: 'india', label: 'India' }]}
+                                    />
+                                ) : (
+                                    <ReadonlyField value="India" />
+                                )}
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 gap-4">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">State</label>
+                                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">State & City</label>
                                     {isEditing ? (
-                                        <Input
-                                            name="state"
-                                            value={profileData.state || ''}
-                                            onChange={handleInputChange}
-                                            placeholder="State"
-                                            className="rounded-xl border-gray-200 bg-gray-50 dark:border-[#31406B] dark:bg-[#0C1430]"
-                                        />
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <ReactSelect<MultiSelectOption, false>
+                                                styles={reactSelectStyles}
+                                                options={stateOptions}
+                                                value={stateOptions.find((option) => option.value === profileData.state) || null}
+                                                onChange={(option: SingleValue<MultiSelectOption>) => {
+                                                    setProfileData((prev: any) => ({
+                                                        ...prev,
+                                                        state: option?.value || '',
+                                                        city: '',
+                                                    }))
+                                                }}
+                                                placeholder="Select state"
+                                                isClearable
+                                                className="rounded-xl"
+                                            />
+                                            <ReactSelect<MultiSelectOption, false>
+                                                styles={reactSelectStyles}
+                                                options={availableCityOptions}
+                                                value={availableCityOptions.find((option) => option.value === profileData.city) || null}
+                                                onChange={(option: SingleValue<MultiSelectOption>) => {
+                                                    setProfileData((prev: any) => ({
+                                                        ...prev,
+                                                        city: option?.value || '',
+                                                    }))
+                                                }}
+                                                placeholder={profileData.state ? 'Select city' : 'Select state first'}
+                                                isDisabled={!profileData.state}
+                                                isClearable
+                                                className="rounded-xl"
+                                            />
+                                        </div>
                                     ) : (
-                                        <ReadonlyField value={profileData.state} placeholder="State" />
-                                    )}
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-bold text-gray-700 dark:text-gray-300">City</label>
-                                    {isEditing ? (
-                                        <Input
-                                            name="city"
-                                            value={profileData.city || ''}
-                                            onChange={handleInputChange}
-                                            placeholder="City"
-                                            className="rounded-xl border-gray-200 bg-gray-50 dark:border-[#31406B] dark:bg-[#0C1430]"
-                                        />
-                                    ) : (
-                                        <ReadonlyField value={profileData.city} placeholder="City" />
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <ReadonlyField value={stateOptions.find((s) => s.value === profileData.state)?.label} placeholder="Not specified" />
+                                            <ReadonlyField value={profileData.city} placeholder="City" />
+                                        </div>
                                     )}
                                 </div>
                             </div>

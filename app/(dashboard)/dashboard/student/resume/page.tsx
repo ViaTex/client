@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Textarea } from "@/components/ui/textarea"
 import { apiClient } from "@/lib/api"
+import { jsPDF } from "jspdf"
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 const ALLOWED_TYPES = ["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]
@@ -424,28 +425,91 @@ export default function ResumePage() {
         : []
 
     const downloadReport = () => {
-        const report = [
-            "ATS Resume Optimization Report",
-            hasATSResult ? `Score: ${displayScore}/100 - ${getScoreLabel(displayScore)}` : "Score: Not calculated yet",
-            "",
-            "Improvements",
-            ...(recommendations.length ? recommendations.map((item) => `- ${item.problem}: ${item.improvedText}`) : ["- No ATS recommendations available yet."]),
-            "",
-            "Keywords",
-            `Found: ${foundKeywords.length ? foundKeywords.join(", ") : "Not available"}`,
-            `Missing: ${missingKeywords.length ? missingKeywords.join(", ") : "Not available"}`,
-            "",
-            "Section Feedback",
-            ...(sectionScores.length ? sectionScores.map((item) => `- ${item.name}: ${item.score}/100 - ${item.detail}`) : ["- No section feedback available yet."]),
-        ].join("\n")
+        const doc = new jsPDF({ unit: "pt", format: "a4" })
+        const margin = 40
+        const maxWidth = 515
+        let y = margin
 
-        const blob = new Blob([report], { type: "text/plain;charset=utf-8" })
-        const url = URL.createObjectURL(blob)
-        const link = document.createElement("a")
-        link.href = url
-        link.download = "ats-resume-report.txt"
-        link.click()
-        URL.revokeObjectURL(url)
+        const title = "ATS Resume Analysis Report"
+        const scoreLabel = hasATSResult ? `${displayScore}/100` : "Not calculated"
+        const scoreTag = hasATSResult ? getScoreLabel(displayScore) : "Not calculated yet"
+
+        doc.setFontSize(18)
+        doc.setTextColor("#111827")
+        doc.text(title, margin, y)
+        y += 24
+
+        doc.setDrawColor(226)
+        doc.setLineWidth(0.8)
+        doc.line(margin, y, margin + maxWidth, y)
+        y += 24
+
+        doc.setFontSize(13)
+        doc.setTextColor("#4B5563")
+        doc.text("ATS Score", margin, y)
+        doc.setFontSize(28)
+        doc.setTextColor("#2563EB")
+        doc.text(scoreLabel, margin + 380, y)
+        y += 30
+        doc.setFontSize(12)
+        doc.setTextColor("#6B7280")
+        doc.text(scoreTag, margin, y)
+        y += 28
+
+        const sectionData = [
+            { label: "Formatting", value: atsScore?.formatting_score ?? 0 },
+            { label: "Content", value: atsScore?.content_score ?? 0 },
+            { label: "Keywords", value: atsScore?.keyword_score ?? 0 },
+        ]
+
+        doc.setFontSize(14)
+        doc.setTextColor("#111827")
+        doc.text("Section Scores", margin, y)
+        y += 18
+
+        sectionData.forEach((section) => {
+            doc.setFontSize(12)
+            doc.setTextColor("#374151")
+            doc.text(`${section.label}: ${section.value ?? 0}/100`, margin, y)
+            y += 16
+        })
+        y += 12
+
+        const drawSection = (heading: string, items: string[]) => {
+            doc.setFontSize(14)
+            doc.setTextColor("#111827")
+            doc.text(heading, margin, y)
+            y += 18
+            doc.setFontSize(11)
+            doc.setTextColor("#4B5563")
+            if (!items.length) {
+                doc.text("No information available.", margin, y)
+                y += 16
+                return
+            }
+            items.forEach((item) => {
+                const lines = doc.splitTextToSize(`• ${item}`, maxWidth)
+                doc.text(lines, margin, y)
+                y += lines.length * 14
+            })
+            y += 8
+        }
+
+        drawSection("Strengths", strengths)
+        drawSection("Weaknesses", weaknesses)
+        drawSection("Recommendations", recommendations.map((item) => item.problem))
+
+        doc.setFontSize(14)
+        doc.setTextColor("#111827")
+        doc.text("Keyword Analysis", margin, y)
+        y += 18
+        doc.setFontSize(12)
+        doc.setTextColor("#4B5563")
+        doc.text(`Found keywords: ${foundKeywords.length ? foundKeywords.join(", ") : "None"}`, margin, y)
+        y += 16
+        doc.text(`Missing keywords: ${missingKeywords.length ? missingKeywords.join(", ") : "None"}`, margin, y)
+
+        doc.save("ATS_Report.pdf")
     }
 
     if (loadingStatus) {
@@ -453,8 +517,8 @@ export default function ResumePage() {
     }
 
     return (
-        <div className="w-full font-sans text-gray-900 dark:text-gray-100 relative max-w-7xl mx-auto">
-            <div className="space-y-4 sm:space-y-6 px-3 sm:px-4 md:px-6 pt-1 sm:pt-6 lg:pt-0">
+        <div className="w-full font-sans text-gray-900 dark:text-gray-100 relative max-w-screen-2xl mx-auto">
+            <div className="space-y-4 sm:space-y-6 px-4 sm:px-6 lg:px-8 pt-1 sm:pt-6 lg:pt-0">
                 <ResumeHeroCard
                     score={displayScore}
                     lastUpdated={formatDate(resumeStatus?.ats_calculated_at || resumeUploadedAt)}
@@ -481,8 +545,8 @@ export default function ResumePage() {
                     </Alert>
                 )}
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-6">
-                    <div className="lg:col-span-1 space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
+                    <div className="lg:col-span-4 space-y-4 sm:space-y-6">
                         <UploadCard
                             file={file}
                             dragActive={dragActive}
@@ -505,9 +569,12 @@ export default function ResumePage() {
                             onChange={setJobDescription}
                             onAnalyze={handleCalculateATS}
                         />
+
+                        <StrengthWeaknessCard strengths={strengths} weaknesses={weaknesses} />
+                        <SkillsCard skills={atsScore?.extracted_skills} />
                     </div>
 
-                    <div className="lg:col-span-3 space-y-4 sm:space-y-6">
+                    <div className="lg:col-span-8 space-y-4 sm:space-y-6">
                         <ATSScoreCard
                             score={displayScore}
                             formattingScore={atsScore?.formatting_score ?? null}
@@ -517,24 +584,16 @@ export default function ResumePage() {
                             hasATSResult={hasATSResult}
                         />
 
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-                            <StrengthWeaknessCard strengths={strengths} weaknesses={weaknesses} />
-                            <RecommendationCard recommendations={recommendations} />
-                        </div>
-
+                        <RecommendationCard recommendations={recommendations} />
                         <KeywordAnalysisCard foundKeywords={foundKeywords} missingKeywords={missingKeywords} />
                         <SectionAnalysisCard sections={sectionScores} />
-
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-                            <SkillsCard skills={atsScore?.extracted_skills} />
-                            <ReportCard
-                                score={displayScore}
-                                improvements={recommendations.length}
-                                keywords={foundKeywords.length + missingKeywords.length}
-                                sections={sectionScores.length}
-                                onDownload={downloadReport}
-                            />
-                        </div>
+                        <ReportCard
+                            score={displayScore}
+                            improvements={recommendations.length}
+                            keywords={foundKeywords.length + missingKeywords.length}
+                            sections={sectionScores.length}
+                            onDownload={downloadReport}
+                        />
                     </div>
                 </div>
             </div>
@@ -547,7 +606,7 @@ export default function ResumePage() {
 
 function ResumeSkeleton() {
     return (
-        <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 space-y-4">
+        <div className="w-full max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
             <div className={`${cardClass} p-5`}>
                 <div className="animate-pulse space-y-4">
                     <div className="h-8 w-56 rounded bg-gray-200 dark:bg-gray-800" />
@@ -1020,11 +1079,7 @@ function RecommendationCard({ recommendations }: { recommendations: { problem: s
 }
 
 function KeywordAnalysisCard({ foundKeywords, missingKeywords }: { foundKeywords: string[]; missingKeywords: string[] }) {
-    const [isDarkMode, setIsDarkMode] = useState(false)
-
-    useEffect(() => {
-        setIsDarkMode(document.documentElement.classList.contains('dark'))
-    }, [])
+    const [isDarkMode] = useState(() => typeof document !== "undefined" && document.documentElement.classList.contains("dark"))
 
     const keywords = [
         ...foundKeywords.map((keyword, index) => ({ keyword, found: true, importance: index < 2 ? "High" : "Medium", where: "Skills or experience" })),
@@ -1159,10 +1214,6 @@ function SectionAnalysisCard({ sections }: { sections: { name: string; score: nu
                             {isOpen && (
                                 <div className="px-3 pb-3 space-y-3">
                                     <p className="text-sm text-gray-600 dark:text-gray-300 rounded-lg bg-gray-50 dark:bg-gray-800/70 p-3">{section.detail}</p>
-                                    <Button size="sm" className={primaryButtonClass}>
-                                        <Wand2 className="h-4 w-4 mr-2" />
-                                        Fix this section
-                                    </Button>
                                 </div>
                             )}
                         </div>

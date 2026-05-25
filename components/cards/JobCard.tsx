@@ -1,8 +1,9 @@
 "use client"
 
-import { ReactNode } from "react"
-import { MapPin, Users, ExternalLink, Heart } from "lucide-react"
+import { ReactNode, useState } from "react"
+import { MapPin, Users, ExternalLink, Heart, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { motion } from "framer-motion"
 
 export interface JobCardProps {
   companyName?: string
@@ -45,6 +46,9 @@ export default function JobCard({
   skillsRequired,
   actions,
 }: JobCardProps) {
+  // Expand/collapse state for detailed section
+  const [isExpanded, setIsExpanded] = useState(false)
+  
   const showCompanyLogo = companyLogo && companyLogo !== "hgvuiihukb.com"
   const logoLetter = companyName?.[0]?.toUpperCase() || "J"
 
@@ -133,38 +137,61 @@ export default function JobCard({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
-          <div className="text-xs">
-            <p className="text-gray-500 dark:text-gray-400 font-medium">CTC</p>
-            <p className="text-gray-900 dark:text-white font-semibold">{ctc || "N/A"}</p>
-          </div>
-          <div className="text-xs">
-            <p className="text-gray-500 dark:text-gray-400 font-medium">Experience</p>
-            <p className="text-gray-900 dark:text-white font-semibold">{experienceRange || "N/A"}</p>
-          </div>
-          <div className="text-xs">
-            <p className="text-gray-500 dark:text-gray-400 font-medium">Openings</p>
-            <p className="text-gray-900 dark:text-white font-semibold">{openings ?? 0}</p>
-          </div>
-        </div>
-
-        {skillsRequired && skillsRequired.length > 0 && (
-          <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-            <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Required Skills</p>
-            <div className="flex flex-wrap gap-2">
-              {skillsRequired.slice(0, 5).map((skill, index) => (
-                <span key={index} className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
-                  {skill}
-                </span>
-              ))}
-              {skillsRequired.length > 5 && (
-                <span className="text-xs text-gray-500 dark:text-gray-400">+{skillsRequired.length - 5} more</span>
-              )}
+        {/* Expandable Details Section - Collapsed by default */}
+        <motion.div
+          initial={false}
+          animate={{ height: isExpanded ? "auto" : 0, opacity: isExpanded ? 1 : 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+          className="overflow-hidden"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+            <div className="text-xs">
+              <p className="text-gray-500 dark:text-gray-400 font-medium">CTC</p>
+              <p className="text-gray-900 dark:text-white font-semibold">{ctc || "N/A"}</p>
+            </div>
+            <div className="text-xs">
+              <p className="text-gray-500 dark:text-gray-400 font-medium">Experience</p>
+              <p className="text-gray-900 dark:text-white font-semibold">{experienceRange || "N/A"}</p>
+            </div>
+            <div className="text-xs">
+              <p className="text-gray-500 dark:text-gray-400 font-medium">Openings</p>
+              <p className="text-gray-900 dark:text-white font-semibold">{openings ?? 0}</p>
             </div>
           </div>
-        )}
 
-        {actions}
+          {skillsRequired && skillsRequired.length > 0 && (
+            <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">Required Skills</p>
+              <div className="flex flex-wrap gap-2">
+                {skillsRequired.slice(0, 5).map((skill, index) => (
+                  <span key={index} className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-medium">
+                    {skill}
+                  </span>
+                ))}
+                {skillsRequired.length > 5 && (
+                  <span className="text-xs text-gray-500 dark:text-gray-400">+{skillsRequired.length - 5} more</span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Actions rendered inside expanded section */}
+          {actions && <div className="pt-4 border-t border-gray-100 dark:border-gray-800">{actions}</div>}
+        </motion.div>
+
+        {/* Expand/Collapse Button */}
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="w-full flex items-center justify-center gap-2 pt-3 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+        >
+          <motion.div
+            animate={{ rotate: isExpanded ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <ChevronDown className="h-4 w-4" />
+          </motion.div>
+          {isExpanded ? "Show less" : "View details"}
+        </button>
       </div>
     </div>
   )
