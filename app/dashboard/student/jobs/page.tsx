@@ -6,7 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Modal } from "@/components/ui/modal"
 import { AnimatePresence, motion, type Variants } from "framer-motion"
-import { ArrowLeft, Briefcase, Building2, CalendarDays, Clock3, ExternalLink, FileText, Heart, IndianRupee, MapPin, Search, Send, ShieldCheck, Sparkles, User, Users, Bookmark, BadgeCheck, Zap, Wallet, ArrowRight, GraduationCap, Clock } from "lucide-react"
+import { JobCard } from "@/components/ui/job-card"
+import { Filter, Search, MapPin, Building, Briefcase, IndianRupee, Clock, ChevronDown, CheckCircle2, ChevronRight, CheckSquare, Plus, ExternalLink, CalendarDays, Globe, Contact, FileText, ClipboardList, ShieldCheck, GraduationCap, FolderKanban, FileBadge2, Gift } from "lucide-react"
+import { JobDetails } from "@/components/ui/job-details"
 
 type JobFilter = "all" | "jobs" | "internships"
 type JobAvailability = "all" | "open" | "closed"
@@ -604,112 +606,17 @@ export default function StudentJobsPage() {
                                 const applicationStatus = getApplicationStatusButton(application?.status)
 
                                 return (
-                                    <motion.article
+                                    <JobCard
                                         key={job.id}
-                                        custom={index}
-                                        layout
-                                        variants={cardVariants}
-                                        initial="hidden"
-                                        animate="visible"
-                                        exit="exit"
-                                        className="group rounded-[20px] bg-white p-5 border border-[#E5E7EB] shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 dark:border-[#243056] dark:hover:border-blue-900/50 dark:bg-[#121C46] flex flex-col relative w-full"
-                                    >
-                                        {/* Top Section */}
-                                        <div className="flex justify-between items-start w-full">
-                                            <div className="flex gap-4 items-start">
-                                                {/* Logo */}
-                                                <div className="flex items-center justify-center w-[60px] h-[60px] flex-shrink-0 rounded-[16px] border-[3px] border-white ring-1 ring-[#E5E7EB] dark:ring-[#31406B] dark:border-[#121C46] bg-[#F0F5FF] dark:bg-blue-900/30 text-[#1B6CFB] text-[24px] font-bold shadow-sm">
-                                                    {job.company_name?.[0]?.toUpperCase() || "J"}
-                                                </div>
-
-                                                {/* Title & Company Info */}
-                                                <div className="flex flex-col mt-0.5">
-                                                    <h2 className="text-[18px] font-bold text-gray-900 dark:text-white line-clamp-1 pr-2">{job.title || "Job Title"}</h2>
-                                                    <div className="flex items-center gap-1.5 mt-1">
-                                                        <p className="text-[15px] font-medium text-gray-600 dark:text-gray-300 line-clamp-1">
-                                                            {job.company_name}
-                                                        </p>
-                                                        <BadgeCheck className="w-[18px] h-[18px] text-[#1B6CFB]" />
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5 mt-2.5">
-                                                        <MapPin className="w-4 h-4 text-gray-400" />
-                                                        <p className="text-[14px] font-medium text-gray-500">{job.location || "Location"}</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Actions (Top Right)
-                                            <div className="flex flex-col items-end gap-2.5">
-                                                <button className="flex items-center justify-center w-10 h-10 border border-[#E5E7EB] dark:border-[#31406B] rounded-[12px] text-gray-500 dark:text-gray-300 hover:text-[#1B6CFB] hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all">
-                                                    <Bookmark className="w-5 h-5" />
-                                                </button>
-                                                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#ECFDF5] dark:bg-green-900/20 text-[#10B981] rounded-lg border border-[#D1FAE5] dark:border-green-900/50 text-[12px] font-bold shadow-sm">
-                                                    <Zap className="w-3.5 h-3.5 fill-current" /> {job.hiring_status || "Actively Hiring"}
-                                                </div> */}
-                                            {/* </div> */}
-                                        </div>
-
-                                        {/* Skills */}
-                                        <div className="flex flex-wrap gap-2 mt-5">
-                                            {job.skills_required?.length ? (
-                                                job.skills_required.slice(0, 4).map((skill) => (
-                                                    <div key={skill} className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-[#0C1430] text-gray-800 dark:text-[#A8B3CF] text-[13px] font-medium rounded-[10px] border border-[#E5E7EB] dark:border-[#31406B] shadow-sm">
-                                                        {skill}
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <span className="text-[12px] text-gray-400 italic mt-2">No specific skills mentioned.</span>
-                                            )}
-                                            {job.skills_required && job.skills_required.length > 4 && (
-                                                <div className="flex items-center justify-center gap-1 px-4 py-1.5 bg-white dark:bg-[#0C1430] text-[#1B6CFB] text-[13px] font-bold rounded-[10px] border border-[#E5E7EB] dark:border-[#31406B] shadow-sm leading-tight">
-                                                    +{job.skills_required.length - 4} <span className="text-[10px] text-gray-500 font-medium">More</span>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Horizontal Divider */}
-                                        <div className="w-full h-px bg-[#E5E7EB] dark:bg-[#243056] my-5"></div>
-
-                                        {/* Hiring Status and Apply */}
-                                        <div className="flex justify-between items-center w-full">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-[50px] h-[50px] bg-[#F0F5FF] dark:bg-[#1A2C58] rounded-[14px] flex items-center justify-center text-[#1B6CFB] flex-shrink-0">
-                                                    <Users className="w-[22px] h-[22px]" />
-                                                </div>
-                                                <div>
-                                                    <p className="text-[16px] sm:text-[18px] font-bold text-[#1B6CFB]">{job.hiring_status || "Actively Hiring"}</p>
-                                                    <p className="text-[13px] font-medium text-gray-500 mt-0.5">Hiring Status</p>
-                                                </div>
-                                            </div>
-                                            <Button
-                                                type="button"
-                                                onClick={() => openApplyModal(job)}
-                                                disabled={isApplied || applyingJobId === job.id || isClosed}
-                                                className={`h-11 px-6 rounded-[12px] text-[15px] font-bold shadow-sm transition-all duration-300 hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 disabled:active:scale-100 flex items-center gap-2 ${isApplied ? applicationStatus.tone : "bg-[#1B6CFB] text-white hover:bg-[#155ade]"}`}
-                                            >
-                                                {isApplied ? applicationStatus.label : applyingJobId === job.id ? "Applying..." : isClosed ? "Closed" : "Apply Job"}
-                                                {!isApplied && !isClosed && applyingJobId !== job.id && <ArrowRight className="w-4 h-4" />}
-                                            </Button>
-                                        </div>
-
-                                        {/* Horizontal Divider */}
-                                        <div className="w-full h-px bg-[#E5E7EB] dark:bg-[#243056] my-5"></div>
-
-                                        {/* Footer Info */}
-                                        <div className="flex items-center justify-between w-full px-1">
-                                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-[13px] font-semibold">
-                                                <Briefcase className="w-4 h-4 text-gray-400" /> {job.job_type === 'internship' ? 'Part-time' : 'Full-time'}
-                                            </div>
-                                            <div className="w-px h-4 bg-[#E5E7EB] dark:bg-[#31406B]"></div>
-                                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-[13px] font-semibold">
-                                                <GraduationCap className="w-[18px] h-[18px] text-gray-400" /> {job.job_type === 'internship' ? 'Internship' : 'Job'}
-                                            </div>
-                                            <div className="w-px h-4 bg-[#E5E7EB] dark:bg-[#31406B]"></div>
-                                            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-[13px] font-semibold">
-                                                <Clock className="w-4 h-4 text-gray-400" /> Posted 2 days ago
-                                            </div>
-                                        </div>
-                                    </motion.article>
+                                        job={job}
+                                        variant="student"
+                                        index={index}
+                                        isApplied={isApplied}
+                                        applyingJobId={applyingJobId}
+                                        isClosed={isClosed}
+                                        applicationStatus={applicationStatus}
+                                        onApply={openApplyModal}
+                                    />
                                 )
                             })}
                         </AnimatePresence>
@@ -1074,92 +981,10 @@ export default function StudentJobsPage() {
                     onClose={() => setSelectedJob(null)}
                     title={selectedJob.title}
                     maxWidth="2xl"
-                    className="max-h-[90vh] overflow-hidden"
+                    position="right"
                 >
                     <div className="max-h-[calc(90vh-120px)] space-y-6 overflow-y-auto pr-1 text-sm text-gray-700 dark:text-[#C7D2FE]">
-                        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                            <div className="rounded-2xl bg-[#F7F8FF] p-4 dark:bg-[#0C1430]">
-                                <p className="text-xs font-semibold uppercase text-gray-500 dark:text-[#A8B3CF]">Company</p>
-                                <p className="mt-1 text-base font-semibold text-gray-900 dark:text-white">{formatValue(selectedJob.company_name)}</p>
-                            </div>
-                            <div className="rounded-2xl bg-[#F7F8FF] p-4 dark:bg-[#0C1430]">
-                                <p className="text-xs font-semibold uppercase text-gray-500 dark:text-[#A8B3CF]">Salary / CTC</p>
-                                <p className="mt-1 text-base font-semibold text-gray-900 dark:text-white">{formatSalary(selectedJob)}</p>
-                            </div>
-                            <div className="rounded-2xl bg-[#F7F8FF] p-4 dark:bg-[#0C1430]">
-                                <p className="text-xs font-semibold uppercase text-gray-500 dark:text-[#A8B3CF]">Location</p>
-                                <p className="mt-1 text-base font-semibold text-gray-900 dark:text-white">{formatValue(selectedJob.location)}</p>
-                            </div>
-                            <div className="rounded-2xl bg-[#F7F8FF] p-4 dark:bg-[#0C1430]">
-                                <p className="text-xs font-semibold uppercase text-gray-500 dark:text-[#A8B3CF]">Work Mode</p>
-                                <p className="mt-1 text-base font-semibold text-gray-900 dark:text-white">{formatLabel(selectedJob.mode_of_work)}</p>
-                            </div>
-                            <div className="rounded-2xl bg-[#F7F8FF] p-4 dark:bg-[#0C1430]">
-                                <p className="text-xs font-semibold uppercase text-gray-500 dark:text-[#A8B3CF]">Experience</p>
-                                <p className="mt-1 text-base font-semibold text-gray-900 dark:text-white">
-                                    {selectedJob.experience_min ?? 0} - {selectedJob.experience_max ?? "Any"} years
-                                </p>
-                            </div>
-                            <div className="rounded-2xl bg-[#F7F8FF] p-4 dark:bg-[#0C1430]">
-                                <p className="text-xs font-semibold uppercase text-gray-500 dark:text-[#A8B3CF]">Deadline</p>
-                                <p className="mt-1 text-base font-semibold text-gray-900 dark:text-white">{formatDate(selectedJob.application_deadline)}</p>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 className="mb-2 text-base font-bold text-gray-900 dark:text-white">Job Description</h3>
-                            <div className="whitespace-pre-wrap rounded-2xl bg-[#F7F8FF] p-4 dark:bg-[#0C1430]">
-                                {formatValue(selectedJob.description)}
-                            </div>
-                        </div>
-
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div>
-                                <h3 className="mb-2 text-base font-bold text-gray-900 dark:text-white">Requirements</h3>
-                                <div className="whitespace-pre-wrap rounded-2xl bg-[#F7F8FF] p-4 dark:bg-[#0C1430]">
-                                    {formatValue(selectedJob.requirements)}
-                                </div>
-                            </div>
-                            <div>
-                                <h3 className="mb-2 text-base font-bold text-gray-900 dark:text-white">Responsibilities</h3>
-                                <div className="whitespace-pre-wrap rounded-2xl bg-[#F7F8FF] p-4 dark:bg-[#0C1430]">
-                                    {formatValue(selectedJob.responsibilities)}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="rounded-2xl bg-[#F7F8FF] p-4 dark:bg-[#0C1430]">
-                                <h3 className="mb-2 text-base font-bold text-gray-900 dark:text-white">Skills Required</h3>
-                                <p>{formatList(selectedJob.skills_required)}</p>
-                            </div>
-                            <div className="rounded-2xl bg-[#F7F8FF] p-4 dark:bg-[#0C1430]">
-                                <h3 className="mb-2 text-base font-bold text-gray-900 dark:text-white">Eligibility</h3>
-                                <p>Education Level: {formatList(selectedJob.education_level)}</p>
-                                <p className="mt-1">Degree: {formatList(selectedJob.education_degree)}</p>
-                                <p className="mt-1">Branch: {formatList(selectedJob.education_branch)}</p>
-                                <p className="mt-1">Criteria: {formatValue(selectedJob.eligibility_criteria)}</p>
-                            </div>
-                        </div>
-
-                        <div className="grid gap-4 md:grid-cols-2">
-                            <div className="rounded-2xl bg-[#F7F8FF] p-4 dark:bg-[#0C1430]">
-                                <h3 className="mb-2 text-base font-bold text-gray-900 dark:text-white">Company Details</h3>
-                                <p>Description: {formatValue(selectedJob.company_description)}</p>
-                                <p className="mt-1">Website: {formatValue(selectedJob.company_website)}</p>
-                                <p className="mt-1">Address: {formatValue(selectedJob.company_address)}</p>
-                                <p className="mt-1">Type: {formatValue(selectedJob.company_type)}</p>
-                                <p className="mt-1">Size: {formatValue(selectedJob.company_size)}</p>
-                            </div>
-                            <div className="rounded-2xl bg-[#F7F8FF] p-4 dark:bg-[#0C1430]">
-                                <h3 className="mb-2 text-base font-bold text-gray-900 dark:text-white">Hiring Details</h3>
-                                <p>Selection Process: {formatValue(selectedJob.selection_process)}</p>
-                                <p className="mt-1">Contact Person: {formatValue(selectedJob.contact_person)}</p>
-                                <p className="mt-1">Contact Designation: {formatValue(selectedJob.contact_designation)}</p>
-                                <p className="mt-1">Openings: {formatValue(selectedJob.number_of_openings)}</p>
-                                <p className="mt-1">Applications: {formatValue(selectedJob.current_applications)} / {formatValue(selectedJob.max_applications)}</p>
-                            </div>
-                        </div>
+                        <JobDetails job={selectedJob} variant="student" />
 
                         <div className="flex flex-col gap-3 border-t border-gray-200 pt-4 dark:border-white/10 sm:flex-row sm:justify-end">
                             <Button

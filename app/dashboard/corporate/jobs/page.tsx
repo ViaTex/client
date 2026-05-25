@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Filter, MoreVertical, Plus, Briefcase, MapPin, IndianRupee, Clock, Clock3, Building, Users, CalendarDays, BadgeCheck, GraduationCap, Globe, Contact, FileText, BookOpen, ClipboardList, CheckSquare, Gift, ShieldCheck, FolderKanban, FileBadge2, Download, Trash2 } from "lucide-react"
 import { Modal } from "@/components/ui/modal"
+import { JobCard } from "@/components/ui/job-card"
+import { JobDetails } from "@/components/ui/job-details"
 
 function getErrorMessage(detail: unknown, fallback: string) {
     if (typeof detail === "string" && detail.trim()) return detail
@@ -664,158 +666,23 @@ export default function CorporateJobsPage() {
                         const postedMeta = getPostedDateMeta(job.created_at)
 
                         return (
-                            <div key={job.id} className="rounded-[12px] border border-[#dbcfd4] bg-[#fff4f1] shadow-[0_4px_12px_rgba(122,118,145,0.12)] dark:border-[#314176] dark:bg-[#101d49] dark:shadow-[0_8px_16px_rgba(5,10,30,0.24)]">
-                                <div className="border-b border-[#eadbdf] p-2.5 dark:border-[#4658a8]">
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div>
-                                            <h3 className="text-[0.9rem] font-bold text-[#171717] dark:text-white">{job.title}</h3>
-                                            <div className="mt-1 inline-flex items-center gap-2 text-[0.8rem] text-[#5f6f98] dark:text-[#c7d2f4]">
-                                                <Building className="h-3.5 w-3.5" />
-                                                <span>{job.company_name || "Not specified"}</span>
-                                            </div>
-                                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                                                <span className="rounded-full bg-[#875ad8] px-2 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-white dark:bg-[#8c5ce5]">
-                                                    {job.job_type.replace("_", " ")}
-                                                </span>
-                                                <span className="rounded-full bg-[#d8ffde] px-2 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-[#1baf52] dark:bg-[#dcfce7] dark:text-[#17803d]">
-                                                    {job.status}
-                                                </span>
-                                                <span className="inline-flex items-center gap-1 rounded-xl bg-[#e8f2ff] px-2 py-0.5 text-[8px] font-semibold text-[#355fbe] dark:bg-[#1377db] dark:text-white">
-                                                    <Clock3 className="h-2.5 w-2.5" />
-                                                    {job.mode_of_work ?? "onsite"}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="relative" ref={openMenuJobId === job.id ? menuRef : null}>
-                                            <button
-                                                type="button"
-                                                onClick={() => setOpenMenuJobId((prev) => (prev === job.id ? null : job.id))}
-                                                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#6f7da9] hover:bg-white/70 dark:text-[#c6d0ff] dark:hover:bg-[#2a387d]"
-                                                aria-label={`Open actions for ${job.title}`}
-                                            >
-                                                <MoreVertical className="h-4 w-4" />
-                                            </button>
-
-                                            {openMenuJobId === job.id ? (
-                                                <div className="absolute right-0 top-10 z-20 w-40 rounded-lg border border-[#d7ddf8] bg-white p-1 shadow-lg sm:w-44 dark:border-[#4658a8] dark:bg-[#24306f]">
-                                                    <button
-                                                        type="button"
-                                                        className="w-full rounded-md px-3 py-2 text-left text-sm font-medium text-[#42548d] hover:bg-[#edf3ff] dark:text-[#e3e9ff] dark:hover:bg-[#2d3c89]"
-                                                        onClick={() => {
-                                                            setOpenMenuJobId(null)
-                                                            router.push(`/dashboard/corporate/jobs/edit/${job.id}`)
-                                                        }}
-                                                    >
-                                                        Edit Job
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-[#dc2626] hover:bg-[#fee2e2] disabled:cursor-not-allowed disabled:opacity-60 dark:text-[#fca5a5] dark:hover:bg-[#5f1f2b]"
-                                                        onClick={() => handleDeleteJob(job)}
-                                                        disabled={deletingJobId === job.id}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                        {deletingJobId === job.id ? "Deleting..." : "Delete Job"}
-                                                    </button>
-                                                </div>
-                                            ) : null}
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                        <div className="rounded-lg bg-[#e7fff1] p-2 dark:flex dark:min-h-[60px] dark:flex-col dark:justify-between dark:border dark:border-[#23914f] dark:bg-[linear-gradient(180deg,_#1f9448_0%,_#1b863f_100%)]">
-                                            <div className="mb-0.5 inline-flex items-center gap-1.5 text-[#19bb5b] dark:text-[#d8ffe7]">
-                                                <MapPin className="h-2.5 w-2.5" />
-                                                <span className="text-[10px] font-medium text-[#5b668e] dark:text-white">Location</span>
-                                            </div>
-                                            <p className="text-[0.8rem] font-semibold text-[#1d2755] dark:text-white">{job.location || "Not specified"}</p>
-                                        </div>
-                                        <div className="rounded-lg bg-[#f5eefe] p-2 dark:flex dark:min-h-[60px] dark:flex-col dark:justify-between dark:border dark:border-[#9633e1] dark:bg-[linear-gradient(180deg,_#952ee1_0%,_#7e28c7_100%)]">
-                                            <div className="mb-0.5 inline-flex items-center gap-1.5 text-[#8b5cf6] dark:text-[#f1ddff]">
-                                                <Users className="h-2.5 w-2.5" />
-                                                <span className="text-[10px] font-medium text-[#5b668e] dark:text-white">Applications</span>
-                                            </div>
-                                            <p className="text-[0.8rem] font-semibold text-[#1d2755] dark:text-white">{safeCurrentApplications}/{safeMaxApplications}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                                        <div className="inline-flex items-center gap-1.5 text-[0.8rem] text-[#42548d] dark:text-[#dfe7ff]">
-                                            <Briefcase className="h-3 w-3" />
-                                            <span>{job.experience_min ?? 0}-{job.experience_max ?? "Any"} years</span>
-                                        </div>
-                                        <div className="inline-flex items-center gap-1.5 text-[0.8rem] text-[#42548d] dark:text-[#dfe7ff]">
-                                            <IndianRupee className="h-3 w-3" />
-                                            <span>{formatSalary(job)}</span>
-                                        </div>
-                                    </div>
-
-                                    {job.skills_required?.length ? (
-                                        <div className="mt-3 flex flex-wrap gap-2">
-                                            {job.skills_required.slice(0, 3).map((skill) => (
-                                                <span
-                                                    key={skill}
-                                                    className="rounded-lg bg-[#e9edf6] px-2.5 py-1 text-[0.8rem] font-medium text-[#42548d] dark:bg-[#334062] dark:text-[#eef3ff]"
-                                                >
-                                                    {skill}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    ) : null}
-
-                                    <p className="mt-2.5 line-clamp-3 text-[0.8rem] leading-6 text-[#42548d] dark:text-[#edf1ff]">{job.description}</p>
-
-                                    <div className="mt-2.5 grid grid-cols-1 gap-1.5 text-[0.75rem] text-[#5f6f98] min-[420px]:grid-cols-2 dark:text-[#c7d2f4]">
-                                        <div className={`relative flex min-w-0 items-center gap-2 rounded-lg border px-2 py-1 font-semibold ${deadlineMeta.cardClass}`}>
-                                            <CalendarDays className="h-3 w-3 shrink-0" />
-                                            <div className="min-w-0 flex-1 pr-36 leading-tight">
-                                                <span className="block text-[8px] uppercase tracking-wide opacity-80">Deadline</span>
-                                                <span className="block whitespace-nowrap text-[0.75rem]">{deadlineMeta.value}</span>
-                                            </div>
-                                            {deadlineMeta.label !== deadlineMeta.value ? (
-                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/60 px-1 py-0.5 text-[8px] uppercase tracking-wide dark:bg-white/10">{deadlineMeta.label}</span>
-                                            ) : null}
-                                        </div>
-                                        <div className={`relative flex min-w-0 items-center gap-2 rounded-lg border px-2 py-1 font-semibold ${postedMeta.cardClass}`}>
-                                            <Clock className="h-3 w-3 shrink-0" />
-                                            <div className="min-w-0 flex-1 pr-36 leading-tight">
-                                                <span className="block text-[8px] uppercase tracking-wide opacity-80">Posted</span>
-                                                <span className="block whitespace-nowrap text-[0.75rem]">{postedMeta.value}</span>
-                                            </div>
-                                            <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/60 px-1 py-0.5 text-[8px] uppercase tracking-wide dark:bg-white/10">{postedMeta.label}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="p-2.5">
-                                    <div className="flex items-end justify-between gap-3">
-                                        <div className="flex-1">
-                                            <p className="text-xs text-[#7c839c] dark:text-[#d8e0ff]">Job Completion</p>
-                                            <div className="mt-2 h-2 rounded-full bg-[#c9c9c9] dark:bg-white">
-                                                <div className="h-full rounded-full bg-[#1564c0] dark:bg-[#2790ef]" style={{ width: `${completionPercent}%` }} />
-                                            </div>
-                                        </div>
-                                        <span className="text-[1rem] font-bold leading-none text-[#171717] sm:text-[1.1rem] md:text-[1.25rem] dark:text-white">{completionPercent}%</span>
-                                    </div>
-
-                                    <div className="mt-3 border-t border-[#ddd1d5] pt-3 dark:border-[#4658a8]">
-                                        <div className="flex gap-3">
-                                            <Button type="button" variant="outline" className="h-9 flex-1 rounded-xl border-[#d7ddf8] bg-white text-sm text-[#42548d] hover:bg-[#eef3ff] hover:text-[#16213f] dark:border-[#6074c5] dark:bg-transparent dark:text-[#eef3ff] dark:hover:bg-[#2a387d] dark:hover:text-white" onClick={() => setSelectedJob(job)}>
-                                                View JD
-                                            </Button>
-                                            <Button
-                                                type="button"
-                                                variant="outline"
-                                                className="h-9 rounded-xl border-[#d7ddf8] bg-white px-3.5 text-sm text-[#42548d] hover:bg-[#eef3ff] hover:text-[#16213f] dark:border-[#6074c5] dark:bg-transparent dark:text-[#eef3ff] dark:hover:bg-[#2a387d] dark:hover:text-white"
-                                                onClick={() => handleDownloadJob(job)}
-                                                aria-label={`Download JD for ${job.title}`}
-                                            >
-                                                <Download className="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <JobCard
+                                key={job.id}
+                                job={job}
+                                variant="corporate"
+                                index={filteredJobs.indexOf(job)}
+                                completionPercent={completionPercent}
+                                onEdit={(job) => {
+                                    router.push(`/dashboard/corporate/jobs/edit/${job.id}`)
+                                }}
+                                onDelete={handleDeleteJob}
+                                isDeleting={deletingJobId === job.id}
+                                isMenuOpen={openMenuJobId === job.id}
+                                onToggleMenu={(id) => setOpenMenuJobId(id)}
+                                menuRef={openMenuJobId === job.id ? menuRef : undefined}
+                                onViewJD={(job) => setSelectedJob(job)}
+                                onDownloadJD={(job) => handleDownloadJob(job)}
+                            />
                         )
                     })}
                 </div>
@@ -827,235 +694,10 @@ export default function CorporateJobsPage() {
                     onClose={() => setSelectedJob(null)}
                     title={selectedJob.title}
                     maxWidth="2xl"
+                    position="right"
                 >
-                    <div className="max-h-[70vh] space-y-6 overflow-y-auto text-[#42548d] dark:text-[#e6ecff]">
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                            <DetailCard
-                                label="Location"
-                                value={formatValue(selectedJob.location)}
-                                icon={<MapPin className="h-5 w-5 text-[#1f5fae] dark:text-[#8fb5ff]" />}
-                                accentClass="bg-[#d9ebff] dark:bg-[#17285a]"
-                                badge={selectedJob.remote_work ? "Remote Available" : undefined}
-                            />
-                            <DetailCard
-                                label="Salary Range"
-                                value={formatSalary(selectedJob)}
-                                icon={<IndianRupee className="h-5 w-5 text-[#12a150] dark:text-[#6ee7a8]" />}
-                                accentClass="bg-[#e9f9ef] dark:bg-[#143020]"
-                            />
-                            <DetailCard
-                                label="Experience"
-                                value={`${selectedJob.experience_min ?? 0}-${selectedJob.experience_max ?? "Any"} years`}
-                                icon={<Briefcase className="h-5 w-5 text-[#4960ff] dark:text-[#a9b4ff]" />}
-                                accentClass="bg-[#eef1ff] dark:bg-[#20285c]"
-                            />
-                            <DetailCard
-                                label="Job Type"
-                                value={formatLabel(selectedJob.job_type)}
-                                icon={<Clock3 className="h-5 w-5 text-[#ff6a00] dark:text-[#ffb26f]" />}
-                                accentClass="bg-[#fff3e7] dark:bg-[#392515]"
-                            />
-                            <DetailCard
-                                label="Posted"
-                                value={formatDate(selectedJob.created_at)}
-                                icon={<CalendarDays className="h-5 w-5 text-[#ef4444] dark:text-[#ff9f9f]" />}
-                                accentClass="bg-[#fff0f0] dark:bg-[#391a1d]"
-                            />
-                            <DetailCard
-                                label="Work Mode"
-                                value={formatLabel(selectedJob.mode_of_work ?? "onsite")}
-                                icon={<Building className="h-5 w-5 text-[#9333ea] dark:text-[#d8b4fe]" />}
-                                accentClass="bg-[#f6edff] dark:bg-[#2f1844]"
-                            />
-                            <DetailCard
-                                label="Status"
-                                value={formatLabel(selectedJob.status)}
-                                icon={<BadgeCheck className="h-5 w-5 text-[#16a34a] dark:text-[#8bf0ac]" />}
-                                accentClass="bg-[#ecfdf3] dark:bg-[#153021]"
-                            />
-                            <DetailCard
-                                label="Contact Person"
-                                value={formatValue(selectedJob.contact_person)}
-                                icon={<Contact className="h-5 w-5 text-[#0f766e] dark:text-[#7ee7dd]" />}
-                                accentClass="bg-[#e8fbf8] dark:bg-[#103532]"
-                            />
-                            <DetailCard
-                                label="Contact Designation"
-                                value={formatValue(selectedJob.contact_designation)}
-                                icon={<Contact className="h-5 w-5 text-[#0f766e] dark:text-[#7ee7dd]" />}
-                                accentClass="bg-[#e8fbf8] dark:bg-[#103532]"
-                            />
-                        </div>
-
-                        <div className="space-y-4">
-                            <DetailSection title="Job Description" value={selectedJob.description} icon={<FileText className="h-5 w-5" />} />
-                            <DetailSection title="Requirements" value={selectedJob.requirements} icon={<ClipboardList className="h-5 w-5" />} />
-                            <DetailSection title="Responsibilities" value={selectedJob.responsibilities} icon={<CheckSquare className="h-5 w-5" />} />
-                            <DetailSection title="Selection Process" value={selectedJob.selection_process} icon={<Briefcase className="h-5 w-5" />} />
-                            <DetailSection title="Eligibility Criteria" value={selectedJob.eligibility_criteria} icon={<GraduationCap className="h-5 w-5" />} />
-                            <DetailSection title="Perks and Benefits" value={selectedJob.perks_and_benefits} icon={<Gift className="h-5 w-5" />} />
-                            <DetailSection title="Certifications Required" value={selectedJob.certifications_required} icon={<FileBadge2 className="h-5 w-5" />} />
-                            <DetailSection title="Ongoing Project Title" value={selectedJob.ongoing_project_title} icon={<FolderKanban className="h-5 w-5" />} />
-                            <DetailSection title="Ongoing Project Description" value={selectedJob.ongoing_project_description} icon={<FolderKanban className="h-5 w-5" />} />
-                            <DetailSection title="Company Description" value={selectedJob.company_description} icon={<Building className="h-5 w-5" />} />
-                        </div>
-
-                        <InfoBlock
-                            title="Number of Openings"
-                            value={formatValue(selectedJob.number_of_openings)}
-                            icon={<Users className="h-5 w-5" />}
-                        />
-
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3 text-[#16213f] dark:text-white">
-                                <span className="text-[#2856b6] dark:text-[#8fb5ff]">
-                                    <GraduationCap className="h-5 w-5" />
-                                </span>
-                                <h4 className="text-[1.05rem] font-bold">Candidate Eligibility</h4>
-                            </div>
-                            <div className="rounded-[20px] border border-[#d8e1f2] bg-[#edf3ff] p-5 shadow-[0_8px_20px_rgba(29,39,85,0.05)] dark:border-[#223067] dark:bg-[#0f183f] dark:shadow-none">
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <AdditionalDetailItem
-                                        icon={<GraduationCap className="h-5 w-5" />}
-                                        label="Education Level"
-                                        value={formatList(selectedJob.education_level)}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<BookOpen className="h-5 w-5" />}
-                                        label="Education Degree"
-                                        value={formatList(selectedJob.education_degree)}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<BookOpen className="h-5 w-5" />}
-                                        label="Education Branch"
-                                        value={formatList(selectedJob.education_branch)}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<Briefcase className="h-5 w-5" />}
-                                        label="Skills Required"
-                                        value={formatList(selectedJob.skills_required)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <InfoBlock
-                            title="Service Agreement Details"
-                            value={formatValue(selectedJob.service_agreement_details)}
-                            icon={<BadgeCheck className="h-5 w-5" />}
-                        />
-
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3 text-[#16213f] dark:text-white">
-                                <span className="text-[#2856b6] dark:text-[#8fb5ff]">
-                                    <IndianRupee className="h-5 w-5" />
-                                </span>
-                                <h4 className="text-[1.05rem] font-bold">CTC Details</h4>
-                            </div>
-                            <div className="rounded-[20px] border border-[#d8e1f2] bg-[#edf3ff] p-5 shadow-[0_8px_20px_rgba(29,39,85,0.05)] dark:border-[#223067] dark:bg-[#0f183f] dark:shadow-none">
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <AdditionalDetailItem
-                                        icon={<IndianRupee className="h-5 w-5" />}
-                                        label="During Probation"
-                                        value={formatValue(selectedJob.ctc_with_probation)}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<IndianRupee className="h-5 w-5" />}
-                                        label="After Probation"
-                                        value={formatValue(selectedJob.ctc_after_probation)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3 text-[#16213f] dark:text-white">
-                                <span className="text-[#2856b6] dark:text-[#8fb5ff]">
-                                    <Briefcase className="h-5 w-5" />
-                                </span>
-                                <h4 className="text-[1.05rem] font-bold">Additional Job Details</h4>
-                            </div>
-                            <div className="rounded-[20px] border border-[#d8e1f2] bg-[#edf3ff] p-5 shadow-[0_8px_20px_rgba(29,39,85,0.05)] dark:border-[#223067] dark:bg-[#0f183f] dark:shadow-none">
-                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                                    <AdditionalDetailItem
-                                        icon={<Building className="h-5 w-5" />}
-                                        label="Industry"
-                                        value={formatValue(selectedJob.industry)}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<Users className="h-5 w-5" />}
-                                        label="Applications"
-                                        value={`${formatApplications(selectedJob.current_applications, selectedJob.max_applications)} applications`}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<Globe className="h-5 w-5" />}
-                                        label="Remote Work"
-                                        value={formatRemoteAvailability(selectedJob.remote_work)}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<BadgeCheck className="h-5 w-5" />}
-                                        label="Job Status"
-                                        value={formatLabel(selectedJob.status)}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<MapPin className="h-5 w-5" />}
-                                        label="Travel Required"
-                                        value={formatBoolean(selectedJob.travel_required)}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<Building className="h-5 w-5" />}
-                                        label="Onsite Office"
-                                        value={formatOnsiteOffice(selectedJob.mode_of_work)}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<Globe className="h-5 w-5" />}
-                                        label="Company Website"
-                                        value={formatValue(selectedJob.company_website)}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<Building className="h-5 w-5" />}
-                                        label="Company Type"
-                                        value={formatValue(selectedJob.company_type)}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<CalendarDays className="h-5 w-5" />}
-                                        label="Company Founded"
-                                        value={formatValue(selectedJob.company_founded)}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<MapPin className="h-5 w-5" />}
-                                        label="Company Address"
-                                        value={formatValue(selectedJob.company_address)}
-                                    />
-                                    <AdditionalDetailItem
-                                        icon={<Users className="h-5 w-5" />}
-                                        label="Company Size"
-                                        value={formatValue(selectedJob.company_size)}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <DateInfoBlock
-                                title="Application Deadline"
-                                value={selectedJob.application_deadline}
-                                emptyLabel="No deadline"
-                                icon={<CalendarDays className="h-5 w-5" />}
-                            />
-                            <DateInfoBlock
-                                title="Campus Drive"
-                                value={selectedJob.campus_drive_date}
-                                prefix="Campus Drive Date"
-                                icon={<Users className="h-5 w-5" />}
-                            />
-                            <DateInfoBlock
-                                title="Job Expiration"
-                                value={selectedJob.expiration_date}
-                                prefix="Expires"
-                                icon={<CalendarDays className="h-5 w-5" />}
-                            />
-                        </div>
+                    <div className="space-y-6 text-[#42548d] dark:text-[#e6ecff]">
+                        <JobDetails job={selectedJob} variant="corporate" />
 
                         <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
                             <Button variant="outline" className="border-[#ccd7f5] bg-transparent text-[#42548d] hover:bg-[#edf3ff] hover:text-[#16213f] dark:border-[#223067] dark:text-[#c4d3ff] dark:hover:bg-[#1a2858] dark:hover:text-white" onClick={() => setSelectedJob(null)}>Close</Button>
