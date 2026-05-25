@@ -653,7 +653,7 @@ export default function CorporateJobsPage() {
                 {loading ? <p className="text-sm text-[#5f6f98] dark:text-[#a0abcf]">Loading jobs...</p> : null}
                 {!loading && filteredJobs.length === 0 ? <p className="text-sm text-[#5f6f98] dark:text-[#a0abcf]">No jobs found.</p> : null}
 
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3">
                     {filteredJobs.map((job) => {
                         const currentApplications = Number(job.current_applications ?? 0)
                         const maxApplicationsValue = Number(job.max_applications ?? 0)
@@ -664,33 +664,41 @@ export default function CorporateJobsPage() {
                         const postedMeta = getPostedDateMeta(job.created_at)
 
                         return (
-                            <div key={job.id} className="rounded-[12px] border border-[#dbcfd4] bg-[#fff4f1] shadow-[0_4px_12px_rgba(122,118,145,0.12)] dark:border-[#314176] dark:bg-[#101d49] dark:shadow-[0_8px_16px_rgba(5,10,30,0.24)]">
-                                <div className="border-b border-[#eadbdf] p-2.5 dark:border-[#4658a8]">
-                                    <div className="flex items-start justify-between gap-3">
-                                        <div>
-                                            <h3 className="text-[0.9rem] font-bold text-[#171717] dark:text-white">{job.title}</h3>
-                                            <div className="mt-1 inline-flex items-center gap-2 text-[0.8rem] text-[#5f6f98] dark:text-[#c7d2f4]">
-                                                <Building className="h-3.5 w-3.5" />
+                            <div key={job.id} className="group overflow-hidden rounded-2xl border border-[#DCE5F8] bg-white shadow-sm transition-shadow hover:shadow-md dark:border-[#243056] dark:bg-[#121C46]">
+                                <div className="min-h-[210px] border-b border-gray-100 bg-[#F7F8FF] p-3.5 dark:border-[#243056] dark:bg-[#0C1430]">
+                                    <div className="flex items-start justify-between gap-2">
+                                        <div className="flex min-w-0 items-start gap-2">
+                                            <div className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#2563EB] to-[#7C3AED] text-[0.95rem] font-bold text-white shadow-sm">
+                                                {(job.title || "J").trim().charAt(0).toUpperCase()}
+                                            </div>
+                                            <div className="min-w-0">
+                                            <h3 className="line-clamp-1 text-[0.95rem] font-bold leading-tight text-gray-900 dark:text-white">{job.title}</h3>
+                                            <div className="mt-0.5 inline-flex items-center gap-1.5 text-[0.78rem] text-gray-600 dark:text-[#A8B3CF]">
+                                                <Building className="h-3 w-3" />
                                                 <span>{job.company_name || "Not specified"}</span>
                                             </div>
-                                            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                                                <span className="rounded-full bg-[#875ad8] px-2 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-white dark:bg-[#8c5ce5]">
+                                            <div className="mt-1.5 flex min-h-[24px] flex-nowrap items-center gap-1.5">
+                                                <span className="whitespace-nowrap rounded-full bg-purple-100 px-2 py-0.5 text-[10px] font-semibold capitalize text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
                                                     {job.job_type.replace("_", " ")}
                                                 </span>
-                                                <span className="rounded-full bg-[#d8ffde] px-2 py-0.5 text-[8px] font-semibold uppercase tracking-wide text-[#1baf52] dark:bg-[#dcfce7] dark:text-[#17803d]">
+                                                <span className="whitespace-nowrap rounded-full bg-cyan-100 px-2 py-0.5 text-[10px] font-semibold capitalize text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300">
+                                                    {formatValue(job.industry)}
+                                                </span>
+                                                <span className="whitespace-nowrap rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-green-700 dark:bg-green-900/30 dark:text-green-300">
                                                     {job.status}
                                                 </span>
-                                                <span className="inline-flex items-center gap-1 rounded-xl bg-[#e8f2ff] px-2 py-0.5 text-[8px] font-semibold text-[#355fbe] dark:bg-[#1377db] dark:text-white">
+                                                <span className="inline-flex whitespace-nowrap items-center gap-1 rounded-full bg-yellow-100 px-2 py-0.5 text-[10px] font-semibold text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300">
                                                     <Clock3 className="h-2.5 w-2.5" />
                                                     {job.mode_of_work ?? "onsite"}
                                                 </span>
                                             </div>
                                         </div>
+                                        </div>
                                         <div className="relative" ref={openMenuJobId === job.id ? menuRef : null}>
                                             <button
                                                 type="button"
                                                 onClick={() => setOpenMenuJobId((prev) => (prev === job.id ? null : job.id))}
-                                                className="inline-flex h-8 w-8 items-center justify-center rounded-md text-[#6f7da9] hover:bg-white/70 dark:text-[#c6d0ff] dark:hover:bg-[#2a387d]"
+                                                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-[#6f7da9] hover:bg-white/70 dark:text-[#c6d0ff] dark:hover:bg-[#2a387d]"
                                                 aria-label={`Open actions for ${job.title}`}
                                             >
                                                 <MoreVertical className="h-4 w-4" />
@@ -722,85 +730,87 @@ export default function CorporateJobsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
-                                        <div className="rounded-lg bg-[#e7fff1] p-2 dark:flex dark:min-h-[60px] dark:flex-col dark:justify-between dark:border dark:border-[#23914f] dark:bg-[linear-gradient(180deg,_#1f9448_0%,_#1b863f_100%)]">
-                                            <div className="mb-0.5 inline-flex items-center gap-1.5 text-[#19bb5b] dark:text-[#d8ffe7]">
-                                                <MapPin className="h-2.5 w-2.5" />
-                                                <span className="text-[10px] font-medium text-[#5b668e] dark:text-white">Location</span>
+                                    <div className="mt-3 grid grid-cols-3 gap-2">
+                                        <div className="rounded-xl bg-[#F7F8FF] p-2.5 dark:bg-[#0C1430]">
+                                            <div className="mb-1.5 inline-flex items-center gap-1.5 text-gray-500 dark:text-[#A8B3CF]">
+                                                <MapPin className="h-3.5 w-3.5" />
+                                                <span className="text-[10px] font-semibold uppercase">Location</span>
                                             </div>
-                                            <p className="text-[0.8rem] font-semibold text-[#1d2755] dark:text-white">{job.location || "Not specified"}</p>
+                                            <p className="text-sm font-medium leading-tight text-gray-900 dark:text-white">{job.location || "Not specified"}</p>
                                         </div>
-                                        <div className="rounded-lg bg-[#f5eefe] p-2 dark:flex dark:min-h-[60px] dark:flex-col dark:justify-between dark:border dark:border-[#9633e1] dark:bg-[linear-gradient(180deg,_#952ee1_0%,_#7e28c7_100%)]">
-                                            <div className="mb-0.5 inline-flex items-center gap-1.5 text-[#8b5cf6] dark:text-[#f1ddff]">
-                                                <Users className="h-2.5 w-2.5" />
-                                                <span className="text-[10px] font-medium text-[#5b668e] dark:text-white">Applications</span>
+                                        <div className="rounded-xl bg-[#F7F8FF] p-2.5 dark:bg-[#0C1430]">
+                                            <div className="mb-1.5 inline-flex items-center gap-1.5 text-gray-500 dark:text-[#A8B3CF]">
+                                                <Briefcase className="h-3.5 w-3.5" />
+                                                <span className="text-[10px] font-semibold uppercase">Experience</span>
                                             </div>
-                                            <p className="text-[0.8rem] font-semibold text-[#1d2755] dark:text-white">{safeCurrentApplications}/{safeMaxApplications}</p>
+                                            <p className="text-sm font-medium leading-tight text-gray-900 dark:text-white">{job.experience_min ?? 0}-{job.experience_max ?? "Any"} years</p>
+                                        </div>
+                                        <div className="rounded-xl bg-[#F7F8FF] p-2.5 dark:bg-[#0C1430]">
+                                            <div className="mb-1.5 inline-flex items-center gap-1.5 text-gray-500 dark:text-[#A8B3CF]">
+                                                <CalendarDays className="h-3.5 w-3.5" />
+                                                <span className="text-[10px] font-semibold uppercase">Deadline</span>
+                                            </div>
+                                            <p className="text-sm font-medium leading-tight text-gray-900 dark:text-white">{formatDate(job.application_deadline)}</p>
                                         </div>
                                     </div>
+                                </div>
 
-                                    <div className="mt-2 grid grid-cols-1 gap-1.5 sm:grid-cols-2">
-                                        <div className="inline-flex items-center gap-1.5 text-[0.8rem] text-[#42548d] dark:text-[#dfe7ff]">
-                                            <Briefcase className="h-3 w-3" />
-                                            <span>{job.experience_min ?? 0}-{job.experience_max ?? "Any"} years</span>
+                                <div className="space-y-3 p-4">
+                                    <div className="grid grid-cols-1 gap-2 border-t border-gray-100 pt-3 dark:border-[#243056] sm:grid-cols-3">
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-500 dark:text-[#A8B3CF]">Salary / CTC</p>
+                                            <p className="mt-1 min-h-[52px] text-sm font-bold leading-tight text-gray-900 dark:text-white">{formatSalary(job)}</p>
                                         </div>
-                                        <div className="inline-flex items-center gap-1.5 text-[0.8rem] text-[#42548d] dark:text-[#dfe7ff]">
-                                            <IndianRupee className="h-3 w-3" />
-                                            <span>{formatSalary(job)}</span>
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-500 dark:text-[#A8B3CF]">Openings</p>
+                                            <p className="mt-1 min-h-[52px] text-sm font-bold leading-tight text-gray-900 dark:text-white">{formatValue(job.number_of_openings)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-500 dark:text-[#A8B3CF]">Applications</p>
+                                            <p className="mt-1 min-h-[52px] text-sm font-bold leading-tight text-gray-900 dark:text-white">{safeCurrentApplications}/{safeMaxApplications}</p>
                                         </div>
                                     </div>
 
                                     {job.skills_required?.length ? (
                                         <div className="mt-3 flex flex-wrap gap-2">
-                                            {job.skills_required.slice(0, 3).map((skill) => (
+                                            {job.skills_required.slice(0, 5).map((skill) => (
                                                 <span
                                                     key={skill}
-                                                    className="rounded-lg bg-[#e9edf6] px-2.5 py-1 text-[0.8rem] font-medium text-[#42548d] dark:bg-[#334062] dark:text-[#eef3ff]"
+                                                    className="rounded-lg bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
                                                 >
                                                     {skill}
                                                 </span>
                                             ))}
+                                            {job.skills_required.length > 5 ? (
+                                                <span className="px-1 py-1 text-xs text-gray-500 dark:text-[#A8B3CF]">+{job.skills_required.length - 5} more</span>
+                                            ) : null}
                                         </div>
                                     ) : null}
 
-                                    <p className="mt-2.5 line-clamp-3 text-[0.8rem] leading-6 text-[#42548d] dark:text-[#edf1ff]">{job.description}</p>
-
-                                    <div className="mt-2.5 grid grid-cols-1 gap-1.5 text-[0.75rem] text-[#5f6f98] min-[420px]:grid-cols-2 dark:text-[#c7d2f4]">
+                                    <div className="grid grid-cols-1 gap-1.5 text-[0.72rem] text-[#5f6f98] min-[420px]:grid-cols-2 dark:text-[#c7d2f4]">
                                         <div className={`relative flex min-w-0 items-center gap-2 rounded-lg border px-2 py-1 font-semibold ${deadlineMeta.cardClass}`}>
                                             <CalendarDays className="h-3 w-3 shrink-0" />
-                                            <div className="min-w-0 flex-1 pr-36 leading-tight">
-                                                <span className="block text-[8px] uppercase tracking-wide opacity-80">Deadline</span>
-                                                <span className="block whitespace-nowrap text-[0.75rem]">{deadlineMeta.value}</span>
-                                            </div>
-                                            {deadlineMeta.label !== deadlineMeta.value ? (
-                                                <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/60 px-1 py-0.5 text-[8px] uppercase tracking-wide dark:bg-white/10">{deadlineMeta.label}</span>
-                                            ) : null}
+                                            <span className="truncate">{deadlineMeta.label}</span>
                                         </div>
                                         <div className={`relative flex min-w-0 items-center gap-2 rounded-lg border px-2 py-1 font-semibold ${postedMeta.cardClass}`}>
                                             <Clock className="h-3 w-3 shrink-0" />
-                                            <div className="min-w-0 flex-1 pr-36 leading-tight">
-                                                <span className="block text-[8px] uppercase tracking-wide opacity-80">Posted</span>
-                                                <span className="block whitespace-nowrap text-[0.75rem]">{postedMeta.value}</span>
-                                            </div>
-                                            <span className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/60 px-1 py-0.5 text-[8px] uppercase tracking-wide dark:bg-white/10">{postedMeta.label}</span>
+                                            <span className="truncate">Posted: {postedMeta.value}</span>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="p-2.5">
-                                    <div className="flex items-end justify-between gap-3">
+                                    <div className="flex items-end justify-between gap-2">
                                         <div className="flex-1">
                                             <p className="text-xs text-[#7c839c] dark:text-[#d8e0ff]">Job Completion</p>
-                                            <div className="mt-2 h-2 rounded-full bg-[#c9c9c9] dark:bg-white">
+                                            <div className="mt-1.5 h-2 rounded-full bg-[#c9c9c9] dark:bg-white">
                                                 <div className="h-full rounded-full bg-[#1564c0] dark:bg-[#2790ef]" style={{ width: `${completionPercent}%` }} />
                                             </div>
                                         </div>
-                                        <span className="text-[1rem] font-bold leading-none text-[#171717] sm:text-[1.1rem] md:text-[1.25rem] dark:text-white">{completionPercent}%</span>
+                                        <span className="text-[1.25rem] font-bold leading-none text-[#171717] dark:text-white">{completionPercent}%</span>
                                     </div>
 
-                                    <div className="mt-3 border-t border-[#ddd1d5] pt-3 dark:border-[#4658a8]">
-                                        <div className="flex gap-3">
-                                            <Button type="button" variant="outline" className="h-9 flex-1 rounded-xl border-[#d7ddf8] bg-white text-sm text-[#42548d] hover:bg-[#eef3ff] hover:text-[#16213f] dark:border-[#6074c5] dark:bg-transparent dark:text-[#eef3ff] dark:hover:bg-[#2a387d] dark:hover:text-white" onClick={() => setSelectedJob(job)}>
+                                    <div className="flex flex-col gap-2.5 border-t border-gray-100 pt-3 dark:border-[#243056] sm:flex-row sm:items-center sm:justify-end">
+                                        <div className="flex flex-col gap-2.5 sm:flex-row">
+                                            <Button type="button" variant="outline" className="h-9 rounded-xl border-[#D5CCFF] px-4 text-[#7C3AED] hover:bg-[#F3EEFF] dark:border-[#4C3D88] dark:text-[#C4B5FD] dark:hover:bg-[#1C2752]" onClick={() => setSelectedJob(job)}>
                                                 View JD
                                             </Button>
                                             <Button

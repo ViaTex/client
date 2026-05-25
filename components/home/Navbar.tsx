@@ -1,7 +1,7 @@
 'use client';
 
 import Link from "next/link";
-import { Layers } from 'lucide-react';
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export default function Navbar() {
   return (
@@ -24,6 +24,7 @@ export default function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-2 sm:gap-4">
+          <ThemeToggle />
           <Link
             href="/auth/login"
             className="bg-transparent border border-[#C0BFBD] text-[#2A2D31] px-4 sm:px-6 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-bold hover:bg-black/5 hover:border-gray-400 transition-all dark:border-white/20 dark:text-white dark:hover:border-[#5EEAD4]/50 dark:hover:bg-white/10"
