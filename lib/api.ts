@@ -56,6 +56,7 @@ export interface JobPayload {
     max_des_score?: number
     ongoing_project_title?: string
     ongoing_project_description?: string
+    hiring_status?: string
 }
 
 export interface JobItem extends JobPayload {

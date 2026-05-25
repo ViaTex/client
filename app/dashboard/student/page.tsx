@@ -156,7 +156,7 @@ export default function StudentDashboard() {
             <div className="sm:space-y-6 px-3 sm:px-4 md:px-6 pt-1 sm:pt-6 mb-6 lg:pt-1 lg:px-0">
                 {/* Header - Figma: 16px radius, 10px padding; dark mode #1A2C58 */}
                 <div
-                    className="w-full flex flex-col rounded-[16px] p-2.5 gap-2.5 bg-gradient-to-r from-[#deefff] via-[#fff0f7] to-[#fffce3] dark:bg-none dark:bg-[#1A2C58] min-h-[92px]"
+                    className="w-full flex flex-col rounded-[16px] p-2.5 gap-2.5 bg-white dark:bg-none dark:bg-[#1A2C58] min-h-[92px]"
                     style={{
                         boxShadow: 'inset 0 1px 1.5px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.25)',
                     }}
@@ -406,7 +406,7 @@ export default function StudentDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 
                 {/* Viewer Demographics (Left) */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="lg:col-span-7 bg-gradient-to-tr from-[#d9f0ff] via-[#e6d9ff] to-[#ffe5d9] dark:bg-none dark:bg-[#0B1739] p-6 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm flex flex-col">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="lg:col-span-7 bg-white dark:bg-none dark:bg-[#0B1739] p-6 rounded-xl border border-gray-200 dark:border-white/10 shadow-sm flex flex-col">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
                         <div>
                             <h3 className="text-[20px] font-bold text-gray-900 dark:text-white mb-1">Who is Viewing Your Profile</h3>
@@ -467,7 +467,7 @@ export default function StudentDashboard() {
                 </motion.div>
 
                 {/* List/Feed (Right) */}
-                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="lg:col-span-5 bg-gradient-to-tr from-[#e6d9fe] via-[#ffe5d9] to-[#e6d9ff] rounded-xl p-6 border border-gray-200 dark:bg-none dark:bg-[#0B1739] order-white/10 shadow-sm relative overflow-hidden">
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8 }} className="lg:col-span-5 bg-white rounded-xl p-6 border border-gray-200 dark:bg-none dark:bg-[#0B1739] shadow-sm relative overflow-hidden">
                     <h3 className="text-lg font-bold mb-6">Activity & Next Steps</h3>
 
                     <div className="space-y-4">
