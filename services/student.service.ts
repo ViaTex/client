@@ -66,4 +66,14 @@ export const studentService = {
             '/student/resume/ats-score',
             jobDescription ? { job_description: jobDescription } : undefined,
         ),
+
+    /** Upload a profile picture file. Sends as multipart/form-data. */
+    uploadProfilePicture: (file: File) => {
+        const formData = new FormData()
+        formData.append('file', file)
+        return postRequest<{ message: string, profile_picture_url: string }>('/student/profile-picture/upload', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 60000,
+        })
+    },
 }

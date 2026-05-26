@@ -145,17 +145,18 @@ export function TopNav({
                         <button className="flex items-center gap-3 hover:opacity-90 transition-opacity focus:outline-none group">
                             {/* Premium avatar styling with picture or fallback gradient initials */}
                             <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-100 dark:border-white/10 shrink-0 shadow-sm relative group-hover:scale-102 transition-transform bg-gradient-to-br from-[#E5B59E] to-[#C8EE44] flex items-center justify-center text-[#13141F] text-sm font-bold">
-                                <img
-                                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80"
-                                    alt="Profile Avatar"
-                                    className="w-full h-full object-cover"
-                                    onError={(e) => {
-                                        e.currentTarget.style.display = 'none';
-                                    }}
-                                />
-                                <span className="absolute inset-0 flex items-center justify-center">
-                                    {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                                </span>
+                                {user?.profile_picture_url ? (
+                                    <img
+                                        src={user.profile_picture_url}
+                                        alt="Profile Avatar"
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                        }}
+                                    />
+                                ) : (
+                                    <span>{user?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
+                                )}
                             </div>
                             <div className="hidden lg:flex flex-col items-start">
                                 <span className="text-[13px] font-semibold text-gray-900 dark:text-white leading-tight">

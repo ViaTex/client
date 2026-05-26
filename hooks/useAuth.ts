@@ -8,6 +8,7 @@ export interface User {
     email: string
     user_type: UserType
     name?: string
+    profile_picture_url?: string
 }
 
 export function useAuth() {
@@ -60,7 +61,8 @@ export function useAuth() {
                                 id: tokenPayload.sub || 'temp-id',
                                 email: tokenPayload.email || '',
                                 user_type: tokenPayload.user_type || 'student',
-                                name: tokenPayload.name || ''
+                                name: tokenPayload.name || '',
+                                profile_picture_url: tokenPayload.profile_picture_url || ''
                             }
                             setUser(userFromToken)
                             setIsAuthenticated(true)

@@ -199,8 +199,16 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
                     {/* Bottom section: User Profile + Logout */}
                     <div className={`shrink-0 border-t border-white/10 ${isCollapsed ? 'px-2' : 'px-4'} py-4`}>
                         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-2'}`}>
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#E5B59E] to-[#C8EE44] flex items-center justify-center text-[#13141F] shrink-0 text-sm font-bold shadow-md">
-                                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                            <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-[#13141F] shrink-0 text-sm font-bold shadow-md relative bg-gradient-to-br from-[#E5B59E] to-[#C8EE44]">
+                                {user?.profile_picture_url ? (
+                                    <img 
+                                        src={user.profile_picture_url} 
+                                        alt="User Avatar" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span>{user?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
+                                )}
                             </div>
                             {!isCollapsed && (
                                 <>

@@ -385,7 +385,7 @@ function ReadonlyParagraph({ value, placeholder }: { value?: string; placeholder
 }
 
 export default function StudentProfile() {
-    const { user } = useAuth()
+    const { user, checkAuthStatus } = useAuth()
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
@@ -398,6 +398,7 @@ export default function StudentProfile() {
 
     // Resume Upload States
     const [resumeFile, setResumeFile] = useState<File | null>(null)
+    const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
     const [uploadSuccess, setUploadSuccess] = useState(false)
     const profileStrength = calculateProfileStrength(profileData)
@@ -498,6 +499,57 @@ export default function StudentProfile() {
             console.error("Error uploading resume:", error)
             toast.error(error.message || "Failed to upload resume")
             setIsUploading(false)
+        }
+    }
+
+    const handleProfilePictureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (!file) return
+
+        setIsUploadingPhoto(true)
+
+        try {
+            const formData = new FormData()
+            formData.append("file", file)
+
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1"
+            const response = await fetch(`${apiUrl}/student/profile-picture/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                },
+                body: formData
+            })
+
+            if (!response.ok) {
+                const errorData = await response.json()
+                throw new Error(errorData.detail || "Upload failed")
+            }
+
+            const data = await response.json()
+            const profilePictureUrl = data.profile_picture_url || data.url
+            if (!profilePictureUrl) {
+                throw new Error("Profile picture uploaded, but no image URL was returned")
+            }
+            toast.success("Profile picture updated successfully!")
+            
+            setProfileData((prev: any) => ({ ...prev, profile_picture_url: profilePictureUrl }))
+            
+            const cachedUserRaw = localStorage.getItem('user_data')
+            if (cachedUserRaw) {
+                const cachedUser = JSON.parse(cachedUserRaw)
+                cachedUser.profile_picture_url = profilePictureUrl
+                localStorage.setItem('user_data', JSON.stringify(cachedUser))
+            }
+            
+            if (checkAuthStatus) {
+                checkAuthStatus()
+            }
+        } catch (error: any) {
+            console.error("Error uploading profile picture:", error)
+            toast.error(error.message || "Failed to upload profile picture")
+        } finally {
+            setIsUploadingPhoto(false)
         }
     }
 
@@ -837,6 +889,50 @@ export default function StudentProfile() {
                             </div>
                             Personal Information
                         </h3>
+
+                        {/* Profile Picture Upload Section */}
+                        <div className="flex flex-col sm:flex-row items-center gap-6 mb-8 pb-6 border-b border-gray-200/50 dark:border-white/5">
+                            <div className="relative w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-[#1F2937] shadow-lg bg-gradient-to-br from-[#E5B59E] to-[#C8EE44] flex items-center justify-center text-[#13141F] text-2xl font-bold group shrink-0">
+                                {profileData?.profile_picture_url ? (
+                                    <img 
+                                        src={profileData.profile_picture_url} 
+                                        alt="Profile Preview" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span>{profileData?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
+                                )}
+                                
+                                {isEditing && (
+                                    <label className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-white text-[10px] font-bold cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <UploadCloud className="w-5.5 h-5.5 mb-1 text-white" />
+                                        <span>Upload</span>
+                                        <input 
+                                            type="file" 
+                                            accept="image/*" 
+                                            className="hidden" 
+                                            onChange={handleProfilePictureUpload}
+                                            disabled={isUploadingPhoto}
+                                        />
+                                    </label>
+                                )}
+                                
+                                {isUploadingPhoto && (
+                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                        <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="text-center sm:text-left">
+                                <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200">Profile Image</h4>
+                                <p className="text-xs text-gray-500 dark:text-[#A8B3CF] mt-1 leading-relaxed">
+                                    {isEditing 
+                                        ? "Hover/Click on the avatar circle to upload your photo (PNG, JPG, max 5MB)." 
+                                        : "Click 'Edit Profile' to change your profile picture."
+                                    }
+                                </p>
+                            </div>
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
