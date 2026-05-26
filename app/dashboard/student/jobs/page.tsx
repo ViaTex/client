@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Modal } from "@/components/ui/modal"
 import { AnimatePresence, motion, type Variants } from "framer-motion"
 import { JobCard } from "@/components/ui/job-card"
-import { Filter, Search, MapPin, Building, Briefcase, IndianRupee, Clock, ChevronDown, CheckCircle2, ChevronRight, CheckSquare, Plus, ExternalLink, CalendarDays, Globe, Contact, FileText, ClipboardList, ShieldCheck, GraduationCap, FolderKanban, FileBadge2, Gift } from "lucide-react"
+import { Filter, Search, MapPin, Building, Briefcase, IndianRupee, Clock, ChevronDown, CheckCircle2, ChevronRight, CheckSquare, Plus, ExternalLink, CalendarDays, Globe, Contact, FileText, ClipboardList, ShieldCheck, GraduationCap, FolderKanban, FileBadge2, Gift, User, Building2, ArrowLeft, Send } from "lucide-react"
 import { JobDetails } from "@/components/ui/job-details"
 
 type JobFilter = "all" | "jobs" | "internships"

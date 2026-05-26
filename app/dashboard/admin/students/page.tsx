@@ -1,24 +1,19 @@
 "use client"
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
     Plus,
-    Search,
-    Edit,
-    Trash2,
     Users,
-    AlertCircle,
     Check,
-    X,
-    MoreVertical,
-    Download
+    X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import toast from 'react-hot-toast'
 import { adminService } from '@/services/admin.service'
+import CustomDataTable, { ColumnDef } from '@/components/common/customeDataTable'
 
 interface Student {
     id: string
@@ -55,7 +50,6 @@ export default function AdminStudentsPage() {
     const [showEditModal, setShowEditModal] = useState(false)
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
     const [pagination, setPagination] = useState({ skip: 0, limit: 20, total: 0 })
-    const [dropdownOpen, setDropdownOpen] = useState<string | null>(null)
 
     // Fetch students
     const fetchStudents = useCallback(async () => {
@@ -162,6 +156,63 @@ export default function AdminStudentsPage() {
         return colors[status as keyof typeof colors] || colors.inactive
     }
 
+    const columns = useMemo<ColumnDef<Student>[]>(() => [
+        {
+            accessorKey: 'name',
+            header: 'Name',
+            enableSorting: true,
+            cell: ({ row }) => (
+                <p className="font-semibold text-gray-900 dark:text-white">{row.original.name}</p>
+            )
+        },
+        {
+            accessorKey: 'email',
+            header: 'Email',
+            enableSorting: true,
+            cell: ({ row }) => (
+                <span className="text-gray-600 dark:text-gray-400">{row.original.email}</span>
+            )
+        },
+        {
+            accessorKey: 'phone',
+            header: 'Phone',
+            cell: ({ row }) => (
+                <span className="text-gray-600 dark:text-gray-400">{row.original.phone || '-'}</span>
+            )
+        },
+        {
+            accessorKey: 'status',
+            header: 'Status',
+            enableSorting: true,
+            cell: ({ row }) => (
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(row.original.status)}`}>
+                    {row.original.status}
+                </span>
+            )
+        },
+        {
+            accessorKey: 'email_verified',
+            header: 'Verified',
+            cell: ({ row }) => (
+                row.original.email_verified ? (
+                    <Check className="w-5 h-5 text-green-600" />
+                ) : (
+                    <X className="w-5 h-5 text-red-600" />
+                )
+            )
+        },
+        {
+            accessorKey: 'created_at',
+            header: 'Created',
+            enableSorting: true,
+            cell: ({ row }) => (
+                <span className="text-gray-600 dark:text-gray-400">
+                    {new Date(row.original.created_at).toLocaleDateString()}
+                </span>
+            )
+        }
+    ], [])
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -217,25 +268,39 @@ export default function AdminStudentsPage() {
                 </motion.div>
             )}
 
-            {/* Filters and Search */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-gray-200 dark:border-gray-700 space-y-4"
-            >
-                <div className="flex flex-col lg:flex-row gap-4">
-                    <div className="flex-1">
-                        <Input
-                            placeholder="Search by name, email, or phone..."
-                            value={searchTerm}
-                            onChange={(e) => {
-                                setSearchTerm(e.target.value)
-                                setPagination(prev => ({ ...prev, skip: 0 }))
-                            }}
-                            className="w-full"
-                        />
-                    </div>
+            {/* Custom Data Table */}
+            <CustomDataTable
+                columns={columns}
+                data={students}
+                loading={loading}
+                error={error}
+                totalCount={pagination.total}
+                pageSize={pagination.limit}
+                pageIndex={Math.floor(pagination.skip / pagination.limit)}
+                onPaginationChange={(pageIdx, size) => {
+                    setPagination({
+                        skip: pageIdx * size,
+                        limit: size,
+                        total: pagination.total
+                    })
+                }}
+                searchTerm={searchTerm}
+                onSearchChange={(term) => {
+                    setSearchTerm(term)
+                    setPagination(prev => ({ ...prev, skip: 0 }))
+                }}
+                searchPlaceholder="Search by name, email, or phone..."
+                showExport={true}
+                onExport={handleExportCSV}
+                enableRowActions={true}
+                onEditRow={(student) => {
+                    setSelectedStudent(student)
+                    setShowEditModal(true)
+                }}
+                onDeleteRow={(student) => {
+                    handleDelete(student.id)
+                }}
+                customHeaderActions={
                     <Select 
                         value={statusFilter || ''} 
                         onChange={(e) => {
@@ -253,165 +318,8 @@ export default function AdminStudentsPage() {
                         ]}
                         className="w-full lg:w-48"
                     />
-                    <Button 
-                        onClick={handleExportCSV}
-                        variant="outline"
-                        className="flex items-center gap-2"
-                    >
-                        <Download className="w-4 h-4" />
-                        Export
-                    </Button>
-                </div>
-            </motion.div>
-
-            {/* Students Table */}
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
-            >
-                {/* Loading State */}
-                {loading && (
-                    <div className="p-8 flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    </div>
-                )}
-
-                {/* Error State */}
-                {error && !loading && (
-                    <div className="p-6 bg-red-50 dark:bg-red-900/20 border-t border-red-200 dark:border-red-700">
-                        <div className="flex items-center gap-3">
-                            <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
-                            <p className="text-red-600 dark:text-red-400">{error}</p>
-                        </div>
-                    </div>
-                )}
-
-                {/* Empty State */}
-                {!loading && students.length === 0 && (
-                    <div className="p-12 text-center">
-                        <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                        <p className="text-gray-600 dark:text-gray-400 text-lg">No students found</p>
-                        <p className="text-gray-500 dark:text-gray-500 text-sm mt-1">Try adjusting your search or filters</p>
-                    </div>
-                )}
-
-                {/* Students List */}
-                {!loading && students.length > 0 && (
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Name</th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Email</th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Phone</th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Verified</th>
-                                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-900 dark:text-white">Created</th>
-                                    <th className="px-6 py-3 text-right text-sm font-semibold text-gray-900 dark:text-white">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                                {students.map((student) => (
-                                    <tr key={student.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <p className="font-medium text-gray-900 dark:text-white">{student.name}</p>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">{student.email}</p>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">{student.phone || '-'}</p>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(student.status)}`}>
-                                                {student.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            {student.email_verified ? (
-                                                <Check className="w-5 h-5 text-green-600" />
-                                            ) : (
-                                                <X className="w-5 h-5 text-red-600" />
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                {new Date(student.created_at).toLocaleDateString()}
-                                            </p>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="relative">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => setDropdownOpen(dropdownOpen === student.id ? null : student.id)}
-                                                    className="relative"
-                                                >
-                                                    <MoreVertical className="w-4 h-4" />
-                                                </Button>
-                                                {dropdownOpen === student.id && (
-                                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
-                                                        <button
-                                                            className="w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 text-gray-700 dark:text-gray-300"
-                                                            onClick={() => {
-                                                                setSelectedStudent(student)
-                                                                setShowEditModal(true)
-                                                                setDropdownOpen(null)
-                                                            }}
-                                                        >
-                                                            <Edit className="w-4 h-4" />
-                                                            Edit
-                                                        </button>
-                                                        <button
-                                                            className="w-full text-left px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 text-red-600 dark:text-red-400"
-                                                            onClick={() => {
-                                                                handleDelete(student.id)
-                                                                setDropdownOpen(null)
-                                                            }}
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                            Delete
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                )}
-
-                {/* Pagination */}
-                {!loading && students.length > 0 && (
-                    <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Showing {pagination.skip + 1} to {Math.min(pagination.skip + pagination.limit, pagination.total)} of {pagination.total}
-                        </p>
-                        <div className="flex gap-2">
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={pagination.skip === 0}
-                                onClick={() => setPagination(prev => ({ ...prev, skip: Math.max(0, prev.skip - prev.limit) }))}
-                            >
-                                Previous
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                disabled={pagination.skip + pagination.limit >= pagination.total}
-                                onClick={() => setPagination(prev => ({ ...prev, skip: prev.skip + prev.limit }))}
-                            >
-                                Next
-                            </Button>
-                        </div>
-                    </div>
-                )}
-            </motion.div>
+                }
+            />
 
             {/* Create/Edit Modal */}
             <AnimatePresence>

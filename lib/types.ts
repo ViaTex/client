@@ -16,6 +16,9 @@ export interface JobPayload {
     salary_min?: number
     salary_max?: number
     salary_currency?: string
+    ctc_min?: number
+    ctc_max?: number
+    ctc_currency?: string
     ctc_with_probation?: string
     ctc_after_probation?: string
     experience_min?: number
