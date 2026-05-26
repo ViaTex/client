@@ -1,7 +1,7 @@
 "use client"
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import {
     LayoutDashboard,
     FileText,
@@ -23,11 +23,17 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 import { useState } from 'react'
 
-interface NavigationItem {
+interface NavigationSubItem {
     name: string
     href: string
+}
+
+interface NavigationItem {
+    name: string
+    href?: string
     icon: any
     badge?: number
+    subItems?: NavigationSubItem[]
 }
 
 const studentNavigation: NavigationItem[] = [
@@ -67,7 +73,16 @@ const collegeNavigation: NavigationItem[] = [
 
 const adminNavigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/dashboard/admin', icon: LayoutDashboard },
-    { name: 'Manage Users', href: '/dashboard/admin/users', icon: Users },
+    {
+        name: 'Manage Users',
+        icon: Users,
+        subItems: [
+            { name: 'Student', href: '/dashboard/admin/users/student' },
+            { name: 'Corporate', href: '/dashboard/admin/users/corporate' },
+            { name: 'College', href: '/dashboard/admin/users/college' },
+            { name: 'Mentor', href: '/dashboard/admin/users/mentor' },
+        ],
+    },
     { name: 'Institutions', href: '/dashboard/admin/institutions', icon: Building },
     { name: 'Job Management', href: '/dashboard/admin/jobs', icon: Briefcase },
     { name: 'System Logs', href: '/dashboard/admin/logs', icon: Shield },
@@ -84,7 +99,23 @@ type SidebarProps = {
 
 export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen }: SidebarProps) {
     const pathname = usePathname()
+    const searchParams = useSearchParams()
     const { user, logout } = useAuth()
+
+    const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
+        'Manage Users': true, // Default to true so it is initially expanded
+    })
+
+    const toggleMenu = (name: string) => {
+        setExpandedMenus((prev) => ({
+            ...prev,
+            [name]: !prev[name],
+        }))
+    }
+
+    const checkSubItemActive = (href: string) => {
+        return pathname === href || pathname.startsWith(href + '/')
+    }
 
     // Select navigation based on user type, defaulting to student
     const getNavigationFields = () => {
@@ -152,12 +183,94 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
                     <div className={`flex-1 overflow-y-auto ${isCollapsed ? 'px-2' : 'px-4'} py-4`}>
                         <nav className="flex flex-col gap-2">
                             {navigation.map((item) => {
-                                const isActive = pathname === item.href
+                                const hasSubItems = !!item.subItems
+                                const isExpanded = expandedMenus[item.name]
+                                const isAnySubActive = hasSubItems && item.subItems?.some(sub => checkSubItemActive(sub.href))
+                                const isActive = hasSubItems ? isAnySubActive : (pathname === item.href)
                                 const Icon = item.icon
+
+                                if (hasSubItems) {
+                                    return (
+                                        <div key={item.name} className="flex flex-col">
+                                            <button
+                                                onClick={() => {
+                                                    if (isCollapsed) {
+                                                        setIsCollapsed(false)
+                                                        setExpandedMenus((prev) => ({ ...prev, [item.name]: true }))
+                                                    } else {
+                                                        toggleMenu(item.name)
+                                                    }
+                                                }}
+                                                className={`relative flex items-center gap-3.5 w-full ${isCollapsed ? 'px-3 justify-center' : 'px-5'} py-3.5 rounded-full text-[14px] font-semibold transition-all duration-200 group
+                                                    ${isAnySubActive
+                                                        ? 'text-white bg-white/[0.04]'
+                                                        : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
+                                                    }`}
+                                                title={isCollapsed ? item.name : undefined}
+                                            >
+                                                <Icon
+                                                    className={`w-[20px] h-[20px] shrink-0 ${isAnySubActive
+                                                        ? 'text-[#C8EE44]'
+                                                        : 'text-white/50 group-hover:text-white/80'
+                                                        }`}
+                                                    strokeWidth={isAnySubActive ? 2.5 : 2}
+                                                />
+                                                {!isCollapsed && (
+                                                    <>
+                                                        <span className="truncate">{item.name}</span>
+                                                        <ChevronDown
+                                                            className={`ml-auto w-4.5 h-4.5 text-white/40 transition-transform duration-200 group-hover:text-white/70
+                                                                ${isExpanded ? 'rotate-180' : ''}`}
+                                                        />
+                                                    </>
+                                                )}
+                                            </button>
+
+                                            {/* Sub-items with curved connector tree design */}
+                                            {!isCollapsed && isExpanded && (
+                                                <div className="relative pl-[48px] flex flex-col gap-1 mt-1.5 transition-all duration-200">
+                                                    {item.subItems?.map((subItem, idx, arr) => {
+                                                        const isSubActive = checkSubItemActive(subItem.href)
+                                                        const isLast = idx === arr.length - 1
+                                                        return (
+                                                            <Link
+                                                                key={subItem.name}
+                                                                href={subItem.href}
+                                                                onClick={() => setIsMobileOpen(false)}
+                                                                className="relative flex items-center h-10 group"
+                                                            >
+                                                                {/* Vertical line segment (top half) */}
+                                                                <div className="absolute left-[-18px] top-0 w-[1.5px] h-1/2 bg-white/15 group-hover:bg-white/35 transition-colors" />
+
+                                                                {/* Vertical line segment (bottom half) - omit for last element */}
+                                                                {!isLast && (
+                                                                    <div className="absolute left-[-18px] top-1/2 w-[1.5px] h-1/2 bg-white/15 group-hover:bg-white/35 transition-colors" />
+                                                                )}
+
+                                                                {/* Curved branch pointing right */}
+                                                                <div className="absolute left-[-18px] top-1/2 w-4 h-4 border-l-[1.5px] border-b-[1.5px] border-white/15 rounded-bl-[6px] -translate-y-1/2 group-hover:border-white/35 transition-colors" />
+
+                                                                <span className={`text-[13px] font-semibold transition-colors duration-150 pl-1
+                                                                    ${isSubActive
+                                                                        ? 'text-[#C8EE44]'
+                                                                        : 'text-white/50 group-hover:text-white'
+                                                                    }`}
+                                                                >
+                                                                    {subItem.name}
+                                                                </span>
+                                                            </Link>
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )
+                                }
+
                                 return (
                                     <Link
                                         key={item.name}
-                                        href={item.href}
+                                        href={item.href || '#'}
                                         onClick={() => setIsMobileOpen(false)}
                                         className={`relative flex items-center gap-3.5 ${isCollapsed ? 'px-3 justify-center' : 'px-5'} py-3.5 rounded-full text-[14px] font-semibold transition-all duration-200 group
                                             ${isActive
