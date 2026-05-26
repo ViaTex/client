@@ -94,7 +94,7 @@ export default function DashboardLayout({
                 className={
                     isSkillExamMode
                         ? 'flex min-h-0 flex-1 flex-col overflow-hidden pt-0 pl-0'
-                        : `pt-[72px] pl-0 lg:pl-[var(--sidebar-w)] ${layoutTransitionClass}`
+                        : `pt-[88px] pl-0 lg:pl-[var(--sidebar-w)] ${layoutTransitionClass}`
                 }
             >
                 <div
