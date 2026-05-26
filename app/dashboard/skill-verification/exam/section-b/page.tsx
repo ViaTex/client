@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { apiClient } from '@/lib/api'
+import { examService } from '@/services/exam.service'
 import { Sparkles, X } from 'lucide-react'
 
 const stepToRoute: Record<string, string> = {
@@ -46,14 +46,14 @@ export default function SectionBPage() {
             }
 
             try {
-                const status = await apiClient.getExamSessionStatus(sessionId)
+                const status = await examService.getSessionStatus(sessionId)
                 const expectedRoute = stepToRoute[status?.current_step]
                 if (expectedRoute && expectedRoute !== '/dashboard/skill-verification/exam/section-b') {
                     router.replace(expectedRoute)
                     return
                 }
 
-                const payload = await apiClient.getSectionBQuestion(sessionId)
+                const payload = await examService.getSectionBQuestion(sessionId)
                 const nextPayload = payload?.question_payload || null
                 setQuestionPayload(nextPayload)
                 setResponseId(payload?.response_id || '')
@@ -92,7 +92,7 @@ export default function SectionBPage() {
         setIsSubmitting(true)
         setError(null)
         try {
-            await apiClient.submitSectionBResponse(sessionId, {
+            await examService.submitSectionBResponse(sessionId, {
                 response_id: responseId,
                 mcq_answers: questionPayload.mcqs.map((item) => ({
                     id: item.id,
@@ -142,7 +142,7 @@ export default function SectionBPage() {
         setIsChatLoading(true)
 
         try {
-            const result = await apiClient.chatExamResponse(
+            const result = await examService.chatExamResponse(
                 localStorage.getItem('active_exam_session_id') || '',
                 responseId,
                 {

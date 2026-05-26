@@ -2,7 +2,8 @@
 
 import { ReactNode, useEffect, useMemo, useState } from "react"
 import { motion, type Variants } from "framer-motion"
-import { apiClient, JobApplicationItem } from "@/lib/api"
+import { JobApplicationItem } from "@/lib/types"
+import { corporateService } from "@/services/corporate.service"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Modal } from "@/components/ui/modal"
@@ -538,7 +539,7 @@ export default function CorporateApplicantsPage() {
             setLoading(true)
             setError("")
             try {
-                const data = await apiClient.getCorporateApplicants()
+                const data = await corporateService.getApplicants()
                 setApplications(data)
             } catch (error) {
                 setError(getErrorMessage(error, "Failed to load applicants"))
@@ -665,7 +666,7 @@ export default function CorporateApplicantsPage() {
         setError("")
         setSuccessMessage("")
         try {
-            const updated = await apiClient.updateCorporateApplicant(selectedApplication.id, { status: draftStatus })
+            const updated = await corporateService.updateApplicant(selectedApplication.id, { status: draftStatus })
             setApplications((current) => current.map((item) => (item.id === updated.id ? updated : item)))
             setSelectedApplication(updated)
             setSuccessMessage(`Application status updated to ${formatStatusLabel(updated.status)}.`)
@@ -683,7 +684,7 @@ export default function CorporateApplicantsPage() {
         setError("")
         setSuccessMessage("")
         try {
-            const updated = await apiClient.updateCorporateApplicant(selectedApplication.id, { status })
+            const updated = await corporateService.updateApplicant(selectedApplication.id, { status })
             setApplications((current) => current.map((item) => (item.id === updated.id ? updated : item)))
             setSelectedApplication(updated)
             setDraftStatus(status)
@@ -702,7 +703,7 @@ export default function CorporateApplicantsPage() {
         setError("")
         setSuccessMessage("")
         try {
-            const updated = await apiClient.updateCorporateApplicant(pendingMove.application.id, { status: pendingMove.status })
+            const updated = await corporateService.updateApplicant(pendingMove.application.id, { status: pendingMove.status })
             setApplications((current) => current.map((item) => (item.id === updated.id ? updated : item)))
             setPendingMove(null)
             setSuccessMessage(`Application moved to ${formatStatusLabel(updated.status)}.`)
@@ -719,7 +720,7 @@ export default function CorporateApplicantsPage() {
         setError("")
         setSuccessMessage("")
         try {
-            await apiClient.deleteCorporateApplicant(pendingRemove.id)
+            await corporateService.deleteApplicant(pendingRemove.id)
             setApplications((current) => current.filter((item) => item.id !== pendingRemove.id))
             setPendingRemove(null)
             setSuccessMessage("Application removed.")
@@ -752,7 +753,7 @@ export default function CorporateApplicantsPage() {
         setError("")
         setSuccessMessage("")
         try {
-            const updated = await apiClient.uploadCorporateOfferLetter(selectedApplication.id, offerLetterFile)
+            const updated = await corporateService.uploadOfferLetter(selectedApplication.id, offerLetterFile)
             setApplications((current) => current.map((item) => (item.id === updated.id ? updated : item)))
             setSelectedApplication(updated)
             setOfferLetterFile(null)

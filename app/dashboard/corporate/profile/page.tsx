@@ -1,7 +1,7 @@
 "use client"
 
 import { ChangeEvent, FormEvent, ReactNode, useEffect, useMemo, useRef, useState } from "react"
-import { apiClient } from "@/lib/api"
+import { corporateService } from "@/services/corporate.service"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -148,7 +148,7 @@ export default function CorporateProfilePage() {
             setLoading(true)
             setError("")
             try {
-                const data = await apiClient.getCorporateProfile()
+                const data = await corporateService.getProfile()
                 setForm({
                     email: data.email || "",
                     name: data.name || "",
@@ -182,7 +182,7 @@ export default function CorporateProfilePage() {
         setMessage("")
         setError("")
         try {
-            await apiClient.updateCorporateProfile({
+            await corporateService.updateProfile({
                 name: form.name || undefined,
                 bio: form.bio || undefined,
                 company_name: form.company_name || undefined,

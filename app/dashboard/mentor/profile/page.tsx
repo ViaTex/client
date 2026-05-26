@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { apiClient, MentorProfile } from '@/lib/api'
+import { MentorProfile } from '@/lib/types'
+import { mentorService } from '@/services/mentor.service'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -14,7 +15,7 @@ export default function MentorProfilePage() {
     useEffect(() => {
         const loadProfile = async () => {
             try {
-                const data = await apiClient.getMentorProfile()
+                const data = await mentorService.getProfile()
                 setProfile(data)
             } catch {
                 toast.error('Unable to load mentor profile')
@@ -37,7 +38,7 @@ export default function MentorProfilePage() {
                 motivation: profile.motivation,
                 expertise_areas: profile.expertise_areas,
             }
-            const updated = await apiClient.updateMentorProfile(payload)
+            const updated = await mentorService.updateProfile(payload)
             setProfile(updated)
             toast.success('Mentor profile updated')
         } catch {

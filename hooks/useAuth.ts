@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { UserType } from '@/types/auth'
-import { apiClient } from '@/lib/api'
+import { authService } from '@/services/auth.service'
 
 export interface User {
     id: string
@@ -94,7 +94,7 @@ export function useAuth() {
     const logout = async () => {
         try {
             // Notify the backend (best-effort; don't block user logout if it fails)
-            await apiClient.logout()
+            await authService.logout()
         } catch (e) {
             // Ignore errors — we still clear local state
         } finally {

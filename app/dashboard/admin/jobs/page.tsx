@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { apiClient, JobItem } from "@/lib/api"
+import { JobItem } from "@/lib/api"
+import { jobService } from "@/services/job.service"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CheckCircle, Clock } from "lucide-react"
@@ -29,7 +30,7 @@ export default function AdminJobsPage() {
         setLoading(true)
         setError("")
         try {
-            const data = await apiClient.getJobs(false) // Admin can see all jobs
+            const data = await jobService.getAll(false) // Admin can see all jobs
             setJobs(data)
         } catch (e: any) {
             setError(e?.response?.data?.detail || "Failed to load jobs")
@@ -44,7 +45,7 @@ export default function AdminJobsPage() {
 
     const handleApprove = async (jobId: string) => {
         try {
-            await apiClient.approveJob(jobId)
+            await jobService.approve(jobId)
             // Update local state instead of full reload for better UX
             setJobs(jobs.map(job => job.id === jobId ? { ...job, is_public: true } : job))
         } catch (e: any) {

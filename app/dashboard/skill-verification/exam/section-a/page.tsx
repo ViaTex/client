@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { apiClient } from '@/lib/api'
+import { examService } from '@/services/exam.service'
 import { useAuth } from '@/hooks/useAuth'
 import { Camera, Circle, Mic, StopCircle, Timer, Video } from 'lucide-react'
 
@@ -261,7 +261,7 @@ export default function SectionAPage() {
             formData.append('student_id', studentId)
             formData.append('exam_level', 'smart_talent')
 
-            const response = await apiClient.uploadSectionA(formData)
+            const response = await examService.uploadSectionA(formData)
             const sessionId = String(response?.session_id || '')
 
             if (!sessionId) {

@@ -30,7 +30,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
-import { apiClient } from '@/lib/api'
+import { studentService } from '@/services/student.service'
 import { toast } from 'react-hot-toast'
 
 type ProjectStatus = 'completed' | 'in_progress'
@@ -409,7 +409,7 @@ export default function StudentProfile() {
     const fetchProfile = async () => {
         try {
             setIsLoading(true)
-            const data = await apiClient.getStudentProfile()
+            const data = await studentService.getProfile()
             const hydrated = hydrateDynamicSections(data ?? {})
             setProfileData(hydrateDynamicSections(data ?? {}))
             setShowNudge(calculateProfileStrength(hydrated) < 100)
@@ -441,7 +441,7 @@ export default function StudentProfile() {
             setIsSaving(true)
             const { experience, ...payload } = profileData || {}
             const experiencePayload = flattenExperienceGroups(normalizeExperienceGroups(experience))
-            const updated = await apiClient.updateStudentProfile({ ...payload, experience: experiencePayload })
+            const updated = await studentService.updateProfile({ ...payload, experience: experiencePayload })
             const hydrated = hydrateDynamicSections(updated ?? { ...payload, experience: experiencePayload })
             setProfileData(hydrateDynamicSections(updated ?? { ...payload, experience: experiencePayload }))
             toast.success("Profile updated successfully!")
@@ -656,14 +656,14 @@ export default function StudentProfile() {
             const { id, ...payload } = educationDraft
 
             if (isAddingEducation) {
-                const created = await apiClient.addStudentEducation(payload)
+                const created = await studentService.addEducation(payload)
                 setProfileData((prev: any) => ({
                     ...prev,
                     education: [created, ...(prev?.education ?? [])],
                 }))
                 toast.success('Education added')
             } else if (editingEducationId) {
-                const updated = await apiClient.updateStudentEducation(editingEducationId, payload)
+                const updated = await studentService.updateEducation(editingEducationId, payload)
                 setProfileData((prev: any) => ({
                     ...prev,
                     education: normalizeEducation(prev?.education).map((entry) =>
@@ -685,7 +685,7 @@ export default function StudentProfile() {
     const deleteEducation = async (educationId: string) => {
         try {
             setIsEducationSaving(true)
-            await apiClient.deleteStudentEducation(educationId)
+            await studentService.deleteEducation(educationId)
             setProfileData((prev: any) => ({
                 ...prev,
                 education: normalizeEducation(prev?.education).filter((entry) => entry.id !== educationId),

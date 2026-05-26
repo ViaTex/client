@@ -31,7 +31,7 @@ import {
     HeartCrackIcon
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import { apiClient } from '@/lib/api'
+import { studentService } from '@/services/student.service'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { useAuth } from '@/hooks/useAuth'
@@ -116,8 +116,8 @@ export default function StudentDashboard() {
             try {
                 setProfileLoading(true)
                 const [profileData, resumeStatusData] = await Promise.all([
-                    apiClient.getStudentProfile(),
-                    apiClient.getResumeStatus().catch(() => null),
+                    studentService.getProfile(),
+                    studentService.getResumeStatus().catch(() => null),
                 ])
                 const data = profileData
                 setProfile(data)

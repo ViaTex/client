@@ -2,7 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
-import { apiClient, SkillEvaluationItem } from '@/lib/api'
+import { SkillEvaluationItem } from '@/lib/types'
+import { mentorService } from '@/services/mentor.service'
 import { Star, CalendarClock, ClipboardCheck, UserRound } from 'lucide-react'
 
 export default function MentorDashboardPage() {
@@ -13,7 +14,7 @@ export default function MentorDashboardPage() {
     useEffect(() => {
         const load = async () => {
             try {
-                const data = await apiClient.getMentorEvaluations()
+                const data = await mentorService.getEvaluations()
                 setEvaluations(data || [])
             } catch {
                 setEvaluations([])

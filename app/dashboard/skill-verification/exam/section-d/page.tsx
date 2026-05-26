@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { apiClient } from '@/lib/api'
+import { examService } from '@/services/exam.service'
 import { Camera, Circle, Mic, StopCircle, Video } from 'lucide-react'
 
 const stepToRoute: Record<string, string> = {
@@ -44,14 +44,14 @@ export default function SectionDPage() {
             }
 
             try {
-                const status = await apiClient.getExamSessionStatus(sessionId)
+                const status = await examService.getSessionStatus(sessionId)
                 const expectedRoute = stepToRoute[status?.current_step]
                 if (expectedRoute && expectedRoute !== '/dashboard/skill-verification/exam/section-d') {
                     router.replace(expectedRoute)
                     return
                 }
 
-                const questionPayload = await apiClient.getSectionDQuestion(sessionId)
+                const questionPayload = await examService.getSectionDQuestion(sessionId)
                 const rawQuestion = questionPayload?.question_text
                 const questionText =
                     typeof rawQuestion === 'string'
@@ -170,7 +170,7 @@ export default function SectionDPage() {
             formData.append('media_file', new File([blob], fileName, { type: blob.type || 'video/webm' }))
             formData.append('response_id', responseId)
 
-            await apiClient.submitSectionDResponse(sessionId, formData)
+            await examService.submitSectionDResponse(sessionId, formData)
 
             localStorage.setItem('skill_verification_under_review', '1')
             router.replace('/dashboard/skill-verification')

@@ -2,7 +2,8 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
-import { apiClient } from "@/lib/api"
+import { corporateService } from "@/services/corporate.service"
+import { jobService } from "@/services/job.service"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
@@ -93,8 +94,8 @@ export default function CreateJobPage() {
     }, [currentStep, currentStepId, canGoNext])
 
     useEffect(() => {
-        apiClient
-            .getCorporateProfile()
+        corporateService
+            .getProfile()
             .then((profile) => {
                 setCompanyName(profile.company_name || "")
                 setCompanyWebsite(profile.website_url || "")
@@ -112,7 +113,7 @@ export default function CreateJobPage() {
         setSuccess("")
 
         try {
-            await apiClient.createJob({
+            await jobService.create({
                 title,
                 description,
                 requirements: requirements || undefined,

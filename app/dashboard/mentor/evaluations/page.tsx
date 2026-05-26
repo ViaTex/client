@@ -1,7 +1,8 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import { apiClient, SkillEvaluationItem } from '@/lib/api'
+import { SkillEvaluationItem } from '@/lib/types'
+import { mentorService } from '@/services/mentor.service'
 
 export default function MentorEvaluationsPage() {
     const [loading, setLoading] = useState(true)
@@ -10,7 +11,7 @@ export default function MentorEvaluationsPage() {
     useEffect(() => {
         const load = async () => {
             try {
-                const data = await apiClient.getMentorEvaluations()
+                const data = await mentorService.getEvaluations()
                 setEvaluations(data || [])
             } catch {
                 setEvaluations([])

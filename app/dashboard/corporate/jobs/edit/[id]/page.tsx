@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { apiClient } from "@/lib/api"
+import { jobService } from "@/services/job.service"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Loader2 } from "lucide-react"
@@ -87,7 +87,7 @@ export default function EditJobPage() {
     useEffect(() => {
         if (!jobId) return;
 
-        apiClient.getJobById(jobId)
+        jobService.getById(jobId)
             .then((job) => {
                 setTitle(job.title || "")
                 setDescription(job.description || "")
@@ -155,7 +155,7 @@ export default function EditJobPage() {
         setSuccess("")
 
         try {
-            await apiClient.updateJob(jobId, {
+            await jobService.update(jobId, {
                 title,
                 description,
                 requirements: requirements || undefined,

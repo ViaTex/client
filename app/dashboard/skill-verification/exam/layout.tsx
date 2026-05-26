@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Modal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
-import { apiClient } from '@/lib/api'
+import { examService } from '@/services/exam.service'
 
 export default function SkillVerificationExamLayout({
     children,
@@ -58,7 +58,7 @@ export default function SkillVerificationExamLayout({
             const sessionId = localStorage.getItem('active_exam_session_id')
             if (sessionId) {
                 try {
-                    await apiClient.abandonExam(sessionId)
+                    await examService.abandon(sessionId)
                 } catch {
                     // Best-effort abandon call.
                 }

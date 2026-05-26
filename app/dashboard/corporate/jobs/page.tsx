@@ -2,7 +2,8 @@
 
 import { ReactNode, useEffect, useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { apiClient, JobItem } from "@/lib/api"
+import { JobItem } from "@/lib/api"
+import { jobService } from "@/services/job.service"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Filter, MoreVertical, Plus, Briefcase, MapPin, IndianRupee, Clock, Clock3, Building, Users, CalendarDays, BadgeCheck, GraduationCap, Globe, Contact, FileText, BookOpen, ClipboardList, CheckSquare, Gift, ShieldCheck, FolderKanban, FileBadge2, Download, Trash2 } from "lucide-react"
@@ -542,7 +543,7 @@ export default function CorporateJobsPage() {
         setOpenMenuJobId(null)
         setError("")
         try {
-            await apiClient.deleteJob(job.id)
+            await jobService.remove(job.id)
             setJobs((current) => current.filter((item) => item.id !== job.id))
             if (selectedJob?.id === job.id) setSelectedJob(null)
         } catch (e: any) {
@@ -568,7 +569,7 @@ export default function CorporateJobsPage() {
         setLoading(true)
         setError("")
         try {
-            const data = await apiClient.getJobs(true)
+            const data = await jobService.getAll(true)
             setJobs(data)
         } catch (e: any) {
             setError(getErrorMessage(e?.response?.data?.detail, "Failed to load jobs"))

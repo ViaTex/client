@@ -8,7 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { Loader } from '@/components/ui/loader'
-import { apiClient } from '@/lib/api'
+import { studentService } from '@/services/student.service'
 import { 
     Upload, 
     FileText, 
@@ -120,8 +120,7 @@ export default function ResumePage() {
     // ✅ NEW: Fetch existing resume status
     const fetchResumeStatus = async () => {
         try {
-            const status = await apiClient.getResumeStatus()
-            const statusData = status?.data ?? status
+            const statusData = await studentService.getResumeStatus()
             setResumeStatus(statusData)
 
             // Reuse cached ATS result when already available.
@@ -216,7 +215,7 @@ export default function ResumePage() {
         setUploadProgress(0)
         
         try {
-            await apiClient.uploadResume(file, (progress) => {
+            await studentService.uploadResume(file, (progress) => {
                 setUploadProgress(progress)
             })
             
@@ -248,8 +247,7 @@ export default function ResumePage() {
         setError(null)
         
         try {
-            const latestStatusResponse = await apiClient.getResumeStatus()
-            const latestStatus = latestStatusResponse?.data ?? latestStatusResponse
+            const latestStatus = await studentService.getResumeStatus()
             setResumeStatus(latestStatus)
 
             const hasCustomJobDescription = Boolean(jobDescription.trim())
@@ -258,7 +256,7 @@ export default function ResumePage() {
                 return
             }
 
-            const result = await apiClient.getATSScore(jobDescription || undefined)
+            const result = await studentService.getATSScore(jobDescription || undefined)
             setAtsScore(result)
 
             // Refresh status so future visits can reuse the newly saved ATS data.

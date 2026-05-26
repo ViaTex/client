@@ -1,7 +1,9 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { apiClient, JobApplicationItem, JobItem } from "@/lib/api"
+import { JobApplicationItem, JobItem } from "@/lib/api"
+import { jobService } from "@/services/job.service"
+import { studentService } from "@/services/student.service"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Modal } from "@/components/ui/modal"
@@ -272,7 +274,7 @@ export default function StudentJobsPage() {
             setError("")
 
             try {
-                const jobsData = await withRequestTimeout(apiClient.getJobs(false), 45000, "Request timeout")
+                const jobsData = await withRequestTimeout(jobService.getAll(false), 45000, "Request timeout")
                 setJobs(jobsData || [])
 
                 // If jobs loaded successfully but no data, provide helpful message
@@ -282,7 +284,7 @@ export default function StudentJobsPage() {
 
                 // Load applications with timeout
                 try {
-                    const applicationsData = await withRequestTimeout(apiClient.getMyApplications(), 45000, "Applications request timeout")
+                    const applicationsData = await withRequestTimeout(jobService.getMyApplications(), 45000, "Applications request timeout")
                     setApplications(applicationsData || [])
                 } catch (e: any) {
                     setApplications([])
@@ -297,8 +299,8 @@ export default function StudentJobsPage() {
 
                 try {
                     const [profileData, resumeData] = await Promise.all([
-                        apiClient.getStudentProfile(),
-                        apiClient.getResumeStatus().catch(() => null),
+                        studentService.getProfile(),
+                        studentService.getResumeStatus().catch(() => null),
                     ])
                     setStudentProfile(profileData || null)
                     setResumeStatus(resumeData || null)
@@ -437,7 +439,7 @@ export default function StudentJobsPage() {
 
         try {
             const application = await withRequestTimeout(
-                apiClient.applyToJob(job.id, applicationData),
+                jobService.apply(job.id, applicationData),
                 30000,
                 "Application request timeout"
             )
