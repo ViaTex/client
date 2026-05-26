@@ -77,7 +77,7 @@ const adminNavigation: NavigationItem[] = [
         name: 'Manage Users',
         icon: Users,
         subItems: [
-            { name: 'Student', href: '/dashboard/admin/users/student' },
+            { name: 'Students', href: '/dashboard/admin/students' },
             { name: 'Corporate', href: '/dashboard/admin/users/corporate' },
             { name: 'College', href: '/dashboard/admin/users/college' },
             { name: 'Mentor', href: '/dashboard/admin/users/mentor' },
