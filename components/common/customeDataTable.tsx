@@ -561,6 +561,7 @@ const CustomDataTable = <TData extends Record<string, any>>({
     const [openAccordion, setOpenAccordion] = useState<string | null>(null)
 
     const tableContainerRef = useRef<HTMLDivElement>(null)
+    const onPaginationChangeRef = useRef<typeof onPaginationChange>(onPaginationChange)
 
     // ─── Effects ─────────────────────────────────────────────────────────────
 
@@ -569,6 +570,10 @@ const CustomDataTable = <TData extends Record<string, any>>({
             setPagination((prev) => ({ ...prev, pageIndex: pageIndexProp }))
         }
     }, [pageIndexProp])
+
+    useEffect(() => {
+        onPaginationChangeRef.current = onPaginationChange
+    }, [onPaginationChange])
 
     useEffect(() => {
         if (pageSizeProp !== undefined && pageSizeProp !== pagination.pageSize) {
@@ -616,10 +621,10 @@ const CustomDataTable = <TData extends Record<string, any>>({
         (!timeRange?.startDate || !timeRange?.endDate)
 
     useEffect(() => {
-        if (onPaginationChange) {
-            onPaginationChange(pagination.pageIndex, pagination.pageSize)
+        if (onPaginationChangeRef.current) {
+            onPaginationChangeRef.current(pagination.pageIndex, pagination.pageSize)
         }
-    }, [pagination.pageIndex, pagination.pageSize, onPaginationChange])
+    }, [pagination.pageIndex, pagination.pageSize])
 
     useEffect(() => {
         if (!onSelectionChange) return

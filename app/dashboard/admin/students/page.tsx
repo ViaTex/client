@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import {
     Plus,
     Users,
@@ -14,6 +14,7 @@ import { Select } from '@/components/ui/select'
 import toast from 'react-hot-toast'
 import { adminService } from '@/services/admin.service'
 import CustomDataTable, { ColumnDef } from '@/components/common/customeDataTable'
+import { CustomFormModal } from '@/components/common/custom-form-modal'
 
 interface Student {
     id: string
@@ -27,6 +28,23 @@ interface Student {
     state?: string
     city?: string
     gender?: string
+    bio?: string
+    dob?: string
+    technical_skills?: string
+    soft_skills?: string
+    certifications?: string
+    preferred_industry?: string
+    job_roles_of_interest?: string
+    location_preferences?: string
+    language_proficiency?: string
+    extracurricular_activities?: string
+    linkedin_profile?: string
+    github_profile?: string
+    personal_website?: string
+    resume_url?: string
+    profile_picture_url?: string
+    current_des_score?: number | string
+    badge?: string
 }
 
 interface StudentStats {
@@ -39,6 +57,64 @@ interface StudentStats {
     email_unverified: number
 }
 
+interface StudentFormData {
+    name: string
+    email: string
+    phone: string
+    password: string
+    status: 'active' | 'inactive' | 'suspended' | 'pending'
+    bio: string
+    dob: string
+    country: string
+    state: string
+    city: string
+    gender: string
+    technical_skills: string
+    soft_skills: string
+    certifications: string
+    preferred_industry: string
+    job_roles_of_interest: string
+    location_preferences: string
+    language_proficiency: string
+    extracurricular_activities: string
+    linkedin_profile: string
+    github_profile: string
+    personal_website: string
+    resume_url: string
+    profile_picture_url: string
+    current_des_score: string
+    badge: string
+}
+
+const getInitialFormData = (student: Student | null): StudentFormData => ({
+    name: student?.name || '',
+    email: student?.email || '',
+    phone: student?.phone || '',
+    password: '',
+    status: student?.status || 'active',
+    bio: student?.bio || '',
+    dob: student?.dob || '',
+    country: student?.country || '',
+    state: student?.state || '',
+    city: student?.city || '',
+    gender: student?.gender || '',
+    technical_skills: student?.technical_skills || '',
+    soft_skills: student?.soft_skills || '',
+    certifications: student?.certifications || '',
+    preferred_industry: student?.preferred_industry || '',
+    job_roles_of_interest: student?.job_roles_of_interest || '',
+    location_preferences: student?.location_preferences || '',
+    language_proficiency: student?.language_proficiency || '',
+    extracurricular_activities: student?.extracurricular_activities || '',
+    linkedin_profile: student?.linkedin_profile || '',
+    github_profile: student?.github_profile || '',
+    personal_website: student?.personal_website || '',
+    resume_url: student?.resume_url || '',
+    profile_picture_url: student?.profile_picture_url || '',
+    current_des_score: student?.current_des_score ? String(student.current_des_score) : '',
+    badge: student?.badge || ''
+})
+
 export default function AdminStudentsPage() {
     const [students, setStudents] = useState<Student[]>([])
     const [stats, setStats] = useState<StudentStats | null>(null)
@@ -49,6 +125,9 @@ export default function AdminStudentsPage() {
     const [showCreateModal, setShowCreateModal] = useState(false)
     const [showEditModal, setShowEditModal] = useState(false)
     const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
+    const [formData, setFormData] = useState<StudentFormData>(() => getInitialFormData(null))
+    const [formLoading, setFormLoading] = useState(false)
+    const [formFetching, setFormFetching] = useState(false)
     const [pagination, setPagination] = useState({ skip: 0, limit: 20, total: 0 })
 
     // Fetch students
@@ -91,6 +170,11 @@ export default function AdminStudentsPage() {
         fetchStudents()
         fetchStats()
     }, [fetchStudents, fetchStats])
+
+    useEffect(() => {
+        if (!showCreateModal && !showEditModal) return
+        setFormData(getInitialFormData(selectedStudent))
+    }, [selectedStudent, showCreateModal, showEditModal])
 
     const handleDelete = async (studentId: string) => {
         if (!confirm('Are you sure you want to delete this student? This action cannot be undone.')) {
@@ -143,6 +227,69 @@ export default function AdminStudentsPage() {
             toast.success('Students exported successfully')
         } catch (err) {
             toast.error('Failed to export students')
+        }
+    }
+
+    const closeFormModal = () => {
+        setShowCreateModal(false)
+        setShowEditModal(false)
+        setSelectedStudent(null)
+    }
+
+    const handleFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setFormLoading(true)
+
+        try {
+            const submitData: Record<string, unknown> = {
+                ...formData,
+                dob: formData.dob || null,
+                badge: formData.badge || null,
+            }
+            if (formData.current_des_score !== '') {
+                submitData.current_des_score = Number(formData.current_des_score)
+            } else {
+                delete submitData.current_des_score
+            }
+            if (!selectedStudent && !submitData.password) {
+                toast.error('Password is required for new students')
+                setFormLoading(false)
+                return
+            }
+            if (selectedStudent) {
+                delete (submitData as any).password
+            }
+
+            if (selectedStudent) {
+                await adminService.updateStudent(selectedStudent.id, submitData)
+                toast.success('Student updated successfully')
+            } else {
+                await adminService.createStudent(submitData)
+                toast.success('Student created successfully')
+            }
+            closeFormModal()
+            fetchStudents()
+            fetchStats()
+        } catch (err: any) {
+            const message = err?.response?.data?.detail || err.message || 'Failed to save student'
+            toast.error(message)
+        } finally {
+            setFormLoading(false)
+        }
+    }
+
+    const openEditModal = async (student: Student) => {
+        setSelectedStudent(student)
+        setShowEditModal(true)
+        setFormFetching(true)
+        try {
+            const fullStudent = await adminService.getStudent(student.id) as Student
+            setSelectedStudent(prev => ({ ...prev, ...fullStudent } as Student))
+        } catch (err: any) {
+            const message = err?.response?.data?.detail || err.message || 'Failed to load student details'
+            toast.error(message)
+        } finally {
+            setFormFetching(false)
         }
     }
 
@@ -292,10 +439,13 @@ export default function AdminStudentsPage() {
                 searchPlaceholder="Search by name, email, or phone..."
                 showExport={true}
                 onExport={handleExportCSV}
+                onAdd={() => {
+                    setSelectedStudent(null)
+                    setShowCreateModal(true)
+                }}
                 enableRowActions={true}
                 onEditRow={(student) => {
-                    setSelectedStudent(student)
-                    setShowEditModal(true)
+                    openEditModal(student)
                 }}
                 onDeleteRow={(student) => {
                     handleDelete(student.id)
@@ -322,278 +472,314 @@ export default function AdminStudentsPage() {
             />
 
             {/* Create/Edit Modal */}
-            <AnimatePresence>
-                {(showCreateModal || showEditModal) && (
-                    <StudentFormModal
-                        student={selectedStudent}
-                        onClose={() => {
-                            setShowCreateModal(false)
-                            setShowEditModal(false)
-                            setSelectedStudent(null)
-                        }}
-                        onSuccess={() => {
-                            setShowCreateModal(false)
-                            setShowEditModal(false)
-                            setSelectedStudent(null)
-                            fetchStudents()
-                            fetchStats()
-                        }}
-                    />
-                )}
-            </AnimatePresence>
-        </div>
-    )
-}
-
-function StudentFormModal({
-    student,
-    onClose,
-    onSuccess
-}: {
-    student: Student | null
-    onClose: () => void
-    onSuccess: () => void
-}) {
-    const [formData, setFormData] = useState({
-        name: student?.name || '',
-        email: student?.email || '',
-        phone: student?.phone || '',
-        password: '',
-        status: student?.status || 'active',
-        bio: '',
-        country: student?.country || '',
-        state: student?.state || '',
-        city: student?.city || '',
-        gender: student?.gender || '',
-        technical_skills: '',
-        preferred_industry: ''
-    })
-    const [loading, setLoading] = useState(false)
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault()
-        setLoading(true)
-
-        try {
-            // Only include password if it's provided and we're creating a new student
-            const submitData = { ...formData }
-            if (!student && !submitData.password) {
-                toast.error('Password is required for new students')
-                setLoading(false)
-                return
-            }
-            if (student) {
-                delete (submitData as any).password
-            }
-
-            if (student) {
-                await adminService.updateStudent(student.id, submitData)
-                toast.success('Student updated successfully')
-            } else {
-                await adminService.createStudent(submitData)
-                toast.success('Student created successfully')
-            }
-            onSuccess()
-        } catch (err: any) {
-            const message = err?.response?.data?.detail || err.message || 'Failed to save student'
-            toast.error(message)
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    return (
-        <div className="fixed inset-0 z-50 overflow-y-auto p-4">
-            <div className="flex min-h-screen items-center justify-center pt-20">
-                {/* Backdrop */}
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={onClose}
-                    className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-                />
-
-                {/* Modal */}
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-                >
-                    <div className="sticky top-0 bg-white dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between z-10">
-                        <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                            {student ? 'Edit Student' : 'Add New Student'}
-                        </h2>
-                        <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
-                            <X className="w-6 h-6" />
-                        </button>
+            <CustomFormModal
+                isOpen={showCreateModal || showEditModal}
+                title={selectedStudent ? 'Edit Student' : 'Add New Student'}
+                onClose={closeFormModal}
+                onSubmit={handleFormSubmit}
+                submitLabel={selectedStudent ? 'Update Student' : 'Create Student'}
+                isSubmitting={formLoading}
+                submitDisabled={formFetching}
+                className="bg-white dark:bg-[#10162e]"
+            >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Name <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                            required
+                            value={formData.name}
+                            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                            placeholder="Student name"
+                        />
                     </div>
-
-                    <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Name <span className="text-red-500">*</span>
-                                </label>
-                                <Input
-                                    required
-                                    value={formData.name}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                                    placeholder="Student name"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Email <span className="text-red-500">*</span>
-                                </label>
-                                <Input
-                                    required
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                                    placeholder="student@example.com"
-                                    disabled={!!student}
-                                />
-                            </div>
-                            {!student && (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Password <span className="text-red-500">*</span>
-                                    </label>
-                                    <Input
-                                        required
-                                        type="password"
-                                        value={formData.password}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                                        placeholder="Minimum 8 characters"
-                                    />
-                                </div>
-                            )}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Phone
-                                </label>
-                                <Input
-                                    value={formData.phone}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-                                    placeholder="+1234567890"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Status
-                                </label>
-                                <Select 
-                                    value={formData.status} 
-                                    onChange={(e) => 
-                                        setFormData(prev => ({ ...prev, status: (e.target as HTMLSelectElement).value as any }))
-                                    }
-                                    placeholder="Select status"
-                                    options={[
-                                        { value: 'active', label: 'Active' },
-                                        { value: 'inactive', label: 'Inactive' },
-                                        { value: 'suspended', label: 'Suspended' },
-                                        { value: 'pending', label: 'Pending' }
-                                    ]}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Gender
-                                </label>
-                                <Select 
-                                    value={formData.gender} 
-                                    onChange={(e) => 
-                                        setFormData(prev => ({ ...prev, gender: (e.target as HTMLSelectElement).value }))
-                                    }
-                                    placeholder="Select gender"
-                                    options={[
-                                        { value: 'male', label: 'Male' },
-                                        { value: 'female', label: 'Female' },
-                                        { value: 'other', label: 'Other' }
-                                    ]}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Country
-                                </label>
-                                <Input
-                                    value={formData.country}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
-                                    placeholder="India"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    State
-                                </label>
-                                <Input
-                                    value={formData.state}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
-                                    placeholder="Karnataka"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    City
-                                </label>
-                                <Input
-                                    value={formData.city}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-                                    placeholder="Bangalore"
-                                />
-                            </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Technical Skills
-                                </label>
-                                <Input
-                                    value={formData.technical_skills}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, technical_skills: e.target.value }))}
-                                    placeholder="React, TypeScript, Node.js"
-                                />
-                            </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Preferred Industry
-                                </label>
-                                <Input
-                                    value={formData.preferred_industry}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, preferred_industry: e.target.value }))}
-                                    placeholder="Software Development"
-                                />
-                            </div>
-                            <div className="md:col-span-2">
-                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Bio
-                                </label>
-                                <textarea
-                                    value={formData.bio}
-                                    onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
-                                    placeholder="Brief bio"
-                                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400"
-                                    rows={3}
-                                />
-                            </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Email <span className="text-red-500">*</span>
+                        </label>
+                        <Input
+                            required
+                            type="email"
+                            value={formData.email}
+                            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                            placeholder="student@example.com"
+                            disabled={!!selectedStudent}
+                        />
+                    </div>
+                    {!selectedStudent && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Password <span className="text-red-500">*</span>
+                            </label>
+                            <Input
+                                required
+                                type="password"
+                                value={formData.password}
+                                onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                                placeholder="Minimum 8 characters"
+                            />
                         </div>
-
-                        <div className="flex gap-3 justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
-                            <Button variant="outline" onClick={onClose} type="button">
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={loading}
-                                className="bg-blue-600 hover:bg-blue-700"
-                            >
-                                {loading ? 'Saving...' : (student ? 'Update Student' : 'Create Student')}
-                            </Button>
-                        </div>
-                    </form>
-                </motion.div>
-            </div>
+                    )}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Phone
+                        </label>
+                        <Input
+                            value={formData.phone}
+                            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                            placeholder="+1234567890"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Date of Birth
+                        </label>
+                        <Input
+                            type="date"
+                            value={formData.dob}
+                            onChange={(e) => setFormData(prev => ({ ...prev, dob: e.target.value }))}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Status
+                        </label>
+                        <Select
+                            value={formData.status}
+                            onChange={(e) =>
+                                setFormData(prev => ({
+                                    ...prev,
+                                    status: (e.target as HTMLSelectElement).value as any
+                                }))
+                            }
+                            placeholder="Select status"
+                            options={[
+                                { value: 'active', label: 'Active' },
+                                { value: 'inactive', label: 'Inactive' },
+                                { value: 'suspended', label: 'Suspended' },
+                                { value: 'pending', label: 'Pending' }
+                            ]}
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Bio
+                        </label>
+                        <textarea
+                            value={formData.bio}
+                            onChange={(e) => setFormData(prev => ({ ...prev, bio: e.target.value }))}
+                            placeholder="Brief bio"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400"
+                            rows={3}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Gender
+                        </label>
+                        <Select
+                            value={formData.gender}
+                            onChange={(e) =>
+                                setFormData(prev => ({
+                                    ...prev,
+                                    gender: (e.target as HTMLSelectElement).value
+                                }))
+                            }
+                            placeholder="Select gender"
+                            options={[
+                                { value: 'male', label: 'Male' },
+                                { value: 'female', label: 'Female' },
+                                { value: 'other', label: 'Other' }
+                            ]}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Country
+                        </label>
+                        <Input
+                            value={formData.country}
+                            onChange={(e) => setFormData(prev => ({ ...prev, country: e.target.value }))}
+                            placeholder="India"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            State
+                        </label>
+                        <Input
+                            value={formData.state}
+                            onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
+                            placeholder="Karnataka"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            City
+                        </label>
+                        <Input
+                            value={formData.city}
+                            onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
+                            placeholder="Bangalore"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Technical Skills
+                        </label>
+                        <Input
+                            value={formData.technical_skills}
+                            onChange={(e) => setFormData(prev => ({ ...prev, technical_skills: e.target.value }))}
+                            placeholder="React, TypeScript, Node.js"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Soft Skills
+                        </label>
+                        <Input
+                            value={formData.soft_skills}
+                            onChange={(e) => setFormData(prev => ({ ...prev, soft_skills: e.target.value }))}
+                            placeholder="Communication, Leadership"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Certifications
+                        </label>
+                        <Input
+                            value={formData.certifications}
+                            onChange={(e) => setFormData(prev => ({ ...prev, certifications: e.target.value }))}
+                            placeholder="AWS, Google Cloud"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Preferred Industry
+                        </label>
+                        <Input
+                            value={formData.preferred_industry}
+                            onChange={(e) => setFormData(prev => ({ ...prev, preferred_industry: e.target.value }))}
+                            placeholder="Software Development"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Job Roles of Interest
+                        </label>
+                        <Input
+                            value={formData.job_roles_of_interest}
+                            onChange={(e) => setFormData(prev => ({ ...prev, job_roles_of_interest: e.target.value }))}
+                            placeholder="Frontend Developer, Data Analyst"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Location Preferences
+                        </label>
+                        <Input
+                            value={formData.location_preferences}
+                            onChange={(e) => setFormData(prev => ({ ...prev, location_preferences: e.target.value }))}
+                            placeholder="Bangalore, Remote"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Language Proficiency
+                        </label>
+                        <Input
+                            value={formData.language_proficiency}
+                            onChange={(e) => setFormData(prev => ({ ...prev, language_proficiency: e.target.value }))}
+                            placeholder="English, Hindi"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Extracurricular Activities
+                        </label>
+                        <textarea
+                            value={formData.extracurricular_activities}
+                            onChange={(e) => setFormData(prev => ({ ...prev, extracurricular_activities: e.target.value }))}
+                            placeholder="Sports, Volunteering"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400"
+                            rows={2}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            LinkedIn Profile
+                        </label>
+                        <Input
+                            value={formData.linkedin_profile}
+                            onChange={(e) => setFormData(prev => ({ ...prev, linkedin_profile: e.target.value }))}
+                            placeholder="https://linkedin.com/in/username"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            GitHub Profile
+                        </label>
+                        <Input
+                            value={formData.github_profile}
+                            onChange={(e) => setFormData(prev => ({ ...prev, github_profile: e.target.value }))}
+                            placeholder="https://github.com/username"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Personal Website
+                        </label>
+                        <Input
+                            value={formData.personal_website}
+                            onChange={(e) => setFormData(prev => ({ ...prev, personal_website: e.target.value }))}
+                            placeholder="https://portfolio.com"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Resume URL
+                        </label>
+                        <Input
+                            value={formData.resume_url}
+                            onChange={(e) => setFormData(prev => ({ ...prev, resume_url: e.target.value }))}
+                            placeholder="https://.../resume.pdf"
+                        />
+                    </div>
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Profile Picture URL
+                        </label>
+                        <Input
+                            value={formData.profile_picture_url}
+                            onChange={(e) => setFormData(prev => ({ ...prev, profile_picture_url: e.target.value }))}
+                            placeholder="https://.../avatar.png"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Current DES Score
+                        </label>
+                        <Input
+                            type="number"
+                            step="0.01"
+                            value={formData.current_des_score}
+                            onChange={(e) => setFormData(prev => ({ ...prev, current_des_score: e.target.value }))}
+                            placeholder="0.0"
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Badge
+                        </label>
+                        <Input
+                            value={formData.badge}
+                            onChange={(e) => setFormData(prev => ({ ...prev, badge: e.target.value }))}
+                            placeholder="bronze"
+                        />
+                    </div>
+                </div>
+            </CustomFormModal>
         </div>
     )
 }
