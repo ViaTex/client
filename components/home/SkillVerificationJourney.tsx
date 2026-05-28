@@ -129,31 +129,30 @@ export default function SkillVerificationJourney() {
   };
 
   return (
-    <section className="flex flex-col gap-xl">
-      <h2 className="text-[28px] md:text-3xl font-extrabold text-[#2A2D31] text-center mb-4">
+    <section className="flex flex-col gap-8 sm:gap-10 lg:gap-12 py-6 sm:py-8">
+      <h2 className="mx-auto max-w-3xl text-center text-[26px] font-extrabold leading-tight text-[#2A2D31] dark:text-white sm:text-3xl lg:text-4xl">
         Verified Talent, Not Just Claims.
       </h2>
 
       {/* Step indicators */}
-      <div className="relative px-4 py-8 md:px-12 w-full max-w-5xl mx-auto">
-        <div className="hidden md:block step-line absolute top-1/2 left-0 right-0 h-0.5 bg-gray-200 -z-10" />
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-4 relative z-10">
+      <div className="relative mx-auto w-full max-w-6xl px-1 sm:px-4 md:px-10">
+        <div className="absolute left-[13%] right-[13%] top-5 hidden h-0.5 bg-gray-200 dark:bg-white/20 sm:block md:top-6" />
+        <div className="relative z-10 grid grid-cols-4 gap-2 sm:gap-4">
           {STEPS.map((step) => (
             <button
               key={step.id}
               onClick={() => goToStep(step.id)}
-              className="flex flex-col items-center text-center gap-3 w-full"
+              className="flex w-full flex-col items-center gap-2 text-center sm:gap-3"
             >
               <div
-                className={`w-12 h-12 rounded-full text-white flex items-center justify-center font-bold step-indicator shadow-md transition-all duration-300${currentStep === step.id ? ' scale-110' : ' hover:scale-105'
+                className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white shadow-md transition-all duration-300 sm:h-12 sm:w-12 sm:text-base ${currentStep === step.id ? 'scale-110 bg-[#4B32C3] shadow-[#4B32C3]/30' : 'bg-[#2A2D31] hover:scale-105 dark:bg-slate-700'
                   }`}
-                style={{ backgroundColor: currentStep === step.id ? '#4B32C3' : '#2A2D31' }}
               >
                 {step.id}
               </div>
-              <div className="mt-2">
-                <h4 className={`font-bold text-sm md:text-base transition-colors ${currentStep === step.id ? 'text-[#4B32C3]' : 'text-[#2A2D31]'}`}>{step.label}</h4>
-                <p className="text-xs text-[#2A2D31]/60 mt-1 max-w-[120px] mx-auto hidden sm:block">{step.sublabel}</p>
+              <div className="min-h-[48px] sm:min-h-[62px]">
+                <h4 className={`text-[11px] font-bold leading-tight transition-colors sm:text-sm md:text-base ${currentStep === step.id ? 'text-[#4B32C3] dark:text-[#A78BFA]' : 'text-[#2A2D31] dark:text-slate-200'}`}>{step.label}</h4>
+                <p className="mx-auto mt-1 hidden max-w-[130px] text-xs leading-snug text-[#2A2D31]/60 dark:text-slate-400 sm:block">{step.sublabel}</p>
               </div>
             </button>
           ))}
@@ -161,38 +160,40 @@ export default function SkillVerificationJourney() {
       </div>
 
       {/* Interactive Journey Panel */}
-      <div className="w-full min-h-[500px] md:aspect-[21/9] rounded-2xl mesh-gradient relative overflow-hidden shadow-2xl mt-4">
+      <div className="mesh-gradient relative mt-1 min-h-[430px] w-full overflow-hidden rounded-2xl shadow-2xl sm:min-h-[480px] md:aspect-[21/9] md:min-h-0">
         {/* Prev button */}
         <button
           onClick={handlePrev}
-          className="absolute left-2 md:left-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg"
+          aria-label="Previous step"
+          className="absolute bottom-5 left-5 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/15 text-white shadow-lg backdrop-blur-md transition-all hover:bg-white/25 sm:left-6 sm:top-1/2 sm:bottom-auto sm:h-12 sm:w-12 sm:-translate-y-1/2"
         >
-          <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" />
+          <ChevronLeft className="h-6 w-6 sm:h-8 sm:w-8" />
         </button>
 
         {/* Next button */}
         <button
           onClick={handleNext}
-          className="absolute right-2 md:right-6 top-1/2 -translate-y-1/2 z-30 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:bg-white/20 transition-all shadow-lg"
+          aria-label="Next step"
+          className="absolute bottom-5 right-5 z-30 flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/15 text-white shadow-lg backdrop-blur-md transition-all hover:bg-white/25 sm:right-6 sm:top-1/2 sm:bottom-auto sm:h-12 sm:w-12 sm:-translate-y-1/2"
         >
-          <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
+          <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8" />
         </button>
 
         {/* Slide content */}
-        <div className="relative w-full h-full z-20">
+        <div className="relative z-20 h-full w-full">
           {STEPS.map((step) => (
             <div
               key={step.id}
-              className={`step-content flex flex-col !items-start justify-center text-left gap-4 md:gap-6 w-full max-w-3xl !pl-16 md:!pl-28 lg:!pl-36 !pr-16 transition-all duration-500 absolute h-full${currentStep === step.id
+              className={`step-content absolute inset-0 flex h-full w-full max-w-3xl flex-col !items-start justify-center gap-4 !px-8 !pb-20 !pt-10 text-left transition-all duration-500 sm:!px-24 sm:!py-12 md:gap-6 lg:max-w-4xl lg:!px-36${currentStep === step.id
                   ? ' opacity-100 translate-y-0 pointer-events-auto'
                   : ' opacity-0 translate-y-4 pointer-events-none'
                 }`}
             >
-              <div className="glass-icon p-3 md:p-4 mb-2 rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg inline-flex items-center justify-center">
-                <step.icon className="w-8 h-8 md:w-10 md:h-10 text-white" strokeWidth={2} />
+              <div className="glass-icon mb-1 inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/10 p-3 shadow-lg backdrop-blur-md md:mb-2 md:p-4">
+                <step.icon className="h-8 w-8 text-white md:h-10 md:w-10" strokeWidth={2} />
               </div>
-              <h3 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-white leading-tight drop-shadow-lg tracking-tight">{step.title}</h3>
-              <p className="text-lg md:text-xl lg:text-2xl text-white/90 leading-relaxed drop-shadow-md font-medium max-w-2xl">{step.description}</p>
+              <h3 className="text-3xl font-extrabold leading-tight tracking-tight text-white drop-shadow-lg sm:text-4xl md:text-5xl lg:text-6xl">{step.title}</h3>
+              <p className="max-w-2xl text-base font-medium leading-relaxed text-white/90 drop-shadow-md sm:text-lg md:text-xl lg:text-2xl">{step.description}</p>
             </div>
           ))}
         </div>
@@ -200,7 +201,7 @@ export default function SkillVerificationJourney() {
         {/* Sunflower */}
         <div
           ref={sunflowerRef}
-          className="sunflower-container z-10 scale-[0.6] md:scale-100 absolute top-1/2 -translate-y-1/2 -right-[172px] md:-right-[152px]"
+          className="sunflower-container absolute top-1/2 -right-[180px] z-10 hidden -translate-y-1/2 scale-[0.72] lg:flex xl:-right-[152px] xl:scale-100"
         >
           <div className="sunflower-core" />
         </div>
