@@ -498,31 +498,6 @@ export default function StudentJobsPage() {
     }
 
     return (
-<<<<<<< HEAD:app/(dashboard)/dashboard/student/jobs/page.tsx
-        <div className="w-full space-y-5 px-3 text-gray-900 dark:text-gray-100 sm:px-4 md:px-6">
-            <motion.section
-                variants={pageIntroVariants}
-                initial="hidden"
-                animate="visible"
-                className="relative overflow-hidden rounded-3xl border border-[#DCE5F8] bg-[#F7F8FF] p-5 shadow-sm dark:border-[#243056] dark:bg-[#121C46]"
-            >
-                <div
-                    aria-hidden="true"
-                    className="absolute right-5 top-4 hidden h-24 w-48 rounded-full bg-gradient-to-r from-[#38BDF8]/20 via-[#7C3AED]/20 to-[#F59E0B]/20 blur-2xl sm:block"
-                />
-                <div className="relative flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-                    <div className="max-w-2xl">
-                        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#D5CCFF] bg-white/80 px-3 py-1 text-xs font-bold text-[#6D28D9] shadow-sm dark:border-[#4C3D88] dark:bg-white/10 dark:text-[#C4B5FD]">
-                            <span className="inline-flex" aria-hidden="true">
-                                <Sparkles className="h-3.5 w-3.5" />
-                            </span>
-                            Fresh career matches
-                        </div>
-                        <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-[2rem]">Jobs & Internships</h1>
-                        <p className="mt-1 max-w-xl text-sm leading-6 text-gray-500 dark:text-[#A8B3CF]">
-                            Explore career opportunities, filter by your goals, and apply directly from your student dashboard.
-                        </p>
-=======
         <div className="mx-auto w-full max-w-7xl space-y-5 px-3 text-gray-900 dark:text-gray-100 sm:px-4 md:px-6 py-6">
             {/* Header Area */}
             <div className="space-y-4">
@@ -531,7 +506,6 @@ export default function StudentJobsPage() {
                     <div className="flex items-center gap-2 mb-1.5">
                         <Sparkles className="w-6 h-6 text-[#1B6CFB]" />
                         <h1 className="text-[22px] sm:text-[26px] font-bold text-gray-900 dark:text-white tracking-tight">Available Jobs in Market</h1>
->>>>>>> eba33d5bb3544d373f4523c674d83657dfd169a1:app/dashboard/student/jobs/page.tsx
                     </div>
                     <p className="text-[14px] sm:text-[15px] text-gray-700 dark:text-gray-300 font-medium">
                         Browse real-time job listings from LinkedIn, Unstop, Foundit, and Naukri based on your skills
