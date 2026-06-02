@@ -38,7 +38,9 @@ interface NavigationItem {
 
 const studentNavigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/dashboard/student', icon: LayoutDashboard },
+    { name: 'Verify Project', href: '/dashboard/student/projects', icon: Rocket },
     { name: 'Skill Verification', href: '/dashboard/skill-verification', icon: FileSpreadsheet },
+    { name: 'Interviews', href: '/dashboard/student/interviews', icon: CalendarCheck },
     { name: 'My Profile', href: '/dashboard/student/profile', icon: User },
     { name: 'Resume', href: '/dashboard/student/resume', icon: FileText },
     { name: 'Jobs & Internships', href: '/dashboard/student/jobs', icon: Briefcase, badge: 2 },
@@ -48,6 +50,8 @@ const studentNavigation: NavigationItem[] = [
 
 const corporateNavigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/dashboard/corporate', icon: LayoutDashboard },
+    { name: 'Smart Match', href: '/dashboard/corporate/smart-match', icon: Rocket },
+    { name: 'Interviews', href: '/dashboard/corporate/interviews', icon: CalendarCheck },
     { name: 'Company Profile', href: '/dashboard/corporate/profile', icon: Building },
     { name: 'Manage Jobs', href: '/dashboard/corporate/jobs', icon: Briefcase },
     { name: 'Manage Applicants', href: '/dashboard/corporate/applicants', icon: Users },
@@ -83,6 +87,7 @@ const adminNavigation: NavigationItem[] = [
             { name: 'Mentor', href: '/dashboard/admin/users/mentor' },
         ],
     },
+    { name: 'Project Assignments', href: '/dashboard/admin/assignments', icon: FileText },
     { name: 'Institutions', href: '/dashboard/admin/institutions', icon: Building },
     { name: 'Job Management', href: '/dashboard/admin/jobs', icon: Briefcase },
     { name: 'System Logs', href: '/dashboard/admin/logs', icon: Shield },
