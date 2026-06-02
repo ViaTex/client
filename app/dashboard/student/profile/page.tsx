@@ -32,6 +32,7 @@ import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
 import { apiClient } from '@/lib/api'
 import { toast } from 'react-hot-toast'
+import { studentService } from '@/services/student.service'
 
 type ProjectStatus = 'completed' | 'in_progress'
 

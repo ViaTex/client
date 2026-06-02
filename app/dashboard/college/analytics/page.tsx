@@ -1,5 +1,5 @@
 import { CollegeDashboardView } from '@/components/college/CollegeDashboardView'
 
-export default function CollegeDashboardPage() {
+export default function CollegeAnalyticsRoute() {
     return <CollegeDashboardView />
 }

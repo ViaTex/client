@@ -116,7 +116,8 @@ function RegisterContent() {
             try {
                 const loginResponse = await authService.login({
                     email: data.email,
-                    password: data.password
+                    password: data.password,
+                    user_type: selectedUserType,
                 })
                 authService.setTokens(loginResponse.access_token, loginResponse.refresh_token)
                 login(
