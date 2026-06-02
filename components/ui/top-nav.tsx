@@ -60,21 +60,23 @@ export function TopNav({
 
     return (
         <header
-            className={`fixed top-0 right-0 z-[60] flex items-center justify-between whitespace-nowrap transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,width]
-                left-0 w-full lg:left-[var(--sidebar-w)] lg:w-[calc(100%_-_var(--sidebar-w))] h-[72px] px-6 lg:px-8
-                bg-white/95 border-b border-gray-100 dark:border-white/[0.06] 
-                dark:bg-gradient-to-r dark:from-[#1b1437]/95 dark:via-[#080b20]/95 dark:to-[#091e30]/95 backdrop-blur-md shadow-sm
+            className={`fixed top-0 right-0 z-[60] flex items-center justify-between whitespace-nowrap
+                border-b border-[#E5E7EB] dark:border-white/10
+                px-6 lg:px-8
+                bg-white dark:bg-[#0B1739]
+                left-0 w-full lg:left-[var(--sidebar-w)] lg:w-[calc(100%_-_var(--sidebar-w))]
                 ${topNavTransitionClass}`}
+            style={{ height: '72px' }}
         >
-            {/* Left: Sidebar toggle + Search */}
+            {/* Left: Sidebar toggle + Welcome message */}
             <div className="flex items-center gap-4 flex-1 min-w-0">
                 {/* Mobile menu toggle */}
                 <button
                     type="button"
                     onClick={() => setIsMobileSidebarOpen((v) => !v)}
-                    className="lg:hidden inline-flex shrink-0 items-center justify-center rounded-lg
-                        bg-gray-100 text-gray-700 dark:bg-[#080F26] dark:text-white
-                        w-10 h-10 hover:bg-gray-200 dark:hover:bg-[#0B1739] focus:outline-none transition-colors"
+                    className="lg:hidden inline-flex shrink-0 items-center justify-center rounded-xl
+                        bg-gray-100 text-gray-700 dark:bg-[#13141F] dark:text-white
+                        w-10 h-10 hover:bg-gray-200 dark:hover:bg-white/5 focus:outline-none transition-colors"
                     aria-expanded={isMobileSidebarOpen}
                     aria-label={isMobileSidebarOpen ? 'Close menu' : 'Open menu'}
                 >
@@ -103,24 +105,35 @@ export function TopNav({
                     )}
                 </button>
 
-                {/* Search Bar */}
-                {/* <div className="hidden lg:flex items-center flex-1">
-                    <div className="flex w-full items-center rounded-[4px] bg-[#F3F3F3] dark:bg-[#080F26] border border-[#6F6F6F]/30 dark:border-white/10 pl-2 pr-3 py-3 h-[48px] gap-2">
-                        <Search className="w-4 h-4 text-[#6F6F6F] dark:text-white/40 shrink-0" />
-                        <input
-                            className="w-full border-none bg-transparent focus:ring-0 text-sm placeholder:text-[#6F6F6F] dark:placeholder:text-white/40 text-gray-900 dark:text-white outline-none"
-                            placeholder="Search"
-                        />
-                    </div>
-                </div> */}
+                {/* Welcome back message */}
+                <span className="text-[20px] font-bold text-gray-900 dark:text-white select-none hidden md:inline-block font-poppins tracking-tight">
+                    Welcome back {(() => {
+                        const raw = user?.name || ''
+                        const displayName = raw.includes('@') ? raw.split('@')[0] : raw
+                        const firstName = displayName.split(' ')[0]
+                        return firstName
+                            ? firstName.charAt(0).toUpperCase() + firstName.slice(1)
+                            : 'Taylor'
+                    })()} 👋
+                </span>
             </div>
 
             {/* Right: Actions */}
             <div className="flex items-center gap-5">
+                {/* Search Bar (Pill style) */}
+                <div className="hidden md:flex items-center relative w-[240px] lg:w-[280px]">
+                    <Search className="absolute left-4 w-4.5 h-4.5 text-gray-400 dark:text-white/40 pointer-events-none" />
+                    <input
+                        type="text"
+                        placeholder="Search courses"
+                        className="w-full bg-[#F3F4F6]/60 dark:bg-[#13141F] border border-gray-200/50 dark:border-white/[0.08] focus:border-gray-300 dark:focus:border-white/20 rounded-full pl-11 pr-5 py-2.5 text-[13px] text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-white/30 focus:outline-none transition-all"
+                    />
+                </div>
+
                 {/* Notification Bell */}
-                <button className="relative flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-colors">
+                <button className="relative flex items-center justify-center w-10 h-10 rounded-xl hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-colors">
                     <Bell className="w-5 h-5 text-gray-500 dark:text-white/60" />
-                    <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-[#0B1739]"></span>
+                    <span className="absolute top-2.5 right-2.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white dark:ring-[#070D1F]"></span>
                 </button>
 
                 {/* Theme Toggle */}
@@ -130,8 +143,20 @@ export function TopNav({
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <button className="flex items-center gap-3 hover:opacity-90 transition-opacity focus:outline-none group">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#A855F7] flex items-center justify-center text-white text-sm font-bold shadow-md shadow-purple-500/20">
-                                {user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                            {/* Premium avatar styling with picture or fallback gradient initials */}
+                            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-100 dark:border-white/10 shrink-0 shadow-sm relative group-hover:scale-102 transition-transform bg-gradient-to-br from-[#E5B59E] to-[#C8EE44] flex items-center justify-center text-[#13141F] text-sm font-bold">
+                                {user?.profile_picture_url ? (
+                                    <img
+                                        src={user.profile_picture_url}
+                                        alt="Profile Avatar"
+                                        className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            e.currentTarget.style.display = 'none';
+                                        }}
+                                    />
+                                ) : (
+                                    <span>{user?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
+                                )}
                             </div>
                             <div className="hidden lg:flex flex-col items-start">
                                 <span className="text-[13px] font-semibold text-gray-900 dark:text-white leading-tight">

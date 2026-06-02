@@ -14,6 +14,7 @@ interface ModalProps {
     children: React.ReactNode
     className?: string
     maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl"
+    position?: "center" | "right"
 }
 
 const maxWidthClasses = {
@@ -30,7 +31,8 @@ export function Modal({
     title,
     children,
     className,
-    maxWidth = "lg"
+    maxWidth = "lg",
+    position = "center"
 }: ModalProps) {
     const [mounted, setMounted] = React.useState(false)
 
@@ -66,7 +68,10 @@ export function Modal({
     const modal = (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[9999] flex min-h-dvh items-start justify-center overflow-y-auto overscroll-none bg-black/60 p-4 pt-6 pointer-events-none backdrop-blur-sm sm:items-center sm:p-6">
+                <div className={cn(
+                    "fixed inset-0 z-[9999] flex pointer-events-none",
+                    position === "center" ? "backdrop-blur-sm bg-black/60 min-h-dvh items-start justify-center overflow-y-auto overscroll-none p-4 pt-6 sm:items-center sm:p-6" : "bg-black/30 justify-end overflow-hidden"
+                )}>
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -78,13 +83,15 @@ export function Modal({
 
                     {/* Modal */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        transition={{ duration: 0.2 }}
+                        initial={position === "center" ? { opacity: 0, scale: 0.95, y: 20 } : { opacity: 0, x: "100%" }}
+                        animate={position === "center" ? { opacity: 1, scale: 1, y: 0 } : { opacity: 1, x: 0 }}
+                        exit={position === "center" ? { opacity: 0, scale: 0.95, y: 20 } : { opacity: 0, x: "100%" }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
                         className={cn(
-                            "relative my-auto w-full rounded-xl border border-gray-200 bg-white shadow-2xl pointer-events-auto dark:border-gray-700 dark:bg-gray-800",
-                            maxWidthClasses[maxWidth],
+                            "relative bg-white shadow-2xl pointer-events-auto dark:border-gray-700 dark:bg-gray-800 flex flex-col",
+                            position === "center"
+                                ? cn("my-auto w-full rounded-xl border border-gray-200", maxWidthClasses[maxWidth])
+                                : "h-full w-full sm:w-[55vw] overflow-y-auto border-l border-gray-200",
                             className
                         )}
                     >
@@ -105,7 +112,7 @@ export function Modal({
                         </div>
 
                         {/* Content */}
-                        <div className="p-4 sm:p-6">
+                        <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
                             {children}
                         </div>
                     </motion.div>

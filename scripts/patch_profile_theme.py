@@ -1,6 +1,6 @@
 from pathlib import Path
 
-path = Path(r'client/app/(dashboard)/dashboard/student/profile/page.tsx')
+path = Path(r'client/app/dashboard/student/profile/page.tsx')
 text = path.read_text(encoding='utf-8')
 replacements = [
     ('bg-[#ee8c2b] hover:bg-[#d57a22]', 'bg-[#7C3AED] hover:bg-[#6D28D9]'),

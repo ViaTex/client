@@ -1,0 +1,88 @@
+/*
+ * CustomDataTable.css — residual styles after Tailwind migration
+ *
+ * Only kept here:
+ *  1. Bootstrap Accordion overrides (selector specificity war)
+ *  2. @keyframes shimmer (referenced via Tailwind `animate-[shimmer_...]`)
+ *  3. Dark-mode class rules that mix with Bootstrap
+ *  4. The sticky-column right/left bg in dark mode
+ */
+
+/* ─── Shimmer keyframe ────────────────────────────────────────────────── */
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* ─── Bootstrap Accordion overrides ──────────────────────────────────── */
+.filter-accordion .accordion-item {
+    border: none !important;
+    margin-bottom: 5px;
+    background: transparent !important;
+}
+
+.filter-accordion .accordion-button {
+    padding: 12px 15px !important;
+    background: transparent !important;
+    color: #64748b !important;
+    border-radius: 12px !important;
+    font-size: 13px !important;
+    transition: 0.2s !important;
+    box-shadow: none !important;
+}
+
+.filter-accordion .accordion-button:not(.collapsed) {
+    background: #f8fafc !important;
+    color: var(--nav-active) !important;
+    font-weight: 700 !important;
+    box-shadow: none !important;
+}
+
+.filter-accordion .accordion-button::after {
+    scale: 0.7;
+    opacity: 0.5;
+}
+
+/* ─── Dark Mode: Bootstrap inside table ───────────────────────────────── */
+.dark-mode .filter-accordion .accordion-button {
+    background: transparent !important;
+    color: #94a3b8 !important;
+}
+
+.dark-mode .filter-accordion .accordion-button:not(.collapsed) {
+    background: #222 !important;
+    color: var(--nav-active) !important;
+}
+
+.dark-mode .filter-accordion .accordion-item {
+    background: transparent !important;
+}
+
+.dark-mode .form-check-input,
+.dark-mode .form-check-input[type="checkbox"] {
+    background-color: #111111 !important;
+    border-color: #555 !important;
+    box-shadow: none !important;
+}
+
+.dark-mode .form-check-input:checked,
+.dark-mode .form-check-input[type="checkbox"]:checked {
+    background-color: var(--nav-active, #004aad) !important;
+    border-color: var(--nav-active, #004aad) !important;
+}
+
+/* ─── Email link ──────────────────────────────────────────────────────── */
+a.email-link {
+    color: var(--nav-active) !important;
+    text-decoration: underline !important;
+    transition: color 0.2s ease;
+}
+
+.dark-mode a.email-link {
+    color: #60a5fa !important;
+}
