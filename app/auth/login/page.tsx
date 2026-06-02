@@ -134,6 +134,8 @@ function LoginContent() {
                     message = 'Invalid password. Please try again.'
                 } else if (status === 404) {
                     message = 'This email is not registered. Please create an account first.'
+                } else if (status === 403) {
+                    message = detail || 'Please verify your email before logging in. Check your inbox for the verification email.'
                 } else if (status === 400) {
                     message = detail || 'Invalid login request.'
                 } else if (status === 422) {
@@ -155,6 +157,7 @@ function LoginContent() {
             setIsLoading(false)
         }
     }
+
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#f0f4fc] dark:bg-[#0A1020] p-4 md:p-8">
@@ -355,6 +358,7 @@ function LoginContent() {
                     </motion.div>
                 </div>
             )}
+
         </div>
     )
 }

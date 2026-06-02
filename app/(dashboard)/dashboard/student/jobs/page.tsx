@@ -494,7 +494,7 @@ export default function StudentJobsPage() {
     }
 
     return (
-        <div className="mx-auto w-full max-w-7xl space-y-5 px-3 text-gray-900 dark:text-gray-100 sm:px-4 md:px-6">
+        <div className="w-full space-y-5 px-3 text-gray-900 dark:text-gray-100 sm:px-4 md:px-6">
             <motion.section
                 variants={pageIntroVariants}
                 initial="hidden"

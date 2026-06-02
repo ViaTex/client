@@ -250,6 +250,51 @@ export const apiClient = {
         return response.data
     },
 
+    sendForgotPasswordOtp: async (email: string) => {
+        const response = await axiosInstance.post('/auth/forgot-password/send-otp', { email })
+        return response.data
+    },
+
+    resetForgottenPassword: async (data: { email: string; code: string; new_password: string }) => {
+        const response = await axiosInstance.post('/auth/forgot-password/reset', data)
+        return response.data
+    },
+
+    startPasswordRecovery: async (data: { identifier: string; channel?: 'email' | 'sms'; captcha_token?: string }) => {
+        const response = await axiosInstance.post('/auth/recovery/forgot-password/start', data)
+        return response.data
+    },
+
+    resendPasswordRecoveryOtp: async (data: { identifier: string; channel?: 'email' | 'sms' }) => {
+        const response = await axiosInstance.post('/auth/recovery/forgot-password/resend-otp', data)
+        return response.data
+    },
+
+    verifyPasswordRecoveryOtp: async (data: { identifier: string; otp: string; captcha_token?: string }) => {
+        const response = await axiosInstance.post('/auth/recovery/forgot-password/verify-otp', data)
+        return response.data
+    },
+
+    completePasswordRecovery: async (data: { reset_token: string; new_password: string }) => {
+        const response = await axiosInstance.post('/auth/recovery/forgot-password/complete', data)
+        return response.data
+    },
+
+    verifyEmailByLink: async (token: string) => {
+        const response = await axiosInstance.post('/auth/verification/email/by-link', { token })
+        return response.data
+    },
+
+    verifyEmailByOtp: async (data: { email: string; otp: string }) => {
+        const response = await axiosInstance.post('/auth/verification/email/by-otp', data)
+        return response.data
+    },
+
+    resendEmailVerification: async (email: string) => {
+        const response = await axiosInstance.post('/auth/verification/email/resend', { email })
+        return response.data
+    },
+
     logout: async () => {
         const response = await axiosInstance.post('/auth/logout')
         return response.data

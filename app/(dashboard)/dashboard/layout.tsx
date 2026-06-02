@@ -11,7 +11,7 @@ const SIDEBAR_EXPANDED_PX = 244
 const SIDEBAR_COLLAPSED_PX = 72
 
 const layoutTransitionClass =
-    'transition-[padding-left] duration-[ms:400ms] ease-[transition-timing-function:cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none'
+    'transition-[padding-left] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[padding-left] motion-reduce:transition-none'
 
 export default function DashboardLayout({
     children,
@@ -101,7 +101,7 @@ export default function DashboardLayout({
                     className={
                         isSkillExamMode
                             ? 'flex min-h-0 flex-1 flex-col overflow-auto w-full max-w-none'
-                            : 'px-5 py-5 lg:px-6 lg:py-6 max-w-[1440px] mx-auto w-full'
+                            : 'px-5 py-5 lg:px-6 lg:py-6 w-full'
                     }
                 >
                     {children}

@@ -376,7 +376,7 @@ export default function ResumePage() {
 
     if (loadingStatus) {
         return (
-            <div className="w-full font-sans text-gray-900 dark:text-gray-100 relative max-w-7xl mx-auto">
+            <div className="w-full font-sans text-gray-900 dark:text-gray-100 relative">
                 <div className="flex justify-center py-12">
                     <Loader size="lg" />
                 </div>
@@ -385,7 +385,7 @@ export default function ResumePage() {
     }
 
     return (
-        <div className="w-full font-sans text-gray-900 dark:text-gray-100 relative max-w-7xl mx-auto">
+        <div className="w-full font-sans text-gray-900 dark:text-gray-100 relative">
             <div className="space-y-4 sm:space-y-6 px-3 sm:px-4 md:px-6 pt-1 sm:pt-6 lg:pt-0">
                 {/* Header */}
                 <div>

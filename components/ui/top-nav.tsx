@@ -16,7 +16,7 @@ import {
 import { useAuth } from '@/hooks/useAuth'
 
 const topNavTransitionClass =
-    'transition-[left,width] duration-[ms:400ms] ease-[transition-timing-function:cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none'
+    'transition-[left,width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,width] motion-reduce:transition-none'
 
 type TopNavProps = {
     isSidebarCollapsed: boolean
@@ -60,13 +60,11 @@ export function TopNav({
 
     return (
         <header
-            className={`fixed top-0 right-0 z-[60] flex items-center justify-between whitespace-nowrap
-                border-b border-[#E5E7EB] dark:border-white/10
-                px-6 lg:px-8
-                bg-white dark:bg-[#0B1739]
-                left-0 w-full lg:left-[var(--sidebar-w)] lg:w-[calc(100%_-_var(--sidebar-w))]
+            className={`fixed top-0 right-0 z-[60] flex items-center justify-between whitespace-nowrap transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,width]
+                left-0 w-full lg:left-[var(--sidebar-w)] lg:w-[calc(100%_-_var(--sidebar-w))] h-[72px] px-6 lg:px-8
+                bg-white/95 border-b border-gray-100 dark:border-white/[0.06] 
+                dark:bg-gradient-to-r dark:from-[#1b1437]/95 dark:via-[#080b20]/95 dark:to-[#091e30]/95 backdrop-blur-md shadow-sm
                 ${topNavTransitionClass}`}
-            style={{ height: '72px' }}
         >
             {/* Left: Sidebar toggle + Search */}
             <div className="flex items-center gap-4 flex-1 min-w-0">
