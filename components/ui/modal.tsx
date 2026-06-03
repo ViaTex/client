@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -13,6 +14,7 @@ interface ModalProps {
     children: React.ReactNode
     className?: string
     maxWidth?: "sm" | "md" | "lg" | "xl" | "2xl"
+    position?: "center" | "right"
 }
 
 const maxWidthClasses = {
@@ -29,8 +31,15 @@ export function Modal({
     title,
     children,
     className,
-    maxWidth = "lg"
+    maxWidth = "lg",
+    position = "center"
 }: ModalProps) {
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => {
+        setMounted(true)
+    }, [])
+
     React.useEffect(() => {
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === "Escape") {
@@ -41,11 +50,13 @@ export function Modal({
         if (isOpen) {
             document.addEventListener("keydown", handleEscape)
             document.body.style.overflow = "hidden"
+            document.documentElement.style.overflow = "hidden"
         }
 
         return () => {
             document.removeEventListener("keydown", handleEscape)
             document.body.style.overflow = "unset"
+            document.documentElement.style.overflow = "unset"
         }
     }, [isOpen, onClose])
 
@@ -54,34 +65,39 @@ export function Modal({
         onClose()
     }
 
-    return (
+    const modal = (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[999] flex items-center justify-center pointer-events-none">
+                <div className={cn(
+                    "fixed inset-0 z-[9999] flex pointer-events-none",
+                    position === "center" ? "backdrop-blur-sm bg-black/60 min-h-dvh items-start justify-center overflow-y-auto overscroll-none p-4 pt-6 sm:items-center sm:p-6" : "bg-black/30 justify-end overflow-hidden"
+                )}>
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="absolute inset-0 bg-black/50 backdrop-blur-sm pointer-events-auto"
+                        className="fixed inset-0 pointer-events-auto"
                         onClick={handleBackdropClick}
                     />
 
                     {/* Modal */}
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        transition={{ duration: 0.2 }}
+                        initial={position === "center" ? { opacity: 0, scale: 0.95, y: 20 } : { opacity: 0, x: "100%" }}
+                        animate={position === "center" ? { opacity: 1, scale: 1, y: 0 } : { opacity: 1, x: 0 }}
+                        exit={position === "center" ? { opacity: 0, scale: 0.95, y: 20 } : { opacity: 0, x: "100%" }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
                         className={cn(
-                            "relative bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 w-full mx-4 pointer-events-auto",
-                            maxWidthClasses[maxWidth],
+                            "relative bg-white shadow-2xl pointer-events-auto dark:border-gray-700 dark:bg-gray-800 flex flex-col",
+                            position === "center"
+                                ? cn("my-auto w-full rounded-xl border border-gray-200", maxWidthClasses[maxWidth])
+                                : "h-full w-full sm:w-[55vw] overflow-y-auto border-l border-gray-200",
                             className
                         )}
                     >
                         {/* Header */}
-                        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-                            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                        <div className="flex items-start justify-between gap-4 border-b border-gray-200 p-4 dark:border-gray-700 sm:p-6">
+                            <h2 className="min-w-0 text-lg font-semibold text-gray-900 dark:text-white sm:text-xl">
                                 {title}
                             </h2>
                             <Button
@@ -96,7 +112,7 @@ export function Modal({
                         </div>
 
                         {/* Content */}
-                        <div className="p-6">
+                        <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
                             {children}
                         </div>
                     </motion.div>
@@ -104,6 +120,8 @@ export function Modal({
             )}
         </AnimatePresence>
     )
+
+    return mounted ? createPortal(modal, document.body) : null
 }
 
 export function TermsModalContent() {

@@ -14,11 +14,11 @@ export default function HeroSection() {
         className="flex flex-col gap-6 sm:gap-8 items-center lg:items-start text-center lg:text-left"
       >
         <h1
-          className="text-[#2A2D31] font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.15] sm:leading-[1.1]"
+          className="text-[#2A2D31] dark:text-white font-extrabold tracking-tight text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.15] sm:leading-[1.1]"
         >
-          Revolutionizing India's <br className="hidden lg:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D1C1] to-[#009B8E]">Employment Landscape</span>
+          Revolutionizing India's <br className="hidden lg:block" /><span className="text-transparent bg-clip-text bg-gradient-to-r from-[#00D1C1] to-[#0EA5E9] dark:from-[#5EEAD4] dark:to-[#38BDF8]">Employment Landscape</span>
         </h1>
-        <p className="text-base sm:text-lg leading-relaxed text-[#2A2D31]/70 max-w-xl font-medium px-4 sm:px-0">
+        <p className="text-base sm:text-lg leading-relaxed text-[#2A2D31]/70 dark:text-slate-300 max-w-xl font-medium px-4 sm:px-0">
           Bridging the gap between ambitious candidates and industry demands through a verified,
           skill-first ecosystem built on trust and academic serenity.
         </p>
@@ -26,7 +26,7 @@ export default function HeroSection() {
           <button className="primary-btn-gradient text-[#2A2D31] px-8 py-3.5 rounded-xl font-bold shadow-md hover:shadow-lg hover:opacity-90 transition-all transform hover:-translate-y-0.5 w-full sm:w-auto">
             Complete Your Profile
           </button>
-          <button className="bg-white border-2 border-[#E5E7EB] text-[#2A2D31] px-8 py-3.5 rounded-xl font-semibold shadow-sm hover:border-[#C0BFBD] hover:bg-gray-50 transition-all transform hover:-translate-y-0.5 w-full sm:w-auto">
+          <button className="bg-white border-2 border-[#E5E7EB] text-[#2A2D31] px-8 py-3.5 rounded-xl font-semibold shadow-sm hover:border-[#C0BFBD] hover:bg-gray-50 transition-all transform hover:-translate-y-0.5 w-full sm:w-auto dark:border-white/15 dark:bg-white/10 dark:text-white dark:hover:border-[#5EEAD4]/50 dark:hover:bg-white/15">
             Verify Your Skills
           </button>
         </div>
@@ -38,16 +38,16 @@ export default function HeroSection() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="mt-4 sm:mt-6 flex w-full justify-center lg:justify-start px-4 sm:px-0"
         >
-          <div className="bg-white rounded-2xl p-4 sm:p-5 flex items-center gap-4 sm:gap-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all w-full sm:w-auto text-left">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#00D1C1]/10 flex-shrink-0 flex items-center justify-center">
-              <TrendingUp className="text-[#00D1C1] w-5 h-5 sm:w-6 sm:h-6" />
+          <div className="bg-white rounded-2xl p-4 sm:p-5 flex items-center gap-4 sm:gap-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all w-full sm:w-auto text-left dark:border-white/10 dark:bg-[#111A33]/90 dark:shadow-[0_18px_45px_rgba(0,0,0,0.25)] dark:hover:shadow-[0_18px_50px_rgba(20,184,166,0.12)]">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#00D1C1]/10 flex-shrink-0 flex items-center justify-center dark:bg-[#5EEAD4]/15">
+              <TrendingUp className="text-[#00D1C1] dark:text-[#5EEAD4] w-5 h-5 sm:w-6 sm:h-6" />
             </div>
             <div>
-              <p className="text-[10px] sm:text-xs uppercase tracking-widest text-[#2A2D31]/50 font-bold mb-1">
+              <p className="text-[10px] sm:text-xs uppercase tracking-widest text-[#2A2D31]/50 dark:text-slate-400 font-bold mb-1">
                 Academic Excellence
               </p>
-              <p className="font-extrabold text-lg sm:text-xl text-[#2A2D31]">
-                Average Package: <span className="text-[#00D1C1]">26.5 LPA</span>
+              <p className="font-extrabold text-lg sm:text-xl text-[#2A2D31] dark:text-white">
+                Average Package: <span className="text-[#00D1C1] dark:text-[#5EEAD4]">26.5 LPA</span>
               </p>
             </div>
           </div>
@@ -62,7 +62,7 @@ export default function HeroSection() {
         className="relative h-[400px] sm:h-[500px] w-full flex items-center justify-center lg:justify-end mt-8 lg:mt-0"
       >
         {/* Subtle background glow */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-[#00D1C1]/10 to-[#FCE7F3]/20 rounded-[3rem] blur-3xl -z-10" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-[#00D1C1]/10 to-[#FCE7F3]/20 rounded-[3rem] blur-3xl -z-10 dark:from-[#00D1C1]/18 dark:via-[#0EA5E9]/10 dark:to-[#FBBF24]/10" />
         
         <img 
           src="/Achievement-bro.svg" 

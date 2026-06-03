@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { UserType } from '@/types/auth'
-import { apiClient } from '@/lib/api'
+import { authService } from '@/services/auth.service'
 
 export interface User {
     id: string
     email: string
     user_type: UserType
     name?: string
+    profile_picture_url?: string
 }
 
 export function useAuth() {
@@ -60,7 +61,8 @@ export function useAuth() {
                                 id: tokenPayload.sub || 'temp-id',
                                 email: tokenPayload.email || '',
                                 user_type: tokenPayload.user_type || 'student',
-                                name: tokenPayload.name || ''
+                                name: tokenPayload.name || '',
+                                profile_picture_url: tokenPayload.profile_picture_url || ''
                             }
                             setUser(userFromToken)
                             setIsAuthenticated(true)
@@ -94,7 +96,7 @@ export function useAuth() {
     const logout = async () => {
         try {
             // Notify the backend (best-effort; don't block user logout if it fails)
-            await apiClient.logout()
+            await authService.logout()
         } catch (e) {
             // Ignore errors — we still clear local state
         } finally {

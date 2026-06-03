@@ -14,7 +14,7 @@ import LoginIllustration from './LoginIllustration'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { apiClient } from '@/lib/api'
+import { authService } from '@/services/auth.service'
 import { UserType } from '@/types/auth'
 import { useAuth } from '@/hooks/useAuth'
 import Image from 'next/image'
@@ -75,12 +75,12 @@ function LoginContent() {
     const onSubmit = async (data: LoginFormData) => {
         setIsLoading(true)
         try {
-            const response = await apiClient.login(data)
+            const response = await authService.login(data)
 
-            apiClient.setAuthTokens(response.access_token, response.refresh_token)
+            authService.setTokens(response.access_token, response.refresh_token)
 
             // Use user_type from backend response
-            const userType = response.user_type || 'student'
+            const userType = (response.user_type || 'student') as UserType
 
             login({
                 id: response.user_id || 'temp-id',

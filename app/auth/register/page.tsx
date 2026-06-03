@@ -12,7 +12,7 @@ import LoginIllustration from '../login/LoginIllustration'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { apiClient } from '@/lib/api'
+import { authService } from '@/services/auth.service'
 import { UserType } from '@/types/auth'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -90,13 +90,13 @@ function RegisterContent() {
 
             switch (selectedUserType) {
                 case 'student':
-                    await apiClient.registerStudent(registerData)
+                    await authService.registerStudent(registerData)
                     break
                 case 'corporate':
-                    await apiClient.registerCorporate(registerData)
+                    await authService.registerCorporate(registerData)
                     break
                 case 'mentor':
-                    await apiClient.registerMentor({
+                    await authService.registerMentor({
                         ...registerData,
                         expertise_areas: data.expertise_areas
                             ? data.expertise_areas.split(',').map((item) => item.trim()).filter(Boolean)
@@ -105,7 +105,7 @@ function RegisterContent() {
                     })
                     break
                 case 'college':
-                    await apiClient.registerCollege(registerData)
+                    await authService.registerCollege(registerData)
                     break
                 default:
                     throw new Error('Invalid user type')
@@ -114,11 +114,11 @@ function RegisterContent() {
             toast.success('Registration successful! Logging you in...')
 
             try {
-                const loginResponse = await apiClient.login({
+                const loginResponse = await authService.login({
                     email: data.email,
                     password: data.password
                 })
-                apiClient.setAuthTokens(loginResponse.access_token, loginResponse.refresh_token)
+                authService.setTokens(loginResponse.access_token, loginResponse.refresh_token)
                 login(
                     {
                         id: loginResponse.user_id || 'temp-id',
