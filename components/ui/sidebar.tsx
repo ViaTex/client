@@ -18,10 +18,11 @@ import {
     Settings,
     Rocket,
     ChevronDown,
-    ArrowUpRight,
+    Bell,
+    LineChart,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { useState, useRef, useEffect } from 'react'
+import { useState } from 'react'
 
 interface NavigationSubItem {
     name: string
@@ -68,10 +69,14 @@ const mentorNavigation: NavigationItem[] = [
 
 const collegeNavigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/dashboard/college', icon: LayoutDashboard },
-    { name: 'College Profile', href: '/dashboard/college/profile', icon: Building },
+    { name: 'Analytics', href: '/dashboard/college/analytics', icon: LineChart },
     { name: 'Students', href: '/dashboard/college/students', icon: GraduationCap },
-    { name: 'Internships', href: '/dashboard/college/internships', icon: Briefcase },
+    { name: 'Verification & Viva', href: '/dashboard/college/verification', icon: CalendarCheck },
+    { name: 'Placements', href: '/dashboard/college/placements', icon: Rocket },
+    { name: 'Recruiters', href: '/dashboard/college/recruiters', icon: Building },
+    { name: 'Jobs', href: '/dashboard/college/jobs', icon: Briefcase },
     { name: 'Reports', href: '/dashboard/college/reports', icon: FileSpreadsheet },
+    { name: 'Notifications', href: '/dashboard/college/notifications', icon: Bell },
     { name: 'Settings', href: '/dashboard/college/settings', icon: Settings },
 ]
 
@@ -106,7 +111,21 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const { user, logout } = useAuth()
-    const isCorporate = user?.user_type === 'corporate'
+
+    const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
+        'Manage Users': true, // Default to true so it is initially expanded
+    })
+
+    const toggleMenu = (name: string) => {
+        setExpandedMenus((prev) => ({
+            ...prev,
+            [name]: !prev[name],
+        }))
+    }
+
+    const checkSubItemActive = (href: string) => {
+        return pathname === href || pathname.startsWith(href + '/')
+    }
 
     // Select navigation based on user type, defaulting to student
     const getNavigationFields = () => {
@@ -127,133 +146,224 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
 
     const navigation = getNavigationFields()
 
-    // Handle clicks outside of profile dropdown
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
-                setShowProfileMenu(false)
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside)
-        return () => document.removeEventListener("mousedown", handleClickOutside)
-    }, [])
-
     return (
         <>
             {/* Mobile Sidebar Overlay */}
             {isMobileOpen && (
                 <div
-                    className="lg:hidden fixed inset-x-0 top-0 bottom-0 z-40 bg-black/50 backdrop-blur-sm"
+                    className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
                     onClick={() => setIsMobileOpen(false)}
                     aria-hidden
                 />
             )}
 
-            {/* Sidebar: Connected Full-Height & Full-Width Grid Design */}
+            {/* Sidebar */}
             <aside
                 className={`fixed left-0 top-0 z-50 flex flex-col h-screen
-                    bg-[#080F26] dark:bg-[#0B1739] text-gray-800 dark:text-white 
                     transition-[width,transform] duration-[ms:400ms] ease-[transition-timing-function:cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none
                     shrink-0
+                    ${isMobileOpen ? 'p-3' : 'lg:p-4 lg:pr-2 p-0'}
                     ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
                 style={{ width: 'var(--sidebar-w)' }}
             >
-                {/* Header: Logo */}
-                <div className={`flex items-center h-[72px] shrink-0 border-b border-white/10 ${isCollapsed ? 'px-3 justify-center' : 'px-5'}`}>
-                    <Link href="/" className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
-                        <div className="w-9 h-9 bg-gradient-to-br from-[#7C3AED] to-[#A855F7] rounded-xl flex items-center justify-center text-white shrink-0 shadow-lg shadow-purple-500/25">
-                            <Rocket className="w-5 h-5" />
-                        </div>
-                        {!isCollapsed && (
-                            <span className="text-[15px] font-bold text-white tracking-tight">
-                                DishaSetu
-                            </span>
-                        )}
-                    </Link>
-                </div>
-
-                {/* Navigation Links */}
-                <div className={`flex-1 overflow-y-auto ${isCollapsed ? 'px-2' : 'px-3'} py-5`}>
-                    <nav className="flex flex-col gap-1">
-                        {navigation.map((item) => {
-                            const isActive = pathname === item.href
-                            const Icon = item.icon
-                            return (
-                                <Link
-                                    key={item.name}
-                                    href={item.href}
-                                    onClick={() => setIsMobileOpen(false)}
-                                    className={`relative flex items-center gap-3 ${isCollapsed ? 'px-3 justify-center' : 'px-4'} py-[10px] rounded-lg text-[13px] font-medium transition-all duration-200 group
-                                        ${isActive
-                                            ? 'bg-gray-100 text-gray-900 dark:bg-[#080F26] dark:text-white'
-                                            : 'text-gray-500 hover:bg-gray-100 hover:text-gray-900 dark:text-white/60 dark:hover:bg-white/[0.06] dark:hover:text-white/90'
-                                        }`}
-                                    title={isCollapsed ? item.name : undefined}
-                                >
-                                    <Icon
-                                        className={`w-[18px] h-[18px] shrink-0 ${isActive
-                                            ? 'text-gray-900 dark:text-white'
-                                            : 'text-gray-400 group-hover:text-gray-700 dark:text-white/50 dark:group-hover:text-white/80'
-                                            }`}
-                                        strokeWidth={isActive ? 2.2 : 1.8}
-                                    />
-                                    {!isCollapsed && (
-                                        <>
-                                            <span>{item.name}</span>
-                                            {/* Show shortlisted count badge only for corporate sidebar */}
-                                            {isCorporate && item.name === 'Shortlisted' && (
-                                                <span className="ml-2 inline-flex items-center justify-center text-[11px] font-bold bg-primary text-white px-2 py-0.5 rounded-full">
-                                                    45
-                                                </span>
-                                            )}
-                                        </>
-                                    )}
-
-                                </Link>
-                            )
-                        })}
-                    </nav>
-                </div>
-
-                {/* Bottom section: User Profile + Logout */}
-                <div className={`shrink-0 border-t border-gray-200 dark:border-white/10 ${isCollapsed ? 'px-2' : 'px-3'} py-4`}>
-                    <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-2'}`}>
-                        <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#A855F7] flex items-center justify-center text-white shrink-0 text-sm font-bold shadow-lg shadow-purple-500/20">
-                            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                        </div>
-                        {!isCollapsed && (
-                            <>
-                                <div className="flex-1 min-w-0 pr-5">
-                                    <p className="text-[13px] font-semibold text-white truncate">
-                                        {(() => {
-                                            const raw = user?.name || ''
-                                            // If it looks like an email, use part before @
-                                            const displayName = raw.includes('@') ? raw.split('@')[0] : raw
-                                            // Take just the first name
-                                            const firstName = displayName.split(' ')[0]
-                                            return firstName
-                                                ? firstName.charAt(0).toUpperCase() + firstName.slice(1)
-                                                : `${user?.user_type?.charAt(0).toUpperCase()}${user?.user_type?.slice(1)} User`
-                                        })()}
-                                    </p>
-                                    <p className="text-[11px] text-white/40 truncate">
-                                        {user?.user_type?.charAt(0).toUpperCase()}{user?.user_type?.slice(1) || 'Student'}
-                                    </p>
+                {/* Floating Inner Container with rounded corners on both left and right sides */}
+                <div className="flex flex-col h-full w-full bg-[#13141F] text-white rounded-[17px] border border-white/[0.05] overflow-hidden shadow-2xl">
+                    {/* Header: Logo */}
+                    <div className={`flex items-center h-[88px] shrink-0 ${isCollapsed ? 'px-3 justify-center' : 'px-6'}`}>
+                        <Link href="/" className={`flex items-center gap-3 ${isCollapsed ? 'justify-center' : ''}`}>
+                            {/* Custom overlapping logo styled like the screenshot */}
+                            <div className="relative w-8 h-8 flex items-center justify-center shrink-0">
+                                {/* Peach outer circle */}
+                                <div className="absolute inset-0 rounded-full bg-[#E5B59E] border border-white/20 shadow-md"></div>
+                                {/* White inner crescent cutting in */}
+                                <div className="absolute top-1 left-1 w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-inner">
+                                    {/* Dark center dot */}
+                                    <div className="w-2.5 h-2.5 rounded-full bg-[#13141F]"></div>
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={logout}
-                                    className="flex items-center justify-center w-8 h-8 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 dark:text-white/40 hover:text-red-400 transition-colors"
-                                    title="Logout"
-                                >
-                                    <LogOut className="w-4 h-4" />
-                                </button>
-                            </>
-                        )}
+                            </div>
+                            {!isCollapsed && (
+                                <span className="text-[20px] font-bold text-white tracking-tight font-poppins">
+                                    DishaSetu
+                                </span>
+                            )}
+                        </Link>
+                    </div>
+
+                    {/* Navigation Links */}
+                    <div className={`flex-1 overflow-y-auto ${isCollapsed ? 'px-2' : 'px-4'} py-4`}>
+                        <nav className="flex flex-col gap-2">
+                            {navigation.map((item) => {
+                                const hasSubItems = !!item.subItems
+                                const isExpanded = expandedMenus[item.name]
+                                const isAnySubActive = hasSubItems && item.subItems?.some(sub => checkSubItemActive(sub.href))
+                                const isActive = hasSubItems ? isAnySubActive : (pathname === item.href)
+                                const Icon = item.icon
+
+                                if (hasSubItems) {
+                                    return (
+                                        <div key={item.name} className="flex flex-col">
+                                            <button
+                                                onClick={() => {
+                                                    if (isCollapsed) {
+                                                        setIsCollapsed(false)
+                                                        setExpandedMenus((prev) => ({ ...prev, [item.name]: true }))
+                                                    } else {
+                                                        toggleMenu(item.name)
+                                                    }
+                                                }}
+                                                className={`relative flex items-center gap-3.5 w-full ${isCollapsed ? 'px-3 justify-center' : 'px-5'} py-3.5 rounded-full text-[14px] font-semibold transition-all duration-200 group
+                                                    ${isAnySubActive
+                                                        ? 'text-white bg-white/[0.04]'
+                                                        : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
+                                                    }`}
+                                                title={isCollapsed ? item.name : undefined}
+                                            >
+                                                <Icon
+                                                    className={`w-[20px] h-[20px] shrink-0 ${isAnySubActive
+                                                        ? 'text-[#C8EE44]'
+                                                        : 'text-white/50 group-hover:text-white/80'
+                                                        }`}
+                                                    strokeWidth={isAnySubActive ? 2.5 : 2}
+                                                />
+                                                {!isCollapsed && (
+                                                    <>
+                                                        <span className="truncate">{item.name}</span>
+                                                        <ChevronDown
+                                                            className={`ml-auto w-4.5 h-4.5 text-white/40 transition-transform duration-200 group-hover:text-white/70
+                                                                ${isExpanded ? 'rotate-180' : ''}`}
+                                                        />
+                                                    </>
+                                                )}
+                                            </button>
+
+                                            {/* Sub-items with curved connector tree design */}
+                                            {!isCollapsed && isExpanded && (
+                                                <div className="relative pl-[48px] flex flex-col gap-1 mt-1.5 transition-all duration-200">
+                                                    {item.subItems?.map((subItem, idx, arr) => {
+                                                        const isSubActive = checkSubItemActive(subItem.href)
+                                                        const isLast = idx === arr.length - 1
+                                                        return (
+                                                            <Link
+                                                                key={subItem.name}
+                                                                href={subItem.href}
+                                                                onClick={() => setIsMobileOpen(false)}
+                                                                className="relative flex items-center h-10 group"
+                                                            >
+                                                                {/* Vertical line segment (top half) */}
+                                                                <div className="absolute left-[-18px] top-0 w-[1.5px] h-1/2 bg-white/15 group-hover:bg-white/35 transition-colors" />
+
+                                                                {/* Vertical line segment (bottom half) - omit for last element */}
+                                                                {!isLast && (
+                                                                    <div className="absolute left-[-18px] top-1/2 w-[1.5px] h-1/2 bg-white/15 group-hover:bg-white/35 transition-colors" />
+                                                                )}
+
+                                                                {/* Curved branch pointing right */}
+                                                                <div className="absolute left-[-18px] top-1/2 w-4 h-4 border-l-[1.5px] border-b-[1.5px] border-white/15 rounded-bl-[6px] -translate-y-1/2 group-hover:border-white/35 transition-colors" />
+
+                                                                <span className={`text-[13px] font-semibold transition-colors duration-150 pl-1
+                                                                    ${isSubActive
+                                                                        ? 'text-[#C8EE44]'
+                                                                        : 'text-white/50 group-hover:text-white'
+                                                                    }`}
+                                                                >
+                                                                    {subItem.name}
+                                                                </span>
+                                                            </Link>
+                                                        )
+                                                    })}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )
+                                }
+
+                                return (
+                                    <Link
+                                        key={item.name}
+                                        href={item.href || '#'}
+                                        onClick={() => setIsMobileOpen(false)}
+                                        className={`relative flex items-center gap-3.5 ${isCollapsed ? 'px-3 justify-center' : 'px-5'} py-3.5 rounded-full text-[14px] font-semibold transition-all duration-200 group
+                                            ${isActive
+                                                ? 'bg-[#C8EE44] text-[#13141F]'
+                                                : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
+                                            }`}
+                                        title={isCollapsed ? item.name : undefined}
+                                    >
+                                        <Icon
+                                            className={`w-[20px] h-[20px] shrink-0 ${isActive
+                                                ? 'text-[#13141F]'
+                                                : 'text-white/50 group-hover:text-white/80'
+                                                }`}
+                                            strokeWidth={isActive ? 2.5 : 2}
+                                        />
+                                        {!isCollapsed && (
+                                            <>
+                                                <span className="truncate">{item.name}</span>
+                                                {/* Show badge dynamically if defined */}
+                                                {item.badge !== undefined && (
+                                                    <span className={`ml-auto inline-flex items-center justify-center text-[11px] font-bold w-5.5 h-5.5 px-1.5 rounded-full shrink-0
+                                                        ${isActive
+                                                            ? 'bg-[#13141F] text-[#C8EE44]'
+                                                            : 'bg-[#F5C2A9] text-[#13141F]'}`}
+                                                    >
+                                                        {item.badge}
+                                                    </span>
+                                                )}
+                                            </>
+                                        )}
+                                    </Link>
+                                )
+                            })}
+                        </nav>
+                    </div>
+
+
+
+                    {/* Bottom section: User Profile + Logout */}
+                    <div className={`shrink-0 border-t border-white/10 ${isCollapsed ? 'px-2' : 'px-4'} py-4`}>
+                        <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-2'}`}>
+                            <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-[#13141F] shrink-0 text-sm font-bold shadow-md relative bg-gradient-to-br from-[#E5B59E] to-[#C8EE44]">
+                                {user?.profile_picture_url ? (
+                                    <img 
+                                        src={user.profile_picture_url} 
+                                        alt="User Avatar" 
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <span>{user?.name?.charAt(0)?.toUpperCase() || 'U'}</span>
+                                )}
+                            </div>
+                            {!isCollapsed && (
+                                <>
+                                    <div className="flex-1 min-w-0 pr-2">
+                                        <p className="text-[13px] font-semibold text-white truncate">
+                                            {(() => {
+                                                const raw = user?.name || ''
+                                                const displayName = raw.includes('@') ? raw.split('@')[0] : raw
+                                                const firstName = displayName.split(' ')[0]
+                                                return firstName
+                                                    ? firstName.charAt(0).toUpperCase() + firstName.slice(1)
+                                                    : `${user?.user_type?.charAt(0).toUpperCase()}${user?.user_type?.slice(1)} User`
+                                            })()}
+                                        </p>
+                                        <p className="text-[11px] text-white/40 truncate">
+                                            {user?.user_type?.charAt(0).toUpperCase()}{user?.user_type?.slice(1) || 'Student'}
+                                        </p>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={logout}
+                                        className="flex items-center justify-center w-8 h-8 rounded-xl hover:bg-white/10 text-white/40 hover:text-red-400 transition-colors"
+                                        title="Logout"
+                                    >
+                                        <LogOut className="w-4.5 h-4.5" />
+                                    </button>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             </aside>
         </>
     )
 }
-

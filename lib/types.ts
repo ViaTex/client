@@ -144,6 +144,18 @@ export interface SkillEvaluationItem {
     student_technical_issues?: string | null
     created_at: string
     updated_at?: string | null
+    student?: {
+        name: string
+        email: string
+        profile_picture_url?: string | null
+    } | null
+    project?: {
+        title: string
+        description?: string | null
+        github_url?: string | null
+        live_url?: string | null
+        skill_domain?: string | null
+    } | null
 }
 
 export interface LoginResponse {
