@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { toast } from "react-hot-toast"
 import { apiClient } from "@/lib/api"
@@ -14,7 +14,7 @@ const getErrorMessage = (error: any, fallback: string) => {
   return fallback
 }
 
-export default function VerifyEmailPage() {
+function VerifyEmailForm() {
   const searchParams = useSearchParams()
   const token = searchParams.get("token") || ""
   const [email, setEmail] = useState("")
@@ -56,17 +56,25 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-[#f0f4fc] dark:bg-[#0A1020]">
-      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#121C46] p-6 shadow-xl">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Verify Email</h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">Use verification link or OTP.</p>
-        <div className="mt-5 space-y-4">
-          <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Registered email" />
-          <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Verification OTP" />
-          <Button className="w-full" loading={loading} onClick={verifyOtp}>Verify OTP</Button>
-          <button type="button" className="w-full text-sm text-[#7199D6]" onClick={resend}>Resend verification email</button>
-        </div>
+    <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#121C46] p-6 shadow-xl">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Verify Email</h1>
+      <p className="mt-1 text-sm text-gray-500 dark:text-gray-300">Use verification link or OTP.</p>
+      <div className="mt-5 space-y-4">
+        <Input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Registered email" />
+        <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Verification OTP" />
+        <Button className="w-full" loading={loading} onClick={verifyOtp}>Verify OTP</Button>
+        <button type="button" className="w-full text-sm text-[#7199D6]" onClick={resend}>Resend verification email</button>
       </div>
+    </div>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center p-4 bg-[#f0f4fc] dark:bg-[#0A1020]">
+      <Suspense fallback={<div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#121C46] p-6 shadow-xl flex justify-center py-10"><span className="text-gray-500">Loading...</span></div>}>
+        <VerifyEmailForm />
+      </Suspense>
     </div>
   )
 }

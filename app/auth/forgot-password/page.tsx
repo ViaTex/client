@@ -245,14 +245,12 @@ function IllustrationPanel({ mouseX, mouseY }: { mouseX: any; mouseY: any }) {
       >
         <div className="relative w-full h-full">
           <Image
-            src="/images/forgot_password_bg_nokey.png"
-            alt="Mystical doorway with a floating key"
+            src="/images/login_illustration.jpg"
+            alt="Illustration of a secure login scene"
             fill
             className="object-cover object-center"
             priority
           />
-          {/* Floating 3D key overlay */}
-          <FloatingKey />
           {/* Bottom fade */}
           <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#0f0c29] to-transparent" />
         </div>

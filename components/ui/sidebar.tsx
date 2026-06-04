@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useState } from 'react'
+import { mentorSidebarInfo } from '@/lib/mentor-sidebar-info'
 
 interface NavigationSubItem {
     name: string
@@ -35,6 +36,7 @@ interface NavigationItem {
     icon: any
     badge?: number
     subItems?: NavigationSubItem[]
+    comingSoon?: boolean
 }
 
 const studentNavigation: NavigationItem[] = [
@@ -60,12 +62,24 @@ const corporateNavigation: NavigationItem[] = [
     { name: 'Settings', href: '/dashboard/corporate/settings', icon: Settings },
 ]
 
-const mentorNavigation: NavigationItem[] = [
-    { name: 'Dashboard', href: '/dashboard/mentor', icon: LayoutDashboard },
-    { name: 'My Profile', href: '/dashboard/mentor/profile', icon: User },
-    { name: 'Skill Evaluations', href: '/dashboard/mentor/evaluations', icon: CalendarCheck, badge: 1 },
-    { name: 'Settings', href: '/dashboard/mentor/settings', icon: Settings },
-]
+const mentorIconMap = {
+    dashboard: LayoutDashboard,
+    profile: User,
+    evaluations: CalendarCheck,
+    vivas: CalendarCheck,
+    projects: FileText,
+    reports: FileSpreadsheet,
+    messages: Bell,
+    settings: Settings,
+} as const
+
+const mentorNavigation: NavigationItem[] = mentorSidebarInfo.map((item) => ({
+    name: item.name,
+    href: item.href ?? undefined,
+    icon: mentorIconMap[item.iconKey],
+    badge: item.badge,
+    comingSoon: item.comingSoon,
+}))
 
 const collegeNavigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/dashboard/college', icon: LayoutDashboard },
@@ -198,6 +212,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
                                 const isAnySubActive = hasSubItems && item.subItems?.some(sub => checkSubItemActive(sub.href))
                                 const isActive = hasSubItems ? isAnySubActive : (pathname === item.href)
                                 const Icon = item.icon
+                                const isDisabled = item.comingSoon || !item.href
 
                                 if (hasSubItems) {
                                     return (
@@ -277,23 +292,57 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
                                     )
                                 }
 
+                                const itemClassName = `relative flex items-center gap-3.5 ${isCollapsed ? 'px-3 justify-center' : 'px-5'} py-3.5 rounded-full text-[14px] font-semibold transition-all duration-200 group
+                                    ${isActive
+                                        ? 'bg-[#C8EE44] text-[#13141F]'
+                                        : isDisabled
+                                            ? 'text-white/35 cursor-default'
+                                            : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
+                                    }`
+
+                                const iconClassName = `w-[20px] h-[20px] shrink-0 ${
+                                    isActive
+                                        ? 'text-[#13141F]'
+                                        : isDisabled
+                                            ? 'text-white/25'
+                                            : 'text-white/50 group-hover:text-white/80'
+                                }`
+
+                                if (isDisabled) {
+                                    return (
+                                        <div
+                                            key={item.name}
+                                            className={itemClassName}
+                                            title={isCollapsed ? item.name : undefined}
+                                        >
+                                            <Icon
+                                                className={iconClassName}
+                                                strokeWidth={2}
+                                            />
+                                            {!isCollapsed && (
+                                                <>
+                                                    <span className="truncate">{item.name}</span>
+                                                    {item.badge !== undefined && (
+                                                        <span className="ml-auto inline-flex items-center justify-center text-[11px] font-bold w-5.5 h-5.5 px-1.5 rounded-full shrink-0 bg-[#F5C2A9] text-[#13141F]">
+                                                            {item.badge}
+                                                        </span>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                    )
+                                }
+
                                 return (
                                     <Link
                                         key={item.name}
                                         href={item.href || '#'}
                                         onClick={() => setIsMobileOpen(false)}
-                                        className={`relative flex items-center gap-3.5 ${isCollapsed ? 'px-3 justify-center' : 'px-5'} py-3.5 rounded-full text-[14px] font-semibold transition-all duration-200 group
-                                            ${isActive
-                                                ? 'bg-[#C8EE44] text-[#13141F]'
-                                                : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
-                                            }`}
+                                        className={itemClassName}
                                         title={isCollapsed ? item.name : undefined}
                                     >
                                         <Icon
-                                            className={`w-[20px] h-[20px] shrink-0 ${isActive
-                                                ? 'text-[#13141F]'
-                                                : 'text-white/50 group-hover:text-white/80'
-                                                }`}
+                                            className={iconClassName}
                                             strokeWidth={isActive ? 2.5 : 2}
                                         />
                                         {!isCollapsed && (
