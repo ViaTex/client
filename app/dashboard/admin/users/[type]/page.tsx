@@ -529,18 +529,19 @@ export default function AdminUserTypePage() {
         }
     }
 
-    const handleExportCSV = () => {
-        try {
-            const headers = config.columns.map((col) =>
-                typeof col.header === "string" ? col.header : String(col.accessorKey)
-            )
-            const rows = users.map((user) =>
-                config.columns.map((col) => {
-                    const key = col.accessorKey as keyof AdminUser
-                    const value = key ? (user[key] as any) : ""
-                    return value ?? ""
-                })
-            )
+  const handleExportCSV = () => {
+    try {
+        const headers = config.columns.map((col) => {
+            const c = col as any
+            return typeof c.header === "string" ? c.header : String(c.accessorKey ?? "")
+        })
+        const rows = users.map((user) =>
+            config.columns.map((col) => {
+                const key = (col as any).accessorKey as keyof AdminUser | undefined
+                const value = key ? (user[key] as any) : ""
+                return value ?? ""
+            })
+        )
 
             const csvContent = [
                 headers.join(","),
