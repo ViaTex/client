@@ -69,12 +69,10 @@ const mentorNavigation: NavigationItem[] = [
 
 const collegeNavigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/dashboard/college', icon: LayoutDashboard },
-    { name: 'Analytics', href: '/dashboard/college/analytics', icon: LineChart },
     { name: 'Students', href: '/dashboard/college/students', icon: GraduationCap },
     { name: 'Verification & Viva', href: '/dashboard/college/verification', icon: CalendarCheck },
     { name: 'Placements', href: '/dashboard/college/placements', icon: Rocket },
     { name: 'Recruiters', href: '/dashboard/college/recruiters', icon: Building },
-    { name: 'Jobs', href: '/dashboard/college/jobs', icon: Briefcase },
     { name: 'Reports', href: '/dashboard/college/reports', icon: FileSpreadsheet },
     { name: 'Notifications', href: '/dashboard/college/notifications', icon: Bell },
     { name: 'Settings', href: '/dashboard/college/settings', icon: Settings },

@@ -26,7 +26,7 @@ const TEMP_USER_TYPE_KEY       = 'temp_user_type'
 // ── Axios Instance ────────────────────────────────────────────────────────────
 export const axiosInstance = axios.create({
     baseURL: BASE_URL,
-    timeout: 45000,
+    timeout: 120000,
     headers: {
         'Content-Type': 'application/json',
     },
