@@ -56,6 +56,7 @@ export interface JobPayload {
     max_des_score?: number
     ongoing_project_title?: string
     ongoing_project_description?: string
+    hiring_status?: string
 }
 
 export interface JobItem extends JobPayload {
@@ -273,6 +274,41 @@ export const apiClient = {
 
     registerCollege: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.post(`/auth/register/college`, data)
+        return response.data
+    },
+
+    verifyEmailByLink: async (token: string) => {
+        const response = await axiosInstance.post('/auth/verification/email/by-link', { token })
+        return response.data
+    },
+
+    verifyEmailByOtp: async (data: { email: string; otp: string }) => {
+        const response = await axiosInstance.post('/auth/verification/email/by-otp', data)
+        return response.data
+    },
+
+    resendEmailVerification: async (email: string) => {
+        const response = await axiosInstance.post('/auth/verification/email/resend', { email })
+        return response.data
+    },
+
+    startPasswordRecovery: async (data: { identifier: string; channel: string; captcha_token?: string }) => {
+        const response = await axiosInstance.post('/auth/recovery/forgot-password/start', data)
+        return response.data
+    },
+
+    resendPasswordRecoveryOtp: async (data: { identifier: string; channel: string }) => {
+        const response = await axiosInstance.post('/auth/recovery/forgot-password/resend-otp', data)
+        return response.data
+    },
+
+    verifyPasswordRecoveryOtp: async (data: { identifier: string; otp: string; captcha_token?: string }) => {
+        const response = await axiosInstance.post('/auth/recovery/forgot-password/verify-otp', data)
+        return response.data
+    },
+
+    completePasswordRecovery: async (data: { reset_token: string; new_password: string }) => {
+        const response = await axiosInstance.post('/auth/recovery/forgot-password/complete', data)
         return response.data
     },
 

@@ -64,7 +64,7 @@ export default function DashboardLayout({
 
     return (
         <div
-            className={`min-h-screen bg-[#F9F9F9] dark:bg-[#070D1F] font-sans overflow-hidden ${
+            className={`min-h-screen bg-[#F9F9F9] dark:bg-[#070D1F] font-sans overflow-x-hidden ${
                 isSkillExamMode ? 'flex h-[100dvh] min-h-0 flex-col' : ''
             }`}
             style={
@@ -101,8 +101,8 @@ export default function DashboardLayout({
                     className={
                         isSkillExamMode
                             ? 'flex min-h-0 flex-1 flex-col overflow-auto w-full max-w-none'
-                            : 'px-5 py-5 lg:px-6 lg:py-6 w-full'
-                    }
+                        : 'px-4 py-4 sm:px-5 sm:py-5 lg:px-6 lg:py-6 w-full'
+                }
                 >
                     {children}
                 </div>

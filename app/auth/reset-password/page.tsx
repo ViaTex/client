@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Eye, EyeOff } from "lucide-react"
 import { toast } from "react-hot-toast"
@@ -25,7 +25,7 @@ const getErrorMessage = (error: any, fallback: string) => {
   return fallback
 }
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const token = searchParams.get("token") || ""
@@ -70,5 +70,13 @@ export default function ResetPasswordPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center p-4 bg-[#f0f4fc] dark:bg-[#0A1020]">Loading...</div>}>
+      <ResetPasswordContent />
+    </Suspense>
   )
 }

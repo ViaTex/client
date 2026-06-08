@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { toast } from "react-hot-toast"
 import { apiClient } from "@/lib/api"
@@ -15,7 +15,7 @@ const getErrorMessage = (error: any, fallback: string) => {
   return fallback
 }
 
-export default function VerifyOtpPage() {
+function VerifyOtpContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [identifier, setIdentifier] = useState("")
@@ -91,5 +91,13 @@ export default function VerifyOtpPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function VerifyOtpPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center p-4 bg-[#f0f4fc] dark:bg-[#0A1020]">Loading...</div>}>
+      <VerifyOtpContent />
+    </Suspense>
   )
 }

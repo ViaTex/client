@@ -122,6 +122,9 @@ export interface MentorProfile {
     experience_years?: number
     motivation?: string
     average_rating: number
+    linkedin_profile?: string | null
+    github_profile?: string | null
+    personal_website?: string | null
 }
 
 export interface SkillEvaluationItem {

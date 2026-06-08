@@ -45,6 +45,16 @@ function formatDateTime(value?: string | null) {
   })
 }
 
+function getSlotDateParts(slotStr?: string | null) {
+  if (!slotStr) return { day: "—", month: "—" }
+  const d = new Date(slotStr)
+  if (Number.isNaN(d.getTime())) return { day: "—", month: "—" }
+  return {
+    day: d.toLocaleString("en-US", { day: "numeric" }),
+    month: d.toLocaleString("en-US", { month: "short" }),
+  }
+}
+
 function getStudentName(item: SkillEvaluationItem) {
   return item.student?.name || item.student_id.slice(0, 8)
 }
@@ -67,7 +77,17 @@ function normalizeStatus(value: string) {
   return value.replaceAll("_", " ")
 }
 
-function HeroIllustration() {
+function HeroIllustration({
+  totalCount,
+  averageRating,
+  chartStyle,
+  activityHeights,
+}: {
+  totalCount: number
+  averageRating: string
+  chartStyle: any
+  activityHeights: number[]
+}) {
   return (
     <div className="relative h-[160px] overflow-hidden rounded-[28px] border border-transparent bg-[radial-gradient(circle_at_30%_20%,rgba(137,106,255,0.15),transparent_36%),linear-gradient(135deg,#f0f3ff,#e0e7ff)] dark:bg-[radial-gradient(circle_at_30%_20%,rgba(137,106,255,0.26),transparent_36%),linear-gradient(135deg,rgba(33,27,79,0.95),rgba(15,20,43,0.9))] shadow-[0_20px_60px_rgba(46,60,120,0.15)] dark:shadow-[0_30px_80px_rgba(15,23,42,0.28)] sm:h-[180px]">
       <div className="absolute inset-0 opacity-50">
@@ -87,27 +107,27 @@ function HeroIllustration() {
             <div className="h-1.5 w-6 rounded-full bg-slate-200 dark:bg-white/10" />
           </div>
           <div className="rounded-full border border-transparent bg-slate-100 dark:bg-white/5 px-2 py-1 text-[10px] text-slate-500 dark:text-white/60">
-            24 Total
+            {totalCount} Total
           </div>
         </div>
         <div className="mt-4 flex h-16 items-end gap-2">
-          {[28, 42, 34, 51, 40, 60].map((height, index) => (
+          {activityHeights.map((height, index) => (
             <div
               key={index}
               className="flex-1 rounded-t-md bg-gradient-to-t from-[#7a61ff] to-[#a38fff] dark:to-[#d9d0ff]"
-              style={{ height: `${height}%` }}
+              style={{ height: `${Math.max(10, height)}%` }}
             />
           ))}
         </div>
       </div>
 
       <div className="absolute right-7 top-8 flex items-center gap-3 rounded-2xl border border-transparent bg-white/60 dark:bg-white/5 px-4 py-3 backdrop-blur shadow-sm dark:shadow-none">
-        <div className="relative h-14 w-14 rounded-full border-4 border-white dark:border-[#1d2648] bg-[conic-gradient(from_140deg,#f25c54_0deg_55deg,#f6ad2e_55deg_125deg,#2e7cf6_125deg_255deg,#2fb86a_255deg_360deg)] shadow-md dark:shadow-lg">
+        <div className="relative h-14 w-14 rounded-full border-4 border-white dark:border-[#1d2648] shadow-md dark:shadow-lg" style={{ background: chartStyle }}>
           <div className="absolute inset-3 rounded-full bg-white dark:bg-[#12182d]" />
         </div>
         <div className="space-y-1">
           <div className="text-[11px] font-medium text-slate-500 dark:text-white/55">Average Rating</div>
-          <div className="text-2xl font-black tracking-tight text-slate-905 dark:text-white">4.6</div>
+          <div className="text-2xl font-black tracking-tight text-slate-905 dark:text-white">{averageRating}</div>
         </div>
       </div>
     </div>
@@ -169,14 +189,18 @@ export default function MentorDashboardPage() {
 
   const upcomingVivas = useMemo(() => {
     return evaluations
-      .filter((item) => item.confirmed_slot)
+      .filter((item) => item.confirmed_slot || item.status === "viva_scheduled")
       .slice(0, 2)
-      .map((item) => ({
-        id: item.evaluation_id,
-        student: getStudentName(item),
-        project: getProjectTitle(item),
-        slot: formatDateTime(item.confirmed_slot),
-      }))
+      .map((item) => {
+        const slotRaw = item.confirmed_slot || (item.proposed_slots && item.proposed_slots[0])
+        return {
+          id: item.evaluation_id,
+          student: getStudentName(item),
+          project: getProjectTitle(item),
+          slot: formatDateTime(slotRaw),
+          slotRaw,
+        }
+      })
   }, [evaluations])
 
   const activityFeed = useMemo(() => {
@@ -208,6 +232,27 @@ export default function MentorDashboardPage() {
             ? "text-orange-400"
             : "text-sky-400",
     }))
+  }, [evaluations])
+
+  const weeklyActivity = useMemo(() => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const days = [0, 0, 0, 0, 0, 0] // Last 6 days
+    
+    evaluations.forEach((item) => {
+      if (!item.updated_at) return
+      const date = new Date(item.updated_at)
+      date.setHours(0, 0, 0, 0)
+      const diffTime = Math.abs(today.getTime() - date.getTime())
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+      
+      if (diffDays < 6) {
+        days[5 - diffDays] += 1
+      }
+    })
+    
+    const max = Math.max(...days, 1)
+    return days.map(count => (count / max) * 100)
   }, [evaluations])
 
   const chartStyle = useMemo(() => {
@@ -272,7 +317,12 @@ export default function MentorDashboardPage() {
             </div>
           </div>
 
-          <HeroIllustration />
+          <HeroIllustration 
+            totalCount={stats.total}
+            averageRating={(stats.averageRating || 0).toFixed(1)}
+            chartStyle={chartStyle.background}
+            activityHeights={weeklyActivity}
+          />
         </div>
       </section>
 
@@ -438,10 +488,10 @@ export default function MentorDashboardPage() {
                   <div className="flex items-center gap-4">
                     <div className="flex h-14 w-14 flex-col items-center justify-center rounded-2xl bg-[linear-gradient(180deg,#f7f8ff_0%,#e8e9ff_100%)] text-[#7a61ff] shadow-sm dark:bg-[linear-gradient(180deg,#23243f_0%,#161a2f_100%)]">
                       <span className="text-lg font-black leading-none">
-                        {index === 0 ? "28" : "30"}
+                        {getSlotDateParts(item.slotRaw).day}
                       </span>
                       <span className="text-[11px] font-bold uppercase tracking-[0.18em] opacity-70">
-                        {index === 0 ? "May" : "May"}
+                        {getSlotDateParts(item.slotRaw).month}
                       </span>
                     </div>
                     <div>

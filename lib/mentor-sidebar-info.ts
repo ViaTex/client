@@ -34,21 +34,18 @@ export const mentorSidebarInfo: MentorSidebarItem[] = [
   },
   {
     name: "Projects",
-    href: null,
+    href: "/dashboard/mentor/projects",
     iconKey: "projects",
-    comingSoon: true,
   },
   {
     name: "Reports",
-    href: null,
+    href: "/dashboard/mentor/reports",
     iconKey: "reports",
-    comingSoon: true,
   },
   {
     name: "Messages",
-    href: null,
+    href: "/dashboard/mentor/messages",
     iconKey: "messages",
-    comingSoon: true,
   },
   {
     name: "Settings",
