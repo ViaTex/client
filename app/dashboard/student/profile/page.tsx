@@ -30,6 +30,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import ReactSelect, { components, OptionProps, SingleValue, StylesConfig } from 'react-select'
 import { apiClient } from '@/lib/api'
 import { toast } from 'react-hot-toast'
 import { studentService } from '@/services/student.service'

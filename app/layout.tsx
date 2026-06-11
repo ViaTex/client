@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Poppins } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/components/providers/theme-provider'
+import { QueryProvider } from '@/components/providers/query-provider'
 import { Toaster } from 'react-hot-toast'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
@@ -39,7 +40,7 @@ export default function RootLayout({
                     enableSystem
                     disableTransitionOnChange
                 >
-                    {children}
+                    <QueryProvider>{children}</QueryProvider>
                     <Toaster
                         position="top-right"
                         toastOptions={{

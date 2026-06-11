@@ -69,7 +69,7 @@ function DataTable({ rows }: { rows: Row[] }) {
                     </thead>
                     <tbody>
                         {rows.length ? rows.map((row, rowIndex) => (
-                            <tr key={row.id || rowIndex} className="border-t border-gray-100 dark:border-white/10">
+                            <tr key={String(row.id ?? rowIndex)} className="border-t border-gray-100 dark:border-white/10">
                                 {columns.map((column, index) => (
                                     <td key={column} className={`truncate px-4 py-3 text-gray-700 dark:text-white/70 ${index > 3 ? 'hidden lg:table-cell' : ''}`}>
                                         {String(row[column] ?? '-')}

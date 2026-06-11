@@ -13,6 +13,18 @@ export const studentService = {
     updateProfile: (data: Record<string, unknown>) =>
         patchRequest('/student/profile', data),
 
+    // ── Interview Actions ───────────────────────────────────────────────────
+
+    /** List all interviews for the current student with optional backend filters */
+    getInterviews: (params?: Record<string, any>) => getRequest('/interviews/me', params),
+
+    /** Get verified skills and evaluation details for the current student */
+    getVerifiedSkills: () => getRequest('/interviews/me/verified-skills'),
+
+    /** Get contextual preparation tips for the current student */
+    getPreparationTips: (query?: { interview_type?: string; job_title?: string; company_name?: string }) =>
+        getRequest('/interviews/me/preparation-tips', query),
+
     // ── Education ────────────────────────────────────────────────────────────
 
     /** Get all education entries for the current student */
