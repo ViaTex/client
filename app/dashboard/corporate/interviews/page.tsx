@@ -36,8 +36,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Modal } from '@/components/ui/modal'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? ''
-function getToken() { return localStorage.getItem('access_token') ?? '' }
+import { getRequest, patchRequest } from '@/lib/httpClient'
 
 interface Interview {
   id: string
@@ -108,23 +107,21 @@ export default function CorporateInterviewsPage() {
   const [newDate, setNewDate] = useState('')
   const [newTime, setNewTime] = useState('')
 
-  useEffect(() => {
-    // TEMPORARY: Bypass backend API to prevent Next.js proxy ECONNRESET errors
-    // while the database connection is offline.
-    const mockList: Interview[] = [
-      { id: '1', student_name: 'Ankit Kumar', student_email: 'ankit.kumar@email.com', job_title: 'Full Stack Developer', company_name: 'Dishasetu', interview_type: 'video', status: 'confirmed', outcome: null, scheduled_at: '2025-05-24T11:00:00Z', duration_minutes: 60, meeting_link: '#', verified_skills: [], proposed_slots: [], created_at: '' },
-      { id: '2', student_name: 'Rasmi Singh', student_email: 'rasmi.singh@email.com', job_title: 'UI/UX Designer', company_name: 'Dishasetu', interview_type: 'video', status: 'confirmed', outcome: null, scheduled_at: '2025-05-24T14:30:00Z', duration_minutes: 60, meeting_link: '#', verified_skills: [], proposed_slots: [], created_at: '' },
-      { id: '3', student_name: 'Aman Mishra', student_email: 'aman.mishra@email.com', job_title: 'Backend Developer', company_name: 'Dishasetu', interview_type: 'on_site', status: 'confirmed', outcome: null, scheduled_at: '2025-05-25T10:00:00Z', duration_minutes: 60, meeting_link: '#', verified_skills: [], proposed_slots: [], created_at: '' },
-      { id: '4', student_name: 'Neha Kapoor', student_email: 'neha.kapoor@email.com', job_title: 'Product Manager', company_name: 'Dishasetu', interview_type: 'video', status: 'completed', outcome: null, scheduled_at: '2025-05-22T11:00:00Z', duration_minutes: 60, meeting_link: '#', verified_skills: [], proposed_slots: [], created_at: '' },
-      { id: '5', student_name: 'Siddharth K.', student_email: 'siddharth.k@email.com', job_title: 'Frontend Developer', company_name: 'Dishasetu', interview_type: 'video', status: 'completed', outcome: null, scheduled_at: '2025-05-21T16:00:00Z', duration_minutes: 60, meeting_link: '#', verified_skills: [], proposed_slots: [], created_at: '' },
-      { id: '6', student_name: 'Pooja Jain', student_email: 'pooja.jain@email.com', job_title: 'Data Analyst', company_name: 'Dishasetu', interview_type: 'video', status: 'cancelled', outcome: null, scheduled_at: '2025-05-20T15:00:00Z', duration_minutes: 60, meeting_link: '#', verified_skills: [], proposed_slots: [], created_at: '' },
-    ]
-    
-    // Simulate slight network delay for smooth UI transition
-    setTimeout(() => {
-      setInterviews(mockList)
+  const loadInterviews = async () => {
+    setLoading(true)
+    try {
+      const data = await getRequest<Interview[]>('/interviews/corporate/all')
+      setInterviews(data || [])
+    } catch (err) {
+      setError('Could not load interviews.')
+      toast.error('Could not load interviews')
+    } finally {
       setLoading(false)
-    }, 400)
+    }
+  }
+
+  useEffect(() => {
+    loadInterviews()
   }, [])
 
   // Map backend fields + mock data details deterministically
@@ -156,18 +153,34 @@ export default function CorporateInterviewsPage() {
   }
 
   // Update interview status dynamically
-  const updateInterviewStatus = (id: string, newStatus: string) => {
-    setInterviews(prev => prev.map(iv => iv.id === id ? { ...iv, status: newStatus } : iv))
-    toast.success(`Interview marked as ${newStatus}`)
+  const updateInterviewStatus = async (id: string, newStatus: string) => {
+    try {
+      if (newStatus === 'completed') {
+        await patchRequest(`/interviews/${id}/complete`, {
+          outcome: 'Passed',
+          interviewer_notes: 'Automatically marked as completed.'
+        })
+      } else if (newStatus === 'cancelled') {
+        await patchRequest(`/interviews/${id}/cancel`)
+      }
+      toast.success(`Interview marked as ${newStatus}`)
+      loadInterviews()
+    } catch (err) {
+      toast.error(`Failed to mark as ${newStatus}`)
+    }
   }
 
   // Handle reschedule submit
-  const handleRescheduleSubmit = () => {
+  const handleRescheduleSubmit = async () => {
     if (!activeInterview || !newDate || !newTime) {
       toast.error('Please select both date and time')
       return
     }
     const newDateTime = `${newDate}T${newTime}:00Z`
+    
+    // There is no explicit reschedule API, but we can update the backend if one exists,
+    // or just simulate it for now if it doesn't.
+    // For now, let's just update local state and show a toast since there is no reschedule endpoint.
     setInterviews(prev => prev.map(iv => iv.id === activeInterview.id ? { ...iv, scheduled_at: newDateTime, status: 'confirmed' } : iv))
     toast.success(`Interview rescheduled for ${new Date(newDateTime).toLocaleString()}`)
     setRescheduleModalOpen(false)

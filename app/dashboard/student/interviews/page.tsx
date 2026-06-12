@@ -109,15 +109,22 @@ export default function StudentInterviewsPage() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`${API}/api/v1/interviews/me`, {
+      const baseHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || `http://${baseHost}:8000/api/v1`
+      const res = await fetch(`${apiUrl}/interviews/me`, {
         headers: { Authorization: `Bearer ${getToken()}` },
-        signal: AbortSignal.timeout(5000),
       })
-      if (!res.ok) throw new Error()
+      if (!res.ok) {
+        let msg = 'API error'
+        try { const errData = await res.json(); msg = errData.detail || msg } catch(e){}
+        throw new Error(msg)
+      }
       setInterviews(await res.json())
       setUsingMockData(false)
-    } catch {
-      // Backend offline — use mock data silently
+    } catch (err: any) {
+      // Backend offline or error
+      console.error("Interviews fetch error:", err)
+      setError(`Failed to load real data: ${err.message || 'Network Error'}`)
       setInterviews(MOCK_INTERVIEWS)
       setUsingMockData(true)
     } finally {
@@ -130,13 +137,17 @@ export default function StudentInterviewsPage() {
   async function handleConfirm(interviewId: string) {
     setConfirming(true)
     try {
-      const res = await fetch(`${API}/api/v1/interviews/${interviewId}/confirm`, {
+      const baseHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || `http://${baseHost}:8000/api/v1`
+      const res = await fetch(`${apiUrl}/interviews/${interviewId}/confirm`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${getToken()}` },
         body: JSON.stringify({ scheduled_at: confirmSlot, meeting_link: confirmLink || undefined }),
-        signal: AbortSignal.timeout(5000),
       })
-      if (!res.ok) throw new Error()
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.detail ?? 'Confirmation failed')
+      }
       const updated: Interview = await res.json()
       setInterviews((prev) => prev.map((iv) => iv.id === interviewId ? updated : iv))
     } catch {

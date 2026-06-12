@@ -25,7 +25,9 @@ import {
   ClipboardCheck,
   ChevronRight,
   Hourglass,
-  Clock
+  Clock,
+  Code2,
+  Sparkles
 } from "lucide-react"
 import type { MentorProfile, SkillEvaluationItem } from "@/lib/types"
 import { mentorService } from "@/services/mentor.service"
@@ -53,6 +55,14 @@ export default function MentorProfilePage() {
   const [evaluations, setEvaluations] = useState<SkillEvaluationItem[]>([])
   const [form, setForm] = useState<FormState | null>(null)
   const [mounted, setMounted] = useState(false)
+  const [isSkillsDropdownOpen, setIsSkillsDropdownOpen] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState("all")
+
+  const TECH_STACK_OPTIONS = [
+    { group: "Roles", items: ["Frontend Development", "Backend Development", "Full Stack Development", "Mobile App Development", "UI/UX Design"] },
+    { group: "Core Domains", items: ["AI/ML", "Data Science", "Cloud Computing", "DevOps & CI/CD", "System Design", "Cybersecurity"] },
+    { group: "Languages & Frameworks", items: ["Python", "JavaScript / TypeScript", "Java", "C++", "React / Next.js", "Node.js", "SQL / Databases", "Docker / Kubernetes", "AWS / Azure / GCP"] }
+  ]
 
   useEffect(() => {
     setMounted(true)
@@ -122,6 +132,22 @@ export default function MentorProfilePage() {
     }
     return ["AI/ML", "Python", "MERN Stack", "System Design", "Data Science", "Cloud Computing", "Docker", "PostgreSQL", "Git & GitHub", "REST APIs"]
   }, [form?.expertise_areas, profile?.expertise_areas])
+
+  const filteredSkills = useMemo(() => {
+    if (selectedCategory === "all") return displaySkills;
+    
+    const categories: Record<string, string[]> = {
+      frontend: ["Frontend", "React", "Next", "JavaScript", "HTML", "CSS", "UI", "Tailwind", "MERN"],
+      backend: ["Backend", "Node", "Python", "Java", "C++", "REST", "API", "Postgres", "SQL"],
+      data: ["Data", "AI", "ML", "Machine Learning", "Science", "Database"],
+      devops: ["DevOps", "Cloud", "Docker", "Kubernetes", "AWS", "Azure", "GCP", "CI/CD", "System Design"]
+    };
+    
+    const keywords = categories[selectedCategory] || [];
+    return displaySkills.filter(skill => 
+      keywords.some(kw => skill.toLowerCase().includes(kw.toLowerCase()))
+    );
+  }, [displaySkills, selectedCategory]);
 
   const stats = useMemo(() => {
     const total = evaluations.length
@@ -267,26 +293,7 @@ export default function MentorProfilePage() {
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-[1600px] space-y-6 pb-6 text-slate-900 dark:text-white">
-        {/* Title Header Card */}
-        <div className="rounded-[24px] border border-slate-200/60 bg-[#f8fafc] p-6 dark:border-white/5 dark:bg-[#0d1527] transition-all">
-          <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-            My Profile <span className="text-xl">👤</span>
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-white/55 mt-1.5">
-            View and manage your mentor profile, expertise areas, and performance. ✨
-          </p>
-          <div className="flex flex-wrap items-center gap-2 mt-4">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3.5 py-1 text-xs font-bold text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-              👤 Profile Details
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-              🔒 Account Settings
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3.5 py-1 text-xs font-bold text-purple-600 dark:bg-purple-500/10 dark:text-purple-400">
-              📈 Social Profiles
-            </span>
-          </div>
-        </div>
+
 
         {/* Hero Skeleton */}
         <div className="animate-pulse rounded-[28px] border border-slate-200 bg-white p-6 dark:border-[#243056]/80 dark:bg-[#0c1224] space-y-6">
@@ -321,27 +328,6 @@ export default function MentorProfilePage() {
 
   return (
     <div className="mx-auto w-full max-w-[1600px] space-y-6 pb-6 text-slate-900 dark:text-white">
-      {/* Title Header Card */}
-      <div className="rounded-[24px] border border-slate-200/60 bg-[#f8fafc] p-6 dark:border-white/5 dark:bg-[#0d1527] transition-all">
-        <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
-          My Profile <span className="text-xl">👤</span>
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-white/55 mt-1.5">
-          View and manage your mentor profile, expertise areas, and performance. ✨
-        </p>
-        <div className="flex flex-wrap items-center gap-2 mt-4">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3.5 py-1 text-xs font-bold text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
-            👤 Profile Details
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-bold text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-            🔒 Account Settings
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 px-3.5 py-1 text-xs font-bold text-purple-600 dark:bg-purple-500/10 dark:text-purple-400">
-            📈 Social Profiles
-          </span>
-        </div>
-      </div>
-
       {/* Hero Section Card */}
       <div className="relative overflow-hidden rounded-[28px] border border-slate-200/80 bg-white p-6 shadow-[0_20px_50px_rgba(46,60,120,0.05)] dark:border-[#243056]/80 dark:bg-[linear-gradient(135deg,#101735_0%,#0a0f24_100%)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
         {/* Animated wave pattern overlay inside card */}
@@ -481,19 +467,59 @@ export default function MentorProfilePage() {
       {/* Middle Section: Skills & Performance */}
       <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
         {/* Skills & Expertise Card */}
-        <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-[0_12px_35px_rgba(46,60,120,0.03)] dark:border-[#243056]/80 dark:bg-[#0c1224]">
-          <h3 className="text-lg font-black text-slate-900 dark:text-white">Skills & Expertise</h3>
-          <p className="mt-1 text-xs text-slate-400 dark:text-slate-500 font-medium">Your mentor focus areas.</p>
-          
-          <div className="mt-5 flex flex-wrap gap-2.5">
-            {displaySkills.map((skill) => (
-              <span
-                key={skill}
-                className="rounded-2xl border border-slate-200/60 bg-slate-50 hover:bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-700 dark:border-[#2b2b5c]/70 dark:bg-[#1a1c3a]/50 dark:text-[#a3b8cc] dark:hover:bg-[#252852]/50 transition-colors duration-200"
+        <div className="relative overflow-hidden rounded-[24px] border border-slate-200 bg-white p-6 shadow-[0_12px_35px_rgba(46,60,120,0.03)] dark:border-[#243056]/80 dark:bg-[#0c1224]">
+          <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-blue-500/10 blur-2xl"></div>
+          <div className="flex items-start sm:items-center justify-between gap-3 relative z-10">
+            <div>
+              <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
+                <Code2 className="h-5 w-5 text-blue-500" />
+                Skills & Expertise
+              </h3>
+              <p className="mt-1 text-xs text-slate-400 dark:text-slate-500 font-medium">Your mentor focus areas.</p>
+            </div>
+
+            {/* Selector Dropdown */}
+            <div className="relative shrink-0">
+              <select 
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="appearance-none rounded-xl border border-slate-200 bg-white px-3 py-1.5 pr-8 text-xs font-bold text-slate-600 outline-none hover:bg-slate-50 dark:border-[#243056] dark:bg-[#0c1224] dark:text-slate-300 dark:hover:bg-white/5 transition-colors duration-200 cursor-pointer shadow-sm"
               >
-                {skill}
-              </span>
-            ))}
+                <option value="all">All Tech Stack</option>
+                <option value="frontend">Frontend</option>
+                <option value="backend">Backend</option>
+                <option value="data">Data & AI</option>
+                <option value="devops">Cloud & DevOps</option>
+              </select>
+              <ChevronDown className="absolute right-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 pointer-events-none text-slate-400" />
+            </div>
+          </div>
+          
+          <div className="mt-6 flex flex-wrap gap-3 relative z-10">
+            {filteredSkills.length > 0 ? (
+              filteredSkills.map((skill, index) => {
+                const colors = [
+                  "bg-blue-50 text-blue-700 border-blue-200/60 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20",
+                  "bg-emerald-50 text-emerald-700 border-emerald-200/60 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20",
+                  "bg-purple-50 text-purple-700 border-purple-200/60 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20",
+                  "bg-amber-50 text-amber-700 border-amber-200/60 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
+                  "bg-rose-50 text-rose-700 border-rose-200/60 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20",
+                ]
+                const colorClass = colors[index % colors.length]
+
+                return (
+                  <span
+                    key={skill}
+                    className={`inline-flex items-center gap-2 rounded-xl border px-3.5 py-2 text-sm font-bold shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md ${colorClass}`}
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70"></span>
+                    {skill}
+                  </span>
+                )
+              })
+            ) : (
+              <p className="text-sm text-slate-400 dark:text-slate-500 italic py-2">No skills found for this category.</p>
+            )}
           </div>
         </div>
 
@@ -807,21 +833,77 @@ export default function MentorProfilePage() {
                     <label className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500 dark:text-white/55">
                       Skills & Expertise
                     </label>
-                    <span className="text-[11px] text-slate-400 dark:text-white/35">Comma separated</span>
+                    <span className="text-[11px] text-slate-400 dark:text-white/35">Select from list</span>
                   </div>
-                  <input
-                    value={form.expertise_areas}
-                    onChange={(e) => setField("expertise_areas", e.target.value)}
-                    className={modalInputClass}
-                    placeholder="e.g. DevOps, Python, AI/ML"
-                  />
+                  
+                  <div className="relative">
+                    <div 
+                      onClick={() => setIsSkillsDropdownOpen(!isSkillsDropdownOpen)}
+                      className={`${modalInputClass} cursor-pointer flex items-center justify-between select-none`}
+                    >
+                      <span className="text-slate-500 dark:text-slate-400">Choose a tech stack to add...</span>
+                      <ChevronDown className={`h-4 w-4 text-slate-400 dark:text-white/35 transition-transform duration-200 ${isSkillsDropdownOpen ? 'rotate-180' : ''}`} />
+                    </div>
+
+                    {isSkillsDropdownOpen && (
+                      <div className="absolute left-0 top-[calc(100%+4px)] z-50 max-h-[260px] w-full overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:border-[#243056] dark:bg-[#0c1224] dark:shadow-[0_10px_40px_rgba(0,0,0,0.5)] custom-scrollbar">
+                        {TECH_STACK_OPTIONS.map((group, gIdx) => (
+                          <div key={group.group} className={`${gIdx > 0 ? 'mt-3 pt-3 border-t border-slate-100 dark:border-white/5' : ''}`}>
+                            <div className="px-2 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                              {group.group}
+                            </div>
+                            <div className="flex flex-col">
+                              {group.items.map((skill) => {
+                                const current = form.expertise_areas.split(',').map(s => s.trim()).filter(Boolean);
+                                const isSelected = current.includes(skill);
+                                
+                                return (
+                                  <button
+                                    key={skill}
+                                    type="button"
+                                    onClick={() => {
+                                      if (!isSelected) {
+                                        setField("expertise_areas", [...current, skill].join(', '));
+                                      } else {
+                                        setField("expertise_areas", current.filter(s => s !== skill).join(', '));
+                                      }
+                                      setIsSkillsDropdownOpen(false);
+                                    }}
+                                    className={`flex items-center justify-between rounded-lg px-2.5 py-2 text-left text-sm font-medium transition-colors ${
+                                      isSelected 
+                                        ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' 
+                                        : 'text-slate-700 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-white/5'
+                                    }`}
+                                  >
+                                    <span>{skill}</span>
+                                    {isSelected && <CheckCircle2 className="h-4 w-4" />}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {skillChipsFromValue(form.expertise_areas).map((skill) => (
+                    {form.expertise_areas.split(',').map(s => s.trim()).filter(Boolean).map((skill) => (
                       <span
                         key={skill}
-                        className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[13px] text-slate-700 dark:border-white/15 dark:bg-white/10 dark:text-white/90"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-[12px] font-bold text-blue-700 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-400 shadow-sm"
                       >
                         {skill}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const current = form.expertise_areas.split(',').map(s => s.trim()).filter(Boolean);
+                            setField("expertise_areas", current.filter(s => s !== skill).join(', '));
+                          }}
+                          className="hover:text-blue-900 dark:hover:text-blue-200 ml-1 transition-colors"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
                       </span>
                     ))}
                   </div>

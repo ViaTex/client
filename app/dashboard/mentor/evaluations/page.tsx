@@ -403,9 +403,15 @@ export default function MentorEvaluationsPage() {
     try {
       const total = scores.technical + scores.practical + scores.communication + scores.originality
       await patchRequest(`/mentor/evaluations/${scoringId}/score`, {
+        status: "evaluated",
+        score_technical: scores.technical,
+        score_practical: scores.practical,
+        score_communication: scores.communication,
+        score_originality: scores.originality,
         total_score: total,
-        skill_scores: scores,
-        mentor_feedback: feedback,
+        verdict: feedback.verdict,
+        feedback_strengths: feedback.strengths,
+        feedback_improvements: feedback.improvements,
       })
       toast.success("Evaluation submitted")
       setScoringId(null)
@@ -604,15 +610,15 @@ export default function MentorEvaluationsPage() {
 
           {/* Table Card */}
           <div className="rounded-[24px] border border-slate-200 bg-white shadow-sm overflow-hidden dark:border-white/5 dark:bg-[#0c1224]">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto min-h-[350px]">
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 border-b border-slate-100 uppercase tracking-wider text-slate-400 font-bold dark:bg-[#0e1526] dark:border-white/5">
                   <tr>
-                    <th className="px-5 py-4 font-bold">Student</th>
-                    <th className="px-5 py-4 font-bold">Project / Skill</th>
-                    <th className="px-5 py-4 font-bold">Due Date</th>
-                    <th className="px-5 py-4 font-bold">Level</th>
-                    <th className="px-5 py-4 font-bold">Status</th>
+                    <th className="px-5 py-4 font-bold text-left">Student</th>
+                    <th className="px-5 py-4 font-bold text-left">Project / Skill</th>
+                    <th className="px-5 py-4 font-bold text-left">Due Date</th>
+                    <th className="px-5 py-4 font-bold text-left">Level</th>
+                    <th className="px-5 py-4 font-bold text-left">Status</th>
                     <th className="px-5 py-4 font-bold text-right">Actions</th>
                   </tr>
                 </thead>
@@ -740,25 +746,28 @@ export default function MentorEvaluationsPage() {
                                 </button>
 
                                 {activeDropdownId === item.id && (
-                                  <div className="absolute right-0 mt-1 z-[50] w-40 rounded-xl border border-slate-200 bg-white p-1 shadow-lg dark:border-white/10 dark:bg-[#0e1726]">
+                                  <div className="absolute right-0 top-[calc(100%+4px)] z-[50] w-48 rounded-2xl border border-[#dde6ff] bg-white/95 p-1.5 shadow-[0_10px_40px_-10px_rgba(37,99,235,0.15)] backdrop-blur-xl dark:border-[#223067] dark:bg-[#0e1c45]/95">
                                     {item.status === "assigned" && (
                                       <button
                                         onClick={() => { setSchedulingId(item.id); setActiveDropdownId(null); }}
-                                        className="w-full text-left rounded-lg px-2.5 py-1.5 text-[10px] font-semibold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300"
+                                        className="group flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-[#16213f] transition-all hover:bg-[#eef3ff] hover:text-[#2563eb] dark:text-[#c4d3ff] dark:hover:bg-[#1a2858] dark:hover:text-[#8ca8ff]"
                                       >
+                                        <CalendarDays className="h-4 w-4 opacity-70 transition-opacity group-hover:opacity-100" />
                                         Schedule Viva
                                       </button>
                                     )}
                                     <button
                                       onClick={() => { setScoringId(item.id); setActiveDropdownId(null); }}
-                                      className="w-full text-left rounded-lg px-2.5 py-1.5 text-[10px] font-semibold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300"
+                                      className="group flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-[#16213f] transition-all hover:bg-emerald-50 hover:text-emerald-600 dark:text-[#c4d3ff] dark:hover:bg-emerald-500/10 dark:hover:text-emerald-400"
                                     >
+                                      <ClipboardCheck className="h-4 w-4 opacity-70 transition-opacity group-hover:opacity-100" />
                                       Submit Score
                                     </button>
                                     <button
                                       onClick={() => { setDetailsId(item.id); setActiveDropdownId(null); }}
-                                      className="w-full text-left rounded-lg px-2.5 py-1.5 text-[10px] font-semibold hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300"
+                                      className="group flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-bold text-[#16213f] transition-all hover:bg-purple-50 hover:text-purple-600 dark:text-[#c4d3ff] dark:hover:bg-purple-500/10 dark:hover:text-purple-400"
                                     >
+                                      <Info className="h-4 w-4 opacity-70 transition-opacity group-hover:opacity-100" />
                                       View Project Info
                                     </button>
                                   </div>
@@ -775,7 +784,7 @@ export default function MentorEvaluationsPage() {
             </div>
 
           {/* Pagination Footer */}
-          <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50 dark:bg-[#0e1526] dark:border-white/5 p-4 text-xs">
+          <div className="relative z-10 flex items-center justify-between border-t border-slate-100 bg-slate-50 dark:bg-[#0e1526] dark:border-white/5 p-4 text-xs">
             <span className="text-slate-400 dark:text-slate-500 font-semibold">
               Showing {filtered.length > 0 ? (currentPage - 1) * rowsPerPage + 1 : 0} to {Math.min(currentPage * rowsPerPage, filtered.length)} of {filtered.length} evaluations
             </span>

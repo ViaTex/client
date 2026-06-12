@@ -5,6 +5,7 @@ import {
   BadgeCheck,
   BookOpen,
   CheckCircle2,
+  ChevronDown,
   ChevronRight,
   Clock,
   Folder,
@@ -19,7 +20,7 @@ import {
 } from 'lucide-react'
 import { Modal } from '@/components/ui/modal'
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? ''
+const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
 
 const STATUS_META: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   pending_viva: {
@@ -118,6 +119,14 @@ export default function StudentProjectsPage() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [usingMockData, setUsingMockData] = useState(false)
+  const [isTechDropdownOpen, setIsTechDropdownOpen] = useState(false)
+
+  const TECH_STACK_OPTIONS = [
+    { 
+      group: "Languages & Frameworks", 
+      items: ["Python", "JavaScript / TypeScript", "Java", "C++", "C# / .NET", "Go", "Rust", "React / Next.js", "Vue / Nuxt", "Angular", "Node.js", "Django / FastAPI", "Spring Boot", "SQL / Databases", "MongoDB / NoSQL", "Docker / Kubernetes", "AWS / Azure / GCP"] 
+    }
+  ]
 
   const [form, setForm] = useState({
     title: '',
@@ -133,16 +142,23 @@ export default function StudentProjectsPage() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`${API}/projects/me`, {
+      const baseHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || `http://${baseHost}:8000/api/v1`
+      const res = await fetch(`${apiUrl}/projects/me`, {
         headers: { Authorization: `Bearer ${getToken()}` },
-        signal: AbortSignal.timeout(5000), // 5s timeout
       })
-      if (!res.ok) throw new Error('API error')
+      if (!res.ok) {
+        let msg = 'API error'
+        try { const errData = await res.json(); msg = errData.detail || msg } catch(e){}
+        throw new Error(msg)
+      }
       const data = await res.json()
       setProjects(data)
       setUsingMockData(false)
-    } catch {
-      // Backend offline — use mock data silently
+    } catch (err: any) {
+      // Backend offline or error
+      console.error("fetchProjects error:", err)
+      setError(`Failed to load real data: ${err.message || 'Network Error'}`)
       setProjects(MOCK_PROJECTS)
       setUsingMockData(true)
     } finally {
@@ -178,7 +194,9 @@ export default function StudentProjectsPage() {
     }
 
     try {
-      const res = await fetch(`${API}/projects`, {
+      const baseHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost'
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || `http://${baseHost}:8000/api/v1`
+      const res = await fetch(`${apiUrl}/projects`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -191,8 +209,7 @@ export default function StudentProjectsPage() {
           live_url: form.live_url,
           tech_stack: form.tech_stack,
           skill_domain: form.skill_domain,
-        }),
-        signal: AbortSignal.timeout(5000),
+        })
       })
       if (!res.ok) {
         const err = await res.json()
@@ -357,25 +374,63 @@ export default function StudentProjectsPage() {
                   <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#5c73b5] dark:text-[#8ea1d6]">
                     Tech Stack
                   </label>
-                  <div className="flex gap-2">
-                    <input
-                      value={form.newTech}
-                      onChange={(e) => setForm((f) => ({ ...f, newTech: e.target.value }))}
-                      onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addTech())}
-                      placeholder="Add technology…"
-                      className="flex-1 rounded-xl border border-[#d4def8] bg-[#f8fbff] px-4 py-2.5 text-sm text-[#16213f] outline-none focus:border-[#4f8cff] dark:border-[#223067] dark:bg-[#0e1c45] dark:text-white"
-                    />
-                    <button type="button" onClick={addTech} className="rounded-xl bg-[#edf3ff] px-3 py-2 text-sm font-bold text-[#4f8cff] hover:bg-[#d8e8ff] dark:bg-[#1a2858] dark:text-[#8aa9ff]">
-                      Add
-                    </button>
+                  <div className="relative">
+                    <div 
+                      onClick={() => setIsTechDropdownOpen(!isTechDropdownOpen)}
+                      className="flex w-full items-center justify-between rounded-xl border border-[#d4def8] bg-[#f8fbff] px-4 py-2.5 text-sm text-[#16213f] outline-none hover:bg-slate-50 cursor-pointer select-none dark:border-[#223067] dark:bg-[#0e1c45] dark:text-[#8ea1d6] dark:hover:bg-[#152352] transition-colors"
+                    >
+                      <span>Choose a tech stack...</span>
+                      <ChevronDown className={`h-4 w-4 text-[#5c73b5] dark:text-[#8ea1d6] transition-transform duration-200 ${isTechDropdownOpen ? 'rotate-180' : ''}`} />
+                    </div>
+
+                    {isTechDropdownOpen && (
+                      <div className="absolute left-0 bottom-[calc(100%+8px)] z-50 max-h-[240px] w-full overflow-y-auto rounded-xl border border-[#d4def8] bg-white p-2 shadow-[0_-10px_40px_rgba(37,99,235,0.15)] dark:border-[#223067] dark:bg-[#0e1c45] dark:shadow-[0_-10px_40px_rgba(0,0,0,0.5)] [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-200 dark:[&::-webkit-scrollbar-thumb]:bg-slate-700">
+                        {TECH_STACK_OPTIONS.map((group, gIdx) => (
+                          <div key={group.group} className={`${gIdx > 0 ? 'mt-3 pt-3 border-t border-[#edf3ff] dark:border-[#223067]' : ''}`}>
+                            <div className="px-2 mb-1.5 text-[10px] font-bold uppercase tracking-wider text-[#5c73b5] dark:text-[#6a7db1]">
+                              {group.group}
+                            </div>
+                            <div className="flex flex-col">
+                              {group.items.map((skill) => {
+                                const isSelected = form.tech_stack.includes(skill);
+                                
+                                return (
+                                  <button
+                                    key={skill}
+                                    type="button"
+                                    onClick={() => {
+                                      if (!isSelected) {
+                                        setForm((f) => ({ ...f, tech_stack: [...f.tech_stack, skill] }));
+                                      } else {
+                                        setForm((f) => ({ ...f, tech_stack: f.tech_stack.filter((x) => x !== skill) }));
+                                      }
+                                      setIsTechDropdownOpen(false);
+                                    }}
+                                    className={`flex items-center justify-between rounded-lg px-2.5 py-2 text-left text-sm font-medium transition-colors ${
+                                      isSelected 
+                                        ? 'bg-[#edf3ff] text-[#2563eb] dark:bg-[#1a2858] dark:text-[#8ca8ff]' 
+                                        : 'text-[#16213f] hover:bg-[#f8fbff] dark:text-[#c4d3ff] dark:hover:bg-[#152352]'
+                                    }`}
+                                  >
+                                    <span>{skill}</span>
+                                    {isSelected && <CheckCircle2 className="h-4 w-4" />}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
+                  
                   {form.tech_stack.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
                       {form.tech_stack.map((t) => (
                         <span key={t} className="inline-flex items-center gap-1 rounded-lg bg-[#edf3ff] px-2.5 py-1 text-xs font-bold text-[#4f6fbc] dark:bg-[#1a2858] dark:text-[#9db0df]">
                           {t}
                           <button type="button" onClick={() => setForm((f) => ({ ...f, tech_stack: f.tech_stack.filter((x) => x !== t) }))}>
-                            <X className="h-3 w-3" />
+                            <X className="h-3 w-3 hover:text-red-500 transition-colors" />
                           </button>
                         </span>
                       ))}
