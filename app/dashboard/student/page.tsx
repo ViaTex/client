@@ -150,7 +150,7 @@ export default function StudentDashboard() {
 
 
     return (
-        <div className="w-full font-sans text-gray-900 dark:text-gray-100 relative max-w-7xl mx-auto">
+        <div className="w-full font-sans text-gray-900 dark:text-gray-100 relative">
 
             {/* Header / Welcome Row */}
             <div className="sm:space-y-6 px-3 sm:px-4 md:px-6 pt-1 sm:pt-6 mb-6 lg:pt-1 lg:px-0">

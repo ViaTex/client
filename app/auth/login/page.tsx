@@ -54,6 +54,7 @@ function LoginContent() {
         register,
         handleSubmit,
         watch,
+        setValue,
         formState: { errors }
     } = useForm<LoginFormData>({
         resolver: zodResolver(loginSchema)
@@ -63,6 +64,18 @@ function LoginContent() {
     const passwordValue = watch("password")
     const baseInputClassName = "mt-2 h-12 rounded-xl bg-gray-100 dark:bg-[#17213F] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-[#9AA8C8] border border-transparent focus:border-[#7C3AED]"
     const filledInputClassName = "bg-[#DCE7F9] dark:bg-[#344670]"
+    const [rememberMe, setRememberMe] = useState(false)
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const savedEmail = localStorage.getItem('remembered_email')
+            const savedRemember = localStorage.getItem('remember_me') === 'true'
+            if (savedRemember && savedEmail) {
+                setRememberMe(true)
+                setValue('email', savedEmail)
+            }
+        }
+    }, [setValue])
 
     useEffect(() => {
         const registered = searchParams.get('registered')
@@ -78,6 +91,16 @@ function LoginContent() {
             const response = await authService.login(data)
 
             authService.setTokens(response.access_token, response.refresh_token)
+
+            if (typeof window !== 'undefined') {
+                if (rememberMe) {
+                    localStorage.setItem('remembered_email', data.email)
+                    localStorage.setItem('remember_me', 'true')
+                } else {
+                    localStorage.removeItem('remembered_email')
+                    localStorage.removeItem('remember_me')
+                }
+            }
 
             // Use user_type from backend response
             const userType = (response.user_type || 'student') as UserType
@@ -124,22 +147,29 @@ function LoginContent() {
             }
         } catch (error: any) {
             let message = 'Login failed. Please try again.'
+            const submittedEmail = data.email
 
             if (error.response) {
                 const status = error.response.status
                 const detail = error.response.data?.detail
-                const data = error.response.data?.data
+                const responseData = error.response.data?.data
 
                 if (status === 401) {
                     message = 'Invalid password. Please try again.'
                 } else if (status === 404) {
                     message = 'This email is not registered. Please create an account first.'
+                } else if (status === 403) {
+                    message = detail || 'Please verify your email before logging in. Check your inbox for the verification email.'
+                    if (typeof window !== 'undefined') {
+                        localStorage.setItem('pending_verification_email', submittedEmail)
+                    }
+                    router.push(`/auth/verify-email?email=${encodeURIComponent(submittedEmail)}`)
                 } else if (status === 400) {
                     message = detail || 'Invalid login request.'
                 } else if (status === 422) {
                     // Validation error - extract meaningful message
-                    if (data && Array.isArray(data)) {
-                        message = data[0]?.msg || 'Invalid request. Please check your email and password.'
+                    if (responseData && Array.isArray(responseData)) {
+                        message = responseData[0]?.msg || 'Invalid request. Please check your email and password.'
                     } else if (detail) {
                         message = detail
                     } else {
@@ -155,6 +185,7 @@ function LoginContent() {
             setIsLoading(false)
         }
     }
+
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#f0f4fc] dark:bg-[#0A1020] p-4 md:p-8">
@@ -228,7 +259,12 @@ function LoginContent() {
                             {/* REMEMBER ME & FORGOT PASSWORD */}
                             <div className="flex justify-between items-center pt-2">
                                 <label className="flex items-center gap-2 cursor-pointer">
-                                    <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-[#7199D6] focus:ring-[#7199D6]" />
+                                    <input
+                                        type="checkbox"
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                        className="w-4 h-4 rounded border-gray-300 text-[#7199D6] focus:ring-[#7199D6]"
+                                    />
                                     <span className="text-xs font-medium text-gray-500 dark:text-[#9AA8C8]">Remember me</span>
                                 </label>
                                 <Link
@@ -355,6 +391,7 @@ function LoginContent() {
                     </motion.div>
                 </div>
             )}
+
         </div>
     )
 }

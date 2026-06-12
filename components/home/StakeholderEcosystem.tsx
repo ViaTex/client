@@ -11,7 +11,7 @@ export default function StakeholderEcosystem() {
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-3xl md:text-4xl font-extrabold text-[#2A2D31] tracking-tight"
+          className="text-3xl md:text-4xl font-extrabold text-[#2A2D31] dark:text-white tracking-tight"
         >
           Stakeholder <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#4B32C3] to-[#00D1C1]">Ecosystem</span>
         </motion.h2>

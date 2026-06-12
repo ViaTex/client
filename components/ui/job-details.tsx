@@ -17,11 +17,11 @@ function formatBoolean(value?: boolean | null) {
 }
 
 function formatSalary(job: JobItem) {
-    if (!job.ctc_min && !job.ctc_max) return "Not specified"
-    const currency = job.ctc_currency || "₹"
-    if (job.ctc_min && job.ctc_max) return `${currency}${job.ctc_min} - ${currency}${job.ctc_max}`
-    if (job.ctc_min) return `${currency}${job.ctc_min}+`
-    if (job.ctc_max) return `Up to ${currency}${job.ctc_max}`
+    if (!job.salary_min && !job.salary_max) return "Not specified"
+    const currency = job.salary_currency || "₹"
+    if (job.salary_min && job.salary_max) return `${currency}${job.salary_min} - ${currency}${job.salary_max}`
+    if (job.salary_min) return `${currency}${job.salary_min}+`
+    if (job.salary_max) return `Up to ${currency}${job.salary_max}`
     return "Not specified"
 }
 

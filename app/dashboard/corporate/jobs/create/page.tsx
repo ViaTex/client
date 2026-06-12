@@ -173,7 +173,7 @@ export default function CreateJobPage() {
 
     return (
         <div className="space-y-6">
-            <div className="rounded-2xl border border-[#d7ddf8] bg-[#edf4ff] p-6 shadow-[0_18px_40px_rgba(121,144,198,0.14)] dark:border-[#2f3b68] dark:bg-[#253261] dark:shadow-[0_18px_40px_rgba(7,10,27,0.28)]">
+            <div className="rounded-2xl border border-[#d7ddf8] bg-[#EDF3FF] p-6 shadow-[0_18px_40px_rgba(121,144,198,0.14)] dark:border-[#2f3b68] dark:bg-[#131D3F] dark:shadow-[0_18px_40px_rgba(7,10,27,0.28)]">
                 <div className="mb-5 flex justify-between items-center">
                     <div>
                         <h1 className="text-2xl font-bold text-[#16213f] dark:text-white">Create New Job</h1>
@@ -201,10 +201,10 @@ export default function CreateJobPage() {
                                 setCurrentStep(index)
                             }}
                                 className={`border-r border-[#d7ddf8] px-3 py-3 text-sm font-semibold last:border-r-0 dark:border-[#3a4677] ${
-                                    isActive ? "bg-[#e9eeff] text-[#2a52d6]" : isDone ? "bg-[#eafaf1] text-[#1e9d63] dark:bg-[#1b3b34] dark:text-[#71e0aa]" : "bg-white text-[#5f6f98] dark:bg-[#182247] dark:text-[#dbe3ff]"
+                                    isActive ? "bg-[#131D3F] text-white dark:bg-[#182247] dark:text-[#dbe3ff]" : isDone ? "bg-[#eafaf1] text-[#1e9d63] dark:bg-[#1b3b34] dark:text-[#71e0aa]" : "bg-white text-[#5f6f98] dark:bg-[#182247] dark:text-[#dbe3ff]"
                                 }`}
                             >
-                                <span className={`mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full text-xs ${isDone ? "bg-emerald-600 text-white" : isActive ? "bg-[#2a52d6] text-white" : "bg-[#f2f5ff] text-[#334372]"}`}>
+                                <span className={`mr-2 inline-flex h-6 w-6 items-center justify-center rounded-full text-xs ${isDone ? "bg-emerald-600 text-white" : isActive ? "bg-white text-[#131D3F] dark:bg-[#2a52d6] dark:text-white" : "bg-[#f2f5ff] text-[#334372]"}`}>
                                     {isDone ? "✓" : index + 1}
                                 </span>
                                 {step.label}
@@ -215,7 +215,7 @@ export default function CreateJobPage() {
 
                 <form
                     onSubmit={onSubmit}
-                    className="overflow-hidden rounded-xl border border-[#d7ddf8] bg-white text-[#42548d] dark:border-[#36426e] dark:bg-[#253261] dark:text-[#dbe3ff] [&_input]:border-[#d7ddf8] [&_input]:bg-white [&_input]:text-[#16213f] [&_input]:placeholder:text-[#8b97bf] dark:[&_input]:border-[#46517f] dark:[&_input]:bg-[#121938] dark:[&_input]:text-white dark:[&_input]:placeholder:text-[#7d88aa] [&_textarea]:border-[#d7ddf8] [&_textarea]:bg-white [&_textarea]:text-[#16213f] [&_textarea]:placeholder:text-[#8b97bf] dark:[&_textarea]:border-[#46517f] dark:[&_textarea]:bg-[#121938] dark:[&_textarea]:text-white dark:[&_textarea]:placeholder:text-[#7d88aa] [&_select]:border-[#d7ddf8] [&_select]:bg-white [&_select]:text-[#16213f] dark:[&_select]:border-[#46517f] dark:[&_select]:bg-[#121938] dark:[&_select]:text-white [&_label]:text-[#16213f] dark:[&_label]:text-white"
+                    className="overflow-hidden rounded-xl border border-[#d7ddf8] bg-white text-[#42548d] dark:border-[#36426e] dark:bg-[#131D3F] dark:text-[#dbe3ff] [&_input]:border-[#d7ddf8] [&_input]:bg-white [&_input]:text-[#16213f] [&_input]:placeholder:text-[#8b97bf] dark:[&_input]:border-[#46517f] dark:[&_input]:bg-[#121938] dark:[&_input]:text-white dark:[&_input]:placeholder:text-[#7d88aa] [&_textarea]:border-[#d7ddf8] [&_textarea]:bg-white [&_textarea]:text-[#16213f] [&_textarea]:placeholder:text-[#8b97bf] dark:[&_textarea]:border-[#46517f] dark:[&_textarea]:bg-[#121938] dark:[&_textarea]:text-white dark:[&_textarea]:placeholder:text-[#7d88aa] [&_select]:border-[#d7ddf8] [&_select]:bg-white [&_select]:text-[#16213f] dark:[&_select]:border-[#46517f] dark:[&_select]:bg-[#121938] dark:[&_select]:text-white [&_label]:text-[#16213f] dark:[&_label]:text-white"
                 >
                     <div>
                         {currentStepId === "job_basics" && (
@@ -408,14 +408,14 @@ export default function CreateJobPage() {
                                 {success ? <p className="text-sm text-green-600 dark:text-green-400">{success}</p> : null}
                                 {error ? <p className="text-sm text-red-600 dark:text-red-400">{error}</p> : null}
                                 {currentStep < STEPS.length - 1 ? (
-                                    <Button type="button" className="bg-[#2f7fff] text-white hover:bg-[#246dea] dark:bg-[#8b5cf6] dark:hover:bg-[#7c46ee]" disabled={!canGoNext} onClick={() => {
+                                    <Button type="button" className="bg-[#131D3F] text-white hover:bg-[#0f1733] dark:bg-[#8b5cf6] dark:hover:bg-[#7c46ee]" disabled={!canGoNext} onClick={() => {
                                         console.log('Next button clicked, current step:', currentStep, 'canGoNext:', canGoNext)
                                         setCurrentStep((p) => p + 1)
                                     }}>
                                         Next
                                     </Button>
                                 ) : (
-                                    <Button type="submit" className="bg-[#2f7fff] text-white hover:bg-[#246dea] dark:bg-[#8b5cf6] dark:hover:bg-[#7c46ee]" disabled={submitting}>
+                                    <Button type="submit" className="bg-[#131D3F] text-white hover:bg-[#0f1733] dark:bg-[#8b5cf6] dark:hover:bg-[#7c46ee]" disabled={submitting}>
                                         {submitting ? "Creating..." : "Create Job"}
                                     </Button>
                                 )}

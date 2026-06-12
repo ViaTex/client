@@ -22,7 +22,8 @@ import {
     LineChart,
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { mentorSidebarInfo } from '@/lib/mentor-sidebar-info'
 
 interface NavigationSubItem {
     name: string
@@ -35,6 +36,7 @@ interface NavigationItem {
     icon: any
     badge?: number
     subItems?: NavigationSubItem[]
+    comingSoon?: boolean
 }
 
 const studentNavigation: NavigationItem[] = [
@@ -60,19 +62,33 @@ const corporateNavigation: NavigationItem[] = [
     { name: 'Settings', href: '/dashboard/corporate/settings', icon: Settings },
 ]
 
-const mentorNavigation: NavigationItem[] = [
-    { name: 'Dashboard', href: '/dashboard/mentor', icon: LayoutDashboard },
-    { name: 'My Profile', href: '/dashboard/mentor/profile', icon: User },
-    { name: 'Skill Evaluations', href: '/dashboard/mentor/evaluations', icon: CalendarCheck, badge: 1 },
-    { name: 'Settings', href: '/dashboard/mentor/settings', icon: Settings },
-]
+const mentorIconMap = {
+    dashboard: LayoutDashboard,
+    profile: User,
+    evaluations: CalendarCheck,
+    vivas: CalendarCheck,
+    projects: FileText,
+    reports: FileSpreadsheet,
+    messages: Bell,
+    settings: Settings,
+} as const
+
+const mentorNavigation: NavigationItem[] = mentorSidebarInfo.map((item) => ({
+    name: item.name,
+    href: item.href ?? undefined,
+    icon: mentorIconMap[item.iconKey],
+    badge: item.badge,
+    comingSoon: item.comingSoon,
+}))
 
 const collegeNavigation: NavigationItem[] = [
     { name: 'Dashboard', href: '/dashboard/college', icon: LayoutDashboard },
+    { name: 'Analytics', href: '/dashboard/college/analytics', icon: LineChart },
     { name: 'Students', href: '/dashboard/college/students', icon: GraduationCap },
     { name: 'Verification & Viva', href: '/dashboard/college/verification', icon: CalendarCheck },
     { name: 'Placements', href: '/dashboard/college/placements', icon: Rocket },
     { name: 'Recruiters', href: '/dashboard/college/recruiters', icon: Building },
+    { name: 'Jobs', href: '/dashboard/college/jobs', icon: Briefcase },
     { name: 'Reports', href: '/dashboard/college/reports', icon: FileSpreadsheet },
     { name: 'Notifications', href: '/dashboard/college/notifications', icon: Bell },
     { name: 'Settings', href: '/dashboard/college/settings', icon: Settings },
@@ -109,6 +125,23 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
     const pathname = usePathname()
     const searchParams = useSearchParams()
     const { user, logout } = useAuth()
+    const [pendingReviews, setPendingReviews] = useState<number | undefined>(undefined)
+
+    useEffect(() => {
+        if (user?.user_type === 'mentor') {
+            const fetchPending = async () => {
+                try {
+                    const { mentorService } = await import('@/services/mentor.service')
+                    const data = await mentorService.getEvaluations()
+                    const pending = data.filter((item) => item.status === 'assigned').length
+                    setPendingReviews(pending)
+                } catch {
+                    // Fallback silently
+                }
+            }
+            fetchPending()
+        }
+    }, [user, pathname])
 
     const [expandedMenus, setExpandedMenus] = useState<Record<string, boolean>>({
         'Manage Users': true, // Default to true so it is initially expanded
@@ -122,17 +155,49 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
     }
 
     const checkSubItemActive = (href: string) => {
+        if (href.includes('?')) {
+            const [basePath, queryString] = href.split('?')
+            if (pathname !== basePath) return false
+            const params = new URLSearchParams(queryString)
+            for (const [key, value] of params.entries()) {
+                let currentVal = searchParams.get(key)
+                if (key === 'tab' && !currentVal) {
+                    currentVal = 'account'
+                }
+                if (currentVal !== value) return false
+            }
+            return true
+        }
         return pathname === href || pathname.startsWith(href + '/')
     }
 
-    // Select navigation based on user type, defaulting to student
     const getNavigationFields = () => {
         if (!user?.user_type) return studentNavigation
 
         if (user.user_type === 'corporate') {
             return corporateNavigation
         } else if (user.user_type === 'mentor') {
-            return mentorNavigation
+            return mentorNavigation.map(item => {
+                if (item.name === 'Skill Evaluations' && pendingReviews !== undefined) {
+                    return { ...item, badge: pendingReviews }
+                }
+                if (item.name === 'Settings') {
+                    return {
+                        ...item,
+                        href: undefined,
+                        subItems: [
+                            { name: 'Account Settings', href: '/dashboard/mentor/settings?tab=account' },
+                            { name: 'Security', href: '/dashboard/mentor/settings?tab=security' },
+                            { name: 'Notifications', href: '/dashboard/mentor/settings?tab=notifications' },
+                            { name: 'Appearance', href: '/dashboard/mentor/settings?tab=appearance' },
+                            { name: 'Privacy', href: '/dashboard/mentor/settings?tab=privacy' },
+                            { name: 'Connected Accounts', href: '/dashboard/mentor/settings?tab=connected' },
+                            { name: 'Help & Support', href: '/dashboard/mentor/settings?tab=help' },
+                        ]
+                    }
+                }
+                return item
+            })
         } else if (user.user_type === 'college') {
             return collegeNavigation
         } else if (user.user_type === 'admin') {
@@ -143,6 +208,27 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
     }
 
     const navigation = getNavigationFields()
+
+    // Auto-expand menus based on active subitems
+    useEffect(() => {
+        const currentNavigation = getNavigationFields()
+        const updatedExpansion: Record<string, boolean> = { ...expandedMenus }
+        let changed = false
+
+        currentNavigation.forEach(item => {
+            if (item.subItems && !expandedMenus[item.name]) {
+                const hasActiveSub = item.subItems.some(sub => checkSubItemActive(sub.href))
+                if (hasActiveSub) {
+                    updatedExpansion[item.name] = true
+                    changed = true
+                }
+            }
+        })
+
+        if (changed) {
+            setExpandedMenus(updatedExpansion)
+        }
+    }, [pathname, searchParams])
 
     return (
         <>
@@ -157,10 +243,10 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
 
             {/* Sidebar */}
             <aside
-                className={`fixed left-0 top-0 z-50 flex flex-col h-screen
-                    transition-[width,transform] duration-[ms:400ms] ease-[transition-timing-function:cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none
+                className={`fixed left-0 top-0 z-50 flex flex-col h-screen transform
+                    transition-[width,transform] duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none
                     shrink-0
-                    ${isMobileOpen ? 'p-3' : 'lg:p-4 lg:pr-2 p-0'}
+                    ${isMobileOpen ? 'p-3' : 'lg:p-4 p-0'}
                     ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
                 style={{ width: 'var(--sidebar-w)' }}
             >
@@ -188,7 +274,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
                     </div>
 
                     {/* Navigation Links */}
-                    <div className={`flex-1 overflow-y-auto ${isCollapsed ? 'px-2' : 'px-4'} py-4`}>
+                    <div className={`flex-1 overflow-y-auto scrollbar-none ${isCollapsed ? 'px-2' : 'px-4'} py-4`}>
                         <nav className="flex flex-col gap-2">
                             {navigation.map((item) => {
                                 const hasSubItems = !!item.subItems
@@ -196,6 +282,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
                                 const isAnySubActive = hasSubItems && item.subItems?.some(sub => checkSubItemActive(sub.href))
                                 const isActive = hasSubItems ? isAnySubActive : (pathname === item.href)
                                 const Icon = item.icon
+                                const isDisabled = item.comingSoon || !item.href
 
                                 if (hasSubItems) {
                                     return (
@@ -275,23 +362,56 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
                                     )
                                 }
 
+                                const itemClassName = `relative flex items-center gap-3.5 ${isCollapsed ? 'px-3 justify-center' : 'px-5'} py-3.5 rounded-full text-[14px] font-semibold transition-all duration-200 group
+                                    ${isActive
+                                        ? 'bg-[#C8EE44] text-[#13141F]'
+                                        : isDisabled
+                                            ? 'text-white/35 cursor-default'
+                                            : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
+                                    }`
+
+                                const iconClassName = `w-[20px] h-[20px] shrink-0 ${isActive
+                                        ? 'text-[#13141F]'
+                                        : isDisabled
+                                            ? 'text-white/25'
+                                            : 'text-white/50 group-hover:text-white/80'
+                                    }`
+
+                                if (isDisabled) {
+                                    return (
+                                        <div
+                                            key={item.name}
+                                            className={itemClassName}
+                                            title={isCollapsed ? item.name : undefined}
+                                        >
+                                            <Icon
+                                                className={iconClassName}
+                                                strokeWidth={2}
+                                            />
+                                            {!isCollapsed && (
+                                                <>
+                                                    <span className="truncate">{item.name}</span>
+                                                    {item.badge !== undefined && (
+                                                        <span className="ml-auto inline-flex items-center justify-center text-[11px] font-bold w-5.5 h-5.5 px-1.5 rounded-full shrink-0 bg-[#F5C2A9] text-[#13141F]">
+                                                            {item.badge}
+                                                        </span>
+                                                    )}
+                                                </>
+                                            )}
+                                        </div>
+                                    )
+                                }
+
                                 return (
                                     <Link
                                         key={item.name}
                                         href={item.href || '#'}
                                         onClick={() => setIsMobileOpen(false)}
-                                        className={`relative flex items-center gap-3.5 ${isCollapsed ? 'px-3 justify-center' : 'px-5'} py-3.5 rounded-full text-[14px] font-semibold transition-all duration-200 group
-                                            ${isActive
-                                                ? 'bg-[#C8EE44] text-[#13141F]'
-                                                : 'text-white/60 hover:text-white hover:bg-white/[0.04]'
-                                            }`}
+                                        className={itemClassName}
                                         title={isCollapsed ? item.name : undefined}
                                     >
                                         <Icon
-                                            className={`w-[20px] h-[20px] shrink-0 ${isActive
-                                                ? 'text-[#13141F]'
-                                                : 'text-white/50 group-hover:text-white/80'
-                                                }`}
+                                            className={iconClassName}
                                             strokeWidth={isActive ? 2.5 : 2}
                                         />
                                         {!isCollapsed && (
@@ -322,9 +442,9 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
                         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3 px-2'}`}>
                             <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-[#13141F] shrink-0 text-sm font-bold shadow-md relative bg-gradient-to-br from-[#E5B59E] to-[#C8EE44]">
                                 {user?.profile_picture_url ? (
-                                    <img 
-                                        src={user.profile_picture_url} 
-                                        alt="User Avatar" 
+                                    <img
+                                        src={user.profile_picture_url}
+                                        alt="User Avatar"
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
@@ -365,4 +485,3 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
         </>
     )
 }
-

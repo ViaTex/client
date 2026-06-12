@@ -67,7 +67,7 @@ export default function HeroSection() {
         <img 
           src="/Achievement-bro.svg" 
           alt="Achievement Illustration" 
-          className="w-full h-full object-contain object-center lg:object-right drop-shadow-2xl" 
+          className="relative w-full h-full object-contain object-center lg:object-right drop-shadow-2xl" 
         />
       </motion.div>
     </section>

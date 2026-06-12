@@ -1156,12 +1156,12 @@ export default function CorporateApplicantsPage() {
                         <Modal
                             isOpen={Boolean(selectedApplication)}
                             onClose={closeStatusModal}
-                            title="Applicant Review Card"
+                            title="Applicant Review"
                             maxWidth="2xl"
                             className="max-w-6xl dark:border-[#26364d] dark:bg-[#070d16]"
                         >
-                            <div className="overflow-hidden rounded-xl border border-[#dbe3ef] bg-white text-[#111827] shadow-sm dark:border-[#34465f] dark:bg-[#07101a] dark:text-white dark:shadow-2xl dark:shadow-black/40">
-                                <div className="grid gap-6 border-b border-[#e5edf7] p-5 dark:border-[#26364d] dark:bg-[#07101a] lg:grid-cols-[1.25fr_1fr] lg:p-8">
+                            <div className="overflow-hidden rounded-xl border border-[#B7C8E8] bg-[#EDF3FF] text-[#111827] shadow-sm dark:border-[#34465f] dark:bg-[#07101a] dark:text-white dark:shadow-2xl dark:shadow-black/40">
+                                <div className="grid gap-6 border-b border-[#B7C8E8] p-5 dark:border-[#26364d] dark:bg-[#07101a] lg:grid-cols-[1.25fr_1fr] lg:p-8">
                                     <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
                                         <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full border-4 border-[#e8eef7] bg-[#edf5ff] text-4xl font-bold text-[#2856b6] dark:border-[#1d4ed8] dark:bg-[#111827] dark:text-[#60a5fa] dark:shadow-[0_0_28px_rgba(37,99,235,0.18)]">
                                             {(selectedApplication.student_name || "S").charAt(0).toUpperCase()}
@@ -1188,7 +1188,7 @@ export default function CorporateApplicantsPage() {
                                         </div>
                                     </div>
 
-                                    <div className="divide-y divide-[#e5edf7] border-[#e5edf7] dark:divide-[#27384d] dark:border-[#27384d] lg:border-l lg:pl-8">
+                                    <div className="divide-y divide-[#B7C8E8] border-[#B7C8E8] dark:divide-[#27384d] dark:border-[#27384d] lg:border-l lg:pl-8">
                                         {[
                                             ["Application ID", selectedApplication.id],
                                             ["Position Applied", selectedApplication.job_title || "Not specified"],
@@ -1204,7 +1204,7 @@ export default function CorporateApplicantsPage() {
                                     </div>
                                 </div>
 
-                                <div className="grid gap-0 divide-y divide-[#e5edf7] dark:divide-[#26364d] lg:grid-cols-3 lg:divide-x lg:divide-y-0">
+                                <div className="grid gap-0 divide-y divide-[#B7C8E8] dark:divide-[#26364d] lg:grid-cols-3 lg:divide-x lg:divide-y-0">
                                     <section className="space-y-6 p-5 lg:p-6">
                                         <div>
                                             <div className="mb-5 flex items-center gap-3 text-[#0f5ec7] dark:text-[#3b82f6]">
@@ -1217,7 +1217,7 @@ export default function CorporateApplicantsPage() {
                                             <p className="mt-1 text-center text-sm font-medium text-[#475569] dark:text-[#cbd5e1]">per annum</p>
                                         </div>
 
-                                        <div className="border-t border-[#e5edf7] pt-6 dark:border-[#26364d]">
+                                        <div className="border-t border-[#B7C8E8] pt-6 dark:border-[#26364d]">
                                             <div className="mb-5 flex items-center gap-3 text-[#0f5ec7] dark:text-[#3b82f6]">
                                                 <Code2 className="h-6 w-6" />
                                                 <h4 className="text-lg font-bold">Programming Languages</h4>
@@ -1255,7 +1255,7 @@ export default function CorporateApplicantsPage() {
                                                 <FileText className="h-6 w-6" />
                                                 <h4 className="text-lg font-bold">Resume</h4>
                                             </div>
-                                            <div className="flex items-center gap-4 rounded-lg border border-[#dbe3ef] bg-[#f8fafc] p-4 dark:border-[#2b4058] dark:bg-[#0b1420]">
+                                            <div className="flex items-center gap-4 rounded-lg border border-[#B7C8E8] bg-[#f8fafc] p-4 dark:border-[#2b4058] dark:bg-[#0b1420]">
                                                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-[#fee2e2] text-xs font-black text-[#dc2626] dark:bg-[#2a1114] dark:text-[#ff2d2d]">PDF</div>
                                                 <div className="min-w-0 flex-1">
                                                     <p className="truncate text-sm font-semibold">{getResumeFileName(selectedApplication.resume_url)}</p>
@@ -1275,7 +1275,7 @@ export default function CorporateApplicantsPage() {
                                             </div>
                                         </div>
 
-                                        <div className="border-t border-[#e5edf7] pt-6 dark:border-[#26364d]">
+                                        <div className="border-t border-[#B7C8E8] pt-6 dark:border-[#26364d]">
                                             <div className="mb-5 flex items-center gap-3 text-[#0f5ec7] dark:text-[#3b82f6]">
                                                 <TrendingUp className="h-6 w-6" />
                                                 <h4 className="text-lg font-bold">ATS Score</h4>
@@ -1297,7 +1297,7 @@ export default function CorporateApplicantsPage() {
                                         <div>
                                             <div className="mb-5 flex items-center gap-3 text-[#0f5ec7] dark:text-[#3b82f6]">
                                                 <ClipboardList className="h-6 w-6" />
-                                                <h4 className="text-lg font-bold">DSS Score</h4>
+                                                <h4 className="text-lg font-bold">DES Score</h4>
                                             </div>
                                             <div className="flex flex-col items-center text-center">
                                                 <div className={`flex h-36 w-36 items-center justify-center rounded-full border-[14px] ${dsScore.strokeClass}`}>
@@ -1311,7 +1311,7 @@ export default function CorporateApplicantsPage() {
                                             </div>
                                         </div>
 
-                                        <div className="rounded-lg border border-[#dbe3ef] p-4 dark:border-[#2b4058] dark:bg-[#0a121d]">
+                                        <div className="rounded-lg border border-[#B7C8E8] p-4 dark:border-[#2b4058] dark:bg-[#0a121d]">
                                             <div className="mb-3 flex items-center gap-2 text-[#0f5ec7] dark:text-[#3b82f6]">
                                                 <UserRoundCheck className="h-5 w-5" />
                                                 <h4 className="font-bold">HR Recommendation</h4>
@@ -1327,7 +1327,7 @@ export default function CorporateApplicantsPage() {
                                     </section>
                                 </div>
 
-                                <div className="flex flex-col gap-4 border-t border-[#e5edf7] p-5 dark:border-[#26364d] dark:bg-[#07101a] lg:flex-row lg:items-center lg:justify-between">
+                                <div className="flex flex-col gap-4 border-t border-[#B7C8E8] p-5 dark:border-[#26364d] dark:bg-[#07101a] lg:flex-row lg:items-center lg:justify-between">
                                     <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-[#334155] dark:text-[#d7deea]">
                                         <span className="font-bold">Score Guide:</span>
                                         <span className="inline-flex items-center gap-2"><span className="h-2.5 w-2.5 rounded-full bg-[#16a34a]" />90 - 100 Excellent</span>

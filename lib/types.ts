@@ -115,12 +115,16 @@ export interface MentorProfile {
     user_id: string
     email: string
     name: string
+    profile_picture_url?: string | null
     phone?: string
     current_role?: string
     expertise_areas: string[]
     experience_years?: number
     motivation?: string
     average_rating: number
+    linkedin_profile?: string | null
+    github_profile?: string | null
+    personal_website?: string | null
 }
 
 export interface SkillEvaluationItem {

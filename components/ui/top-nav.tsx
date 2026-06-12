@@ -15,8 +15,24 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from '@/hooks/useAuth'
 
+const getProfileHref = (userType?: string) => {
+    switch (userType) {
+        case 'mentor':
+            return '/dashboard/mentor/profile'
+        case 'corporate':
+            return '/dashboard/corporate/profile'
+        case 'college':
+            return '/dashboard/college'
+        case 'admin':
+            return '/dashboard/admin'
+        case 'student':
+        default:
+            return '/dashboard/student/profile'
+    }
+}
+
 const topNavTransitionClass =
-    'transition-[left,width] duration-[ms:400ms] ease-[transition-timing-function:cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none'
+    'transition-[left,width] duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] will-change-[left,width] motion-reduce:transition-none'
 
 type TopNavProps = {
     isSidebarCollapsed: boolean
@@ -61,12 +77,12 @@ export function TopNav({
     return (
         <header
             className={`fixed top-0 right-0 z-[60] flex items-center justify-between whitespace-nowrap
-                border-none shadow-none
+                border-b border-[#E5E7EB] dark:border-white/10
                 px-6 lg:px-8
-                bg-[#F9F9F9] dark:bg-[#070D1F]
+                bg-white dark:bg-[#0B1739]
                 left-0 w-full lg:left-[var(--sidebar-w)] lg:w-[calc(100%_-_var(--sidebar-w))]
                 ${topNavTransitionClass}`}
-            style={{ height: '75px' }}
+            style={{ height: '72px' }}
         >
             {/* Left: Sidebar toggle + Welcome message */}
             <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -179,7 +195,7 @@ export function TopNav({
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild className="cursor-pointer">
-                            <Link href={user?.user_type === 'mentor' ? '/dashboard/mentor/profile' : '/dashboard/student/profile'}>Profile</Link>
+                            <Link href={getProfileHref(user?.user_type)}>Profile</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20">
                             Log out

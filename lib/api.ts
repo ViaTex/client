@@ -1,29 +1,236 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// lib/api.ts — Thin Barrel Re-export
-// ─────────────────────────────────────────────────────────────────────────────
+import axios from 'axios'
 
-// ── Re-export all shared types ────────────────────────────────────────────────
-import type {
-    JobPayload,
-    JobItem,
-    JobApplicationItem,
-    CorporateProfile,
-    MentorProfile,
-    SkillEvaluationItem,
-    LoginResponse,
-} from './types'
-import { axiosInstance } from './httpClient'
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1'
 
-// ── Re-export all shared types ────────────────────────────────────────────────────────────────
-export type {
-    JobPayload,
-    JobItem,
-    JobApplicationItem,
-    CorporateProfile,
-    MentorProfile,
-    SkillEvaluationItem,
-    LoginResponse,
-} from './types'
+const axiosInstance = axios.create({
+    baseURL: BASE_URL,
+    timeout: 45000,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+})
+
+export interface JobPayload {
+    title: string
+    description: string
+    requirements?: string
+    responsibilities?: string
+    job_type: 'full_time' | 'part_time' | 'contract' | 'internship' | 'freelance'
+    location: string
+    remote_work?: boolean
+    travel_required?: boolean
+    mode_of_work?: 'onsite' | 'remote' | 'hybrid'
+    salary_min?: number
+    salary_max?: number
+    salary_currency?: string
+    ctc_with_probation?: string
+    ctc_after_probation?: string
+    experience_min?: number
+    experience_max?: number
+    education_level?: string[]
+    education_degree?: string[]
+    education_branch?: string[]
+    skills_required?: string[]
+    certifications_required?: string
+    application_deadline?: string
+    max_applications?: number
+    number_of_openings?: number
+    industry?: string
+    selection_process?: string
+    campus_drive_date?: string
+    service_agreement_details?: string
+    expiration_date?: string
+    perks_and_benefits?: string
+    eligibility_criteria?: string
+    company_name?: string
+    company_logo?: string
+    company_website?: string
+    company_address?: string
+    company_size?: string
+    company_type?: string
+    company_founded?: number
+    company_description?: string
+    contact_person?: string
+    contact_designation?: string
+    min_des_score?: number
+    max_des_score?: number
+    ongoing_project_title?: string
+    ongoing_project_description?: string
+    hiring_status?: string
+}
+
+export interface JobItem extends JobPayload {
+    id: string
+    status: string
+    max_applications: number
+    current_applications: number
+    created_at: string
+    is_public?: boolean
+    can_apply?: boolean
+}
+
+export interface JobApplicationItem {
+    id: string
+    job_id: string
+    student_id: string
+    corporate_id?: string | null
+    college_id?: string | null
+    status: string
+    expected_salary?: number | string | null
+    cover_letter?: string | null
+    resume_url?: string | null
+    offer_letter?: string | null
+    offer_letter_sent_at?: string | null
+    created_at: string
+    updated_at?: string | null
+    student_name?: string | null
+    student_email?: string | null
+    student_phone?: string | null
+    student_technical_skills?: string | null
+    student_des_score?: number | string | null
+    student_ats_score?: number | null
+    job_title?: string | null
+    company_name?: string | null
+    salary_min?: number | string | null
+    salary_max?: number | string | null
+    salary_currency?: string | null
+}
+
+export interface CorporateProfile {
+    id: string
+    email: string
+    name?: string
+    bio?: string
+    company_name?: string
+    phone?: string
+    contact_person?: string
+    contact_designation?: string
+    website_url?: string
+    industry?: string
+    company_size?: string
+    founded_year?: number
+    company_type?: string
+    description?: string
+    address?: string
+}
+
+export interface MentorProfile {
+    id: string
+    user_id: string
+    email: string
+    name: string
+    profile_picture_url?: string | null
+    phone?: string
+    current_role?: string
+    expertise_areas: string[]
+    experience_years?: number
+    motivation?: string
+    average_rating: number
+}
+
+export interface SkillEvaluationItem {
+    evaluation_id: string
+    mentor_id: string
+    student_id: string
+    project_id?: string | null
+    status: string
+    proposed_slots: string[]
+    confirmed_slot?: string | null
+    viva_meeting_link?: string | null
+    score_technical?: number | null
+    score_practical?: number | null
+    score_communication?: number | null
+    score_originality?: number | null
+    total_score?: number | null
+    verdict?: string | null
+    feedback_strengths?: string | null
+    feedback_improvements?: string | null
+    student_rating_of_mentor?: number | null
+    student_technical_issues?: string | null
+    created_at: string
+    updated_at?: string | null
+}
+
+// Network error detection
+const isNetworkError = (error: any): boolean => {
+    return !error.response &&
+        (error.code === 'ERR_NETWORK' ||
+            error.code === 'ERR_INTERNET_DISCONNECTED' ||
+            (error.message && error.message.includes('Network Error')) ||
+            (error.message && error.message.includes('fetch')))
+}
+
+const retryRequest = async (originalRequest: any, retryCount = 0, maxRetries = 3) => {
+    if (retryCount >= maxRetries) {
+        throw originalRequest
+    }
+
+    // Wait before retrying (exponential backoff)
+    const delay = Math.pow(2, retryCount) * 1000
+    await new Promise(resolve => setTimeout(resolve, delay))
+
+    try {
+        return await axiosInstance(originalRequest)
+    } catch (error) {
+        if (isNetworkError(error)) {
+            return retryRequest(originalRequest, retryCount + 1, maxRetries)
+        }
+        throw error
+    }
+}
+
+// Request interceptor to add auth token
+axiosInstance.interceptors.request.use(
+    (config) => {
+        if (typeof window !== 'undefined') {
+            const token = localStorage.getItem('access_token')
+            if (token) {
+                config.headers.Authorization = `Bearer ${token}`
+            }
+        }
+        return config
+    },
+    (error) => Promise.reject(error)
+)
+
+// Response interceptor with retry logic
+axiosInstance.interceptors.response.use(
+    (response) => response,
+    async (error) => {
+        const originalRequest = error.config
+
+        // Handle network errors with retry logic
+        if (isNetworkError(error) && !originalRequest._retry) {
+            originalRequest._retry = true
+            try {
+                return await retryRequest(originalRequest)
+            } catch (retryError) {
+                // If all retries fail, create a more user-friendly error
+                const networkError = new Error(
+                    'Network connection failed. Please check your internet connection and try again.'
+                ) as any
+                networkError.code = 'NETWORK_ERROR'
+                return Promise.reject(networkError)
+            }
+        }
+
+        // Handle 401 Unauthorized
+        if (typeof window !== 'undefined' && error?.response?.status === 401) {
+            // Clear all auth state and redirect to login
+            localStorage.removeItem('access_token')
+            localStorage.removeItem('refresh_token')
+            localStorage.removeItem('user_data')
+            localStorage.removeItem('temp_user_data')
+            localStorage.removeItem('temp_user_type')
+            // Only redirect if not already on the auth pages
+            if (!window.location.pathname.startsWith('/auth/')) {
+                window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname)}`
+            }
+        }
+
+        return Promise.reject(error)
+    }
+)
 
 export const apiClient = {
     // Auth
@@ -67,6 +274,41 @@ export const apiClient = {
 
     registerCollege: async (data: Record<string, unknown>) => {
         const response = await axiosInstance.post(`/auth/register/college`, data)
+        return response.data
+    },
+
+    verifyEmailByLink: async (token: string) => {
+        const response = await axiosInstance.post('/auth/verification/email/by-link', { token })
+        return response.data
+    },
+
+    verifyEmailByOtp: async (data: { email: string; otp: string }) => {
+        const response = await axiosInstance.post('/auth/verification/email/by-otp', data)
+        return response.data
+    },
+
+    resendEmailVerification: async (email: string) => {
+        const response = await axiosInstance.post('/auth/verification/email/resend', { email })
+        return response.data
+    },
+
+    startPasswordRecovery: async (data: { identifier: string; channel: string; captcha_token?: string }) => {
+        const response = await axiosInstance.post('/auth/recovery/forgot-password/start', data)
+        return response.data
+    },
+
+    resendPasswordRecoveryOtp: async (data: { identifier: string; channel: string }) => {
+        const response = await axiosInstance.post('/auth/recovery/forgot-password/resend-otp', data)
+        return response.data
+    },
+
+    verifyPasswordRecoveryOtp: async (data: { identifier: string; otp: string; captcha_token?: string }) => {
+        const response = await axiosInstance.post('/auth/recovery/forgot-password/verify-otp', data)
+        return response.data
+    },
+
+    completePasswordRecovery: async (data: { reset_token: string; new_password: string }) => {
+        const response = await axiosInstance.post('/auth/recovery/forgot-password/complete', data)
         return response.data
     },
 
@@ -122,6 +364,27 @@ export const apiClient = {
         return response.data as JobItem
     },
 
+    deleteJob: async (jobId: string) => {
+        const response = await axiosInstance.delete(`/jobs/${jobId}`)
+        return response.data as { message: string; id: string }
+    },
+
+    applyToJob: async (
+        jobId: string,
+        data?: {
+            expected_salary?: number
+            cover_letter?: string
+        }
+    ) => {
+        const response = await axiosInstance.post(`/jobs/${jobId}/apply`, data || {})
+        return response.data as JobApplicationItem
+    },
+
+    getMyApplications: async () => {
+        const response = await axiosInstance.get('/jobs/applications/me')
+        return response.data as JobApplicationItem[]
+    },
+
     approveJob: async (jobId: string) => {
         const response = await axiosInstance.patch(`/jobs/${jobId}/approve`)
         return response.data as JobItem
@@ -135,6 +398,33 @@ export const apiClient = {
     updateCorporateProfile: async (data: Partial<CorporateProfile>) => {
         const response = await axiosInstance.patch('/corporate/profile', data)
         return response.data as CorporateProfile
+    },
+
+    getCorporateApplicants: async () => {
+        const response = await axiosInstance.get('/corporate/applicants')
+        return response.data as JobApplicationItem[]
+    },
+
+    updateCorporateApplicant: async (applicationId: string, data: { status?: string; offer_letter?: string }) => {
+        const response = await axiosInstance.patch(`/corporate/applicants/${applicationId}`, data)
+        return response.data as JobApplicationItem
+    },
+
+    deleteCorporateApplicant: async (applicationId: string) => {
+        const response = await axiosInstance.delete(`/corporate/applicants/${applicationId}`)
+        return response.data as { message: string; id: string }
+    },
+
+    uploadCorporateOfferLetter: async (applicationId: string, file: File) => {
+        const formData = new FormData()
+        formData.append("file", file)
+        const response = await axiosInstance.post(`/corporate/applicants/${applicationId}/offer-letter`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+            timeout: 60000,
+        })
+        return response.data as JobApplicationItem
     },
 
     getMentorProfile: async () => {
@@ -272,7 +562,7 @@ export const apiClient = {
                 headers: {
                     "Content-Type": "multipart/form-data",
                 },
-                timeout: 180000,
+                timeout: 60000,
                 onUploadProgress: (progressEvent: any) => {
                     if (progressEvent.total && onProgress) {
                         const percentCompleted = Math.round(
@@ -287,9 +577,7 @@ export const apiClient = {
     },
 
     async getResumeStatus(): Promise<any> {
-        const response = await axiosInstance.get("/student/resume/status", {
-            timeout: 45000,
-        })
+        const response = await axiosInstance.get("/student/resume/status")
         return response.data
     },
 
@@ -297,33 +585,9 @@ export const apiClient = {
         const params = jobDescription ? { job_description: jobDescription } : {}
         const response = await axiosInstance.get(
             "/student/resume/ats-score",
-            {
-                params,
-                timeout: 120000,
-            },
+            { params },
         )
         return response.data
     }
 
 }
-// ── Re-export core HTTP helpers & axios instance ──────────────────────────────
-export {
-    axiosInstance,
-    getRequest,
-    postRequest,
-    patchRequest,
-    putRequest,
-    deleteRequest,
-    tokenUtils,
-    AUTH_TOKEN_KEY,
-    REFRESH_TOKEN_KEY,
-} from './httpClient'
-
-// ── Re-export services for convenience ───────────────────────────────────────
-export { authService }      from '@/services/auth.service'
-export { studentService }   from '@/services/student.service'
-export { jobService }       from '@/services/job.service'
-export { corporateService } from '@/services/corporate.service'
-export { mentorService }    from '@/services/mentor.service'
-export { examService }      from '@/services/exam.service'
-export { collegeService }   from '@/services/college.service'
