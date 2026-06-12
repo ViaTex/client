@@ -244,7 +244,7 @@ export function Sidebar({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobile
             {/* Sidebar */}
             <aside
                 className={`fixed left-0 top-0 z-50 flex flex-col h-screen transform
-                    transition-[width,transform] duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none
+                    transition-[width,transform] duration-300 [transition-timing-function:cubic-bezier(0.4,0,0.2,1)] motion-reduce:transition-none
                     shrink-0
                     ${isMobileOpen ? 'p-3' : 'lg:p-4 p-0'}
                     ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}

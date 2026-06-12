@@ -15,8 +15,24 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { useAuth } from '@/hooks/useAuth'
 
+const getProfileHref = (userType?: string) => {
+    switch (userType) {
+        case 'mentor':
+            return '/dashboard/mentor/profile'
+        case 'corporate':
+            return '/dashboard/corporate/profile'
+        case 'college':
+            return '/dashboard/college'
+        case 'admin':
+            return '/dashboard/admin'
+        case 'student':
+        default:
+            return '/dashboard/student/profile'
+    }
+}
+
 const topNavTransitionClass =
-    'transition-[left,width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] will-change-[left,width] motion-reduce:transition-none'
+    'transition-[left,width] duration-300 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] will-change-[left,width] motion-reduce:transition-none'
 
 type TopNavProps = {
     isSidebarCollapsed: boolean
@@ -179,7 +195,7 @@ export function TopNav({
                         <DropdownMenuLabel>My Account</DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild className="cursor-pointer">
-                            <Link href={user?.user_type === 'mentor' ? '/dashboard/mentor/profile' : '/dashboard/student/profile'}>Profile</Link>
+                            <Link href={getProfileHref(user?.user_type)}>Profile</Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={logout} className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-900/20">
                             Log out

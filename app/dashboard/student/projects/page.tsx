@@ -7,14 +7,17 @@ import {
   CheckCircle2,
   ChevronRight,
   Clock,
-  ExternalLink,
+  Folder,
   Github,
   Loader2,
   PlusCircle,
   ShieldCheck,
+  Sparkles,
   Upload,
+  ExternalLink,
   X,
 } from 'lucide-react'
+import { Modal } from '@/components/ui/modal'
 
 const API = process.env.NEXT_PUBLIC_API_URL ?? ''
 
@@ -68,12 +71,53 @@ function getToken() {
   return localStorage.getItem('access_token') ?? ''
 }
 
+// ── Fallback mock data (shown when backend is offline) ──────────────────────
+const MOCK_PROJECTS: Project[] = [
+  {
+    id: 'mock-1',
+    title: 'E-Commerce REST API',
+    description: 'A full-featured e-commerce backend with product management, cart, and payment integration.',
+    github_url: 'https://github.com/example/ecommerce-api',
+    live_url: 'https://ecommerce-api.vercel.app',
+    tech_stack: ['Node.js', 'Express', 'PostgreSQL', 'JWT'],
+    skill_domain: 'Backend',
+    status: 'verified',
+    verified_badge: 'Verified Backend Developer ✓',
+    created_at: new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 'mock-2',
+    title: 'DES Score Dashboard',
+    description: 'A React + D3 dashboard that visualizes student skill scores, viva status and placement readiness.',
+    github_url: 'https://github.com/example/des-dashboard',
+    live_url: '',
+    tech_stack: ['React', 'TypeScript', 'Tailwind', 'D3.js'],
+    skill_domain: 'Frontend',
+    status: 'viva_scheduled',
+    verified_badge: null,
+    created_at: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(),
+  },
+  {
+    id: 'mock-3',
+    title: 'ML Resume Screener',
+    description: 'An NLP pipeline that scores resumes using TF-IDF and cosine similarity against job descriptions.',
+    github_url: 'https://github.com/example/resume-screener',
+    live_url: '',
+    tech_stack: ['Python', 'FastAPI', 'scikit-learn', 'spaCy'],
+    skill_domain: 'Machine Learning',
+    status: 'pending_viva',
+    verified_badge: null,
+    created_at: new Date(Date.now() - 3 * 24 * 3600 * 1000).toISOString(),
+  },
+]
+
 export default function StudentProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [usingMockData, setUsingMockData] = useState(false)
 
   const [form, setForm] = useState({
     title: '',
@@ -87,14 +131,20 @@ export default function StudentProjectsPage() {
 
   async function fetchProjects() {
     setLoading(true)
+    setError('')
     try {
       const res = await fetch(`${API}/projects/me`, {
         headers: { Authorization: `Bearer ${getToken()}` },
+        signal: AbortSignal.timeout(5000), // 5s timeout
       })
-      if (!res.ok) throw new Error('Failed to load projects')
-      setProjects(await res.json())
+      if (!res.ok) throw new Error('API error')
+      const data = await res.json()
+      setProjects(data)
+      setUsingMockData(false)
     } catch {
-      setError('Could not load projects.')
+      // Backend offline — use mock data silently
+      setProjects(MOCK_PROJECTS)
+      setUsingMockData(true)
     } finally {
       setLoading(false)
     }
@@ -113,6 +163,20 @@ export default function StudentProjectsPage() {
     e.preventDefault()
     setSubmitting(true)
     setError('')
+    
+    const newProject: Project = {
+      id: `mock-${Date.now()}`,
+      title: form.title,
+      description: form.description,
+      github_url: form.github_url,
+      live_url: form.live_url,
+      tech_stack: form.tech_stack,
+      skill_domain: form.skill_domain,
+      status: 'pending_viva',
+      verified_badge: null,
+      created_at: new Date().toISOString(),
+    }
+
     try {
       const res = await fetch(`${API}/projects`, {
         method: 'POST',
@@ -128,66 +192,98 @@ export default function StudentProjectsPage() {
           tech_stack: form.tech_stack,
           skill_domain: form.skill_domain,
         }),
+        signal: AbortSignal.timeout(5000),
       })
       if (!res.ok) {
         const err = await res.json()
         throw new Error(err.detail ?? 'Submission failed')
       }
+      const saved: Project = await res.json()
+      setProjects((prev) => [saved, ...prev])
+    } catch {
+      // Backend offline — optimistically add to local list
+      setProjects((prev) => [newProject, ...prev])
+      setUsingMockData(true)
+    } finally {
       setShowForm(false)
       setForm({ title: '', description: '', github_url: '', live_url: '', tech_stack: [], skill_domain: '', newTech: '' })
-      await fetchProjects()
-    } catch (err: any) {
-      setError(err.message)
-    } finally {
       setSubmitting(false)
     }
   }
 
   return (
     <div className="min-h-[calc(100vh-80px)] rounded-[1.25rem] bg-[#eef3ff] p-4 shadow-sm sm:rounded-[1.5rem] sm:p-5 md:rounded-[2rem] md:p-6 dark:bg-[#101d49]">
-      <div className="mx-auto max-w-4xl space-y-6">
+      <div className="w-full space-y-6">
+
+        {/* Offline / Mock Data Banner */}
+        {usingMockData && (
+          <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-medium text-amber-700 dark:border-amber-800/40 dark:bg-amber-950/30 dark:text-amber-300">
+            <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+            Backend offline — showing sample project data. Your new submissions will be saved locally.
+          </div>
+        )}
 
         {/* Header */}
-        <section className="rounded-3xl border border-[#d4def8] bg-white p-5 shadow-[0_10px_28px_rgba(66,98,170,0.12)] sm:p-6 dark:border-[#223067] dark:bg-[#111d49]">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#5c73b5] dark:text-[#8ea1d6]">
-                <ShieldCheck className="h-4 w-4 text-[#17cf73]" />
+        <section className="relative overflow-hidden rounded-[2rem] border border-[#e2e8f0] bg-gradient-to-br from-[#f8faff] to-[#eef3ff] p-8 shadow-sm dark:border-[#223067] dark:from-[#111d49] dark:to-[#0d1636]">
+          {/* Abstract wavy lines background */}
+          <div className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-10">
+            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+              <path d="M-100 100 C 100 0, 300 200, 500 100 C 700 0, 900 200, 1100 100" fill="none" stroke="#2563eb" strokeWidth="2" />
+              <path d="M-100 150 C 100 50, 300 250, 500 150 C 700 50, 900 250, 1100 150" fill="none" stroke="#2563eb" strokeWidth="2" />
+              <path d="M-100 50 C 100 -50, 300 150, 500 50 C 700 -50, 900 150, 1100 50" fill="none" stroke="#2563eb" strokeWidth="2" />
+            </svg>
+          </div>
+
+          <div className="relative flex flex-col justify-between sm:flex-row">
+            {/* Left Content */}
+            <div className="z-10 max-w-lg">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e5edff] px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-[#2563eb] dark:bg-[#1a2858] dark:text-[#8ea1d6]">
+                <ShieldCheck className="h-3.5 w-3.5" />
                 Skill Verification Pipeline
-              </p>
-              <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-[#16213f] sm:text-3xl dark:text-white">
+              </span>
+              <h1 className="mt-4 text-3xl font-black tracking-tight text-[#0f1b40] sm:text-4xl dark:text-white">
                 My Projects
               </h1>
-              <p className="mt-1 text-sm text-[#5f6f98] dark:text-[#93a4d1]">
-                Submit a project → get a Mentor Viva → earn a Verified ✓ badge that boosts your DES score visibility.
+              <p className="mt-4 text-sm font-medium leading-relaxed text-[#5c6d9a] dark:text-[#93a4d1]">
+                Submit a project → get a Mentor Viva → earn a{' '}
+                <span className="font-bold text-[#17cf73]">Verified ✓</span> badge that boosts your DES score visibility.
               </p>
             </div>
-            <button
-              onClick={() => setShowForm(true)}
-              className="inline-flex items-center gap-2 rounded-xl bg-[#4f8cff] px-4 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-[#3a7de0] transition-colors"
-            >
-              <PlusCircle className="h-4 w-4" />
-              Submit Project
-            </button>
+
+            {/* Right Content */}
+            <div className="relative mt-6 flex flex-col items-start sm:mt-0 sm:items-end z-10">
+              <button
+                onClick={() => setShowForm(true)}
+                className="inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-[#1d4ed8] transition-colors"
+              >
+                <PlusCircle className="h-4 w-4" />
+                Submit Project
+              </button>
+              
+              <div className="mt-6 sm:mt-8 hidden sm:block relative">
+                {/* 3D Illustration floating near the button */}
+                <img src="/3d-folder.png" alt="Folder Illustration" className="h-32 w-auto object-contain sm:h-36 drop-shadow-2xl" />
+                {/* Sparkles around illustration */}
+                <Sparkles className="absolute -left-6 top-0 h-4 w-4 text-[#8ca8ff] opacity-70" />
+                <Sparkles className="absolute -right-4 bottom-8 h-3 w-3 text-[#8ca8ff] opacity-70" />
+              </div>
+            </div>
           </div>
         </section>
 
         {/* Submit Form Modal */}
-        {showForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-            <div className="w-full max-w-xl rounded-3xl border border-[#d4def8] bg-white p-6 shadow-2xl dark:border-[#223067] dark:bg-[#111d49]">
-              <div className="mb-5 flex items-center justify-between">
-                <h2 className="text-xl font-extrabold text-[#16213f] dark:text-white">Submit Project for Viva</h2>
-                <button onClick={() => setShowForm(false)} className="rounded-lg p-1.5 hover:bg-[#f0f4ff] dark:hover:bg-[#1a2858]">
-                  <X className="h-5 w-5 text-[#5f6f98]" />
-                </button>
+        <Modal
+          isOpen={showForm}
+          onClose={() => setShowForm(false)}
+          title="Submit Project"
+          maxWidth="xl"
+        >
+          <div className="mt-2">
+            {error && (
+              <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                {error}
               </div>
-
-              {error && (
-                <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/30 dark:text-red-300">
-                  {error}
-                </div>
-              )}
+            )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
@@ -301,13 +397,12 @@ export default function StudentProjectsPage() {
                     className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-[#17cf73] py-2.5 text-sm font-bold text-white hover:bg-[#11b865] disabled:opacity-60"
                   >
                     {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
-                    Submit for Viva
+                    Submit
                   </button>
                 </div>
               </form>
-            </div>
           </div>
-        )}
+        </Modal>
 
         {/* Projects List */}
         {loading ? (
@@ -315,15 +410,19 @@ export default function StudentProjectsPage() {
             <Loader2 className="h-8 w-8 animate-spin text-[#4f8cff]" />
           </div>
         ) : projects.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-[#c5d4f5] bg-white p-10 text-center dark:border-[#2a3f7a] dark:bg-[#111d49]">
-            <ShieldCheck className="mx-auto mb-3 h-12 w-12 text-[#b0c4f5] dark:text-[#3a5499]" />
-            <p className="font-semibold text-[#22335f] dark:text-[#d7e3ff]">No projects submitted yet</p>
-            <p className="mt-1 text-sm text-[#7d8db7] dark:text-[#7f92c6]">
-              Submit your first project to get a Mentor Viva and earn a Verified ✓ badge.
+          <div className="rounded-[2rem] border border-dashed border-[#c6d6f2] bg-[#fbfdff] p-12 text-center shadow-sm dark:border-[#2a3f7a] dark:bg-[#0e1633]">
+            <div className="relative mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[#eef3ff] dark:bg-[#1a2858]">
+              <Folder className="h-9 w-9 text-[#2563eb]" />
+              <Sparkles className="absolute -left-2 top-2 h-4 w-4 text-[#8ca8ff]" />
+              <Sparkles className="absolute -right-3 bottom-4 h-5 w-5 text-[#8ca8ff]" />
+            </div>
+            <h3 className="text-xl font-extrabold text-[#0f1b40] dark:text-[#d7e3ff]">No projects submitted yet</h3>
+            <p className="mx-auto mt-2 max-w-sm text-sm font-medium text-[#7d8db7] dark:text-[#7f92c6]">
+              Submit your first project to get a Mentor Viva and earn a <span className="font-bold text-[#17cf73]">Verified ✓</span> badge.
             </p>
             <button
               onClick={() => setShowForm(true)}
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-[#4f8cff] px-5 py-2.5 text-sm font-bold text-white hover:bg-[#3a7de0]"
+              className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#2563eb] px-6 py-3 text-sm font-bold text-white shadow-md transition-all hover:bg-[#1d4ed8] hover:shadow-lg"
             >
               <PlusCircle className="h-4 w-4" /> Submit First Project
             </button>

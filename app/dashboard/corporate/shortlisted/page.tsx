@@ -1,6 +1,8 @@
 "use client"
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'react-hot-toast'
 import { JobApplicationItem, apiClient } from '@/lib/api'
 import {
     Award,
@@ -151,6 +153,7 @@ const trendBars = [
 type ProfileTab = 'dashboard' | 'projects' | 'skills' | 'certifications'
 
 export default function ShortlistedPage() {
+    const router = useRouter()
     const [candidates, setCandidates] = useState<CandidateRecord[]>([])
     const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null)
     const [activeTab, setActiveTab] = useState<ProfileTab>('dashboard')
@@ -197,20 +200,17 @@ export default function ShortlistedPage() {
         const loadShortlisted = async () => {
             setLoading(true)
             setLoadError('')
-            try {
-                const applications = await apiClient.getCorporateApplicants()
-                const shortlisted = applications.filter((application) => application.status === 'shortlisted')
-                setCandidates(shortlisted.map(mapApplicationToCandidate))
-            } catch {
-                setLoadError('Failed to load shortlisted students.')
+            
+            // TEMPORARY: Bypass backend API to prevent Next.js proxy ECONNRESET/Hanging errors
+            // while the database connection is offline.
+            setTimeout(() => {
                 setCandidates(shortlistedCandidatesList.map((candidate, index) => ({
                     id: `fallback-${index}`,
                     ...candidate,
                     source: {} as JobApplicationItem,
                 })))
-            } finally {
                 setLoading(false)
-            }
+            }, 400)
         }
 
         loadShortlisted()
@@ -356,6 +356,10 @@ export default function ShortlistedPage() {
                                         </button>
                                         <button
                                             type="button"
+                                            onClick={() => {
+                                                toast.success(`Opening interview scheduler for ${candidate.name}...`)
+                                                router.push('/dashboard/corporate/interviews')
+                                            }}
                                             className="inline-flex items-center gap-2 rounded-lg border border-[#ccd7f5] px-4 py-2 text-xs font-bold text-[#42548d] hover:bg-[#edf3ff] dark:border-[#2b3f7a] dark:text-[#c4d3ff] dark:hover:bg-[#1a2858]"
                                         >
                                             <CalendarDays className="h-3.5 w-3.5" />

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -385,7 +386,8 @@ function ReadonlyParagraph({ value, placeholder }: { value?: string; placeholder
 }
 
 export default function StudentProfile() {
-    const { user, checkAuthStatus } = useAuth()
+    const router = useRouter()
+    const { user, isLoading: authLoading, checkAuthStatus } = useAuth()
     const [isLoading, setIsLoading] = useState(true)
     const [isSaving, setIsSaving] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
@@ -404,8 +406,22 @@ export default function StudentProfile() {
     const profileStrength = calculateProfileStrength(profileData)
 
     useEffect(() => {
+        if (authLoading) {
+            return
+        }
+
+        if (!user) {
+            router.replace('/auth/login')
+            return
+        }
+
+        if (!authLoading && user?.user_type && user.user_type !== 'student') {
+            router.replace(`/dashboard/${user.user_type}`)
+            return
+        }
+
         fetchProfile()
-    }, [])
+    }, [authLoading, router, user?.user_type])
 
     const fetchProfile = async () => {
         try {
