@@ -42,11 +42,7 @@ export const mentorSidebarInfo: MentorSidebarItem[] = [
     href: "/dashboard/mentor/reports",
     iconKey: "reports",
   },
-  {
-    name: "Messages",
-    href: "/dashboard/mentor/messages",
-    iconKey: "messages",
-  },
+
   {
     name: "Settings",
     href: "/dashboard/mentor/settings",
