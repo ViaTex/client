@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'react-hot-toast'
-import { JobApplicationItem, apiClient } from '@/lib/api'
+import { JobApplicationItem } from '@/lib/api'
+import { corporateService } from '@/services/corporate.service'
+import { Modal } from '@/components/ui/modal'
 import {
     Award,
     BarChart3,
@@ -165,6 +167,14 @@ export default function ShortlistedPage() {
     const [editNotes, setEditNotes] = useState<string>('')
     const [saveSuccess, setSaveSuccess] = useState<boolean>(false)
 
+    // Schedule Interview Modal State
+    const [scheduleModalOpen, setScheduleModalOpen] = useState(false)
+    const [scheduleDate, setScheduleDate] = useState('')
+    const [scheduleTime, setScheduleTime] = useState('10:00')
+    const [interviewType, setInterviewType] = useState('technical')
+    const [meetingLink, setMeetingLink] = useState('')
+    const [isScheduling, setIsScheduling] = useState(false)
+
     const selectedCandidate = candidates.find(c => c.id === selectedCandidateId) || null
 
     const openProfile = (candidate: CandidateRecord) => {
@@ -180,20 +190,76 @@ export default function ShortlistedPage() {
         setSaveSuccess(false)
     }
 
-    const handleSaveCandidateData = () => {
+    const handleSaveCandidateData = async () => {
         if (!selectedCandidateId) return
-        setCandidates(prev => prev.map(c => {
-            if (c.id === selectedCandidateId) {
-                return {
-                    ...c,
+        
+        try {
+            // Only attempt to patch if it's a real database ID
+            if (!selectedCandidateId.startsWith('fallback-')) {
+                await corporateService.updateApplicant(selectedCandidateId, {
                     status: editStatus,
-                    notes: editNotes
-                }
+                    cover_letter: editNotes
+                })
             }
-            return c
-        }))
-        setSaveSuccess(true)
-        setTimeout(() => setSaveSuccess(false), 3000)
+            
+            setCandidates(prev => prev.map(c => {
+                if (c.id === selectedCandidateId) {
+                    return {
+                        ...c,
+                        status: editStatus,
+                        notes: editNotes
+                    }
+                }
+                return c
+            }))
+            setSaveSuccess(true)
+            setTimeout(() => setSaveSuccess(false), 3000)
+        } catch (err: any) {
+            console.error('Failed to save data:', err)
+            toast.error(err.message || 'Failed to save candidate data')
+        }
+    }
+
+    const handleScheduleInterview = async () => {
+        if (!selectedCandidateId || !scheduleDate || !scheduleTime) {
+            toast.error('Please select both date and time')
+            return
+        }
+        
+        const candidate = candidates.find(c => c.id === selectedCandidateId)
+        if (!candidate || !candidate.source?.student_id) {
+            toast.error('Missing candidate information')
+            return
+        }
+
+        setIsScheduling(true)
+        try {
+            const proposedSlot = `${scheduleDate}T${scheduleTime}:00Z`
+            await corporateService.scheduleInterview({
+                job_application_id: candidate.id,
+                student_id: candidate.source.student_id,
+                proposed_slots: [proposedSlot],
+                duration_minutes: 45,
+                interview_type: interviewType,
+                meeting_link: meetingLink
+            })
+            
+            toast.success(`Interview scheduled successfully for ${candidate.name}!`)
+            setScheduleModalOpen(false)
+            // Reset fields
+            setScheduleDate('')
+            setMeetingLink('')
+            
+            // Navigate to interviews tab to see the newly scheduled interview
+            setTimeout(() => {
+                router.push('/dashboard/corporate/interviews')
+            }, 1000)
+        } catch (err: any) {
+            console.error('Failed to schedule interview:', err)
+            toast.error(err.message || 'Failed to schedule interview')
+        } finally {
+            setIsScheduling(false)
+        }
     }
 
     useEffect(() => {
@@ -201,16 +267,28 @@ export default function ShortlistedPage() {
             setLoading(true)
             setLoadError('')
             
-            // TEMPORARY: Bypass backend API to prevent Next.js proxy ECONNRESET/Hanging errors
-            // while the database connection is offline.
-            setTimeout(() => {
+            try {
+                const apps = await corporateService.getApplicants() || []
+                
+                // Only show candidates who are shortlisted, scheduled, offered, or hired
+                const shortlistedApps = apps.filter(app => {
+                    const s = app.status?.toLowerCase() || ''
+                    return s.includes('shortlisted') || s.includes('interview') || s.includes('selected') || s.includes('offer') || s.includes('hired')
+                })
+
+                setCandidates(shortlistedApps.map(mapApplicationToCandidate))
+            } catch (err: any) {
+                console.error("Failed to load shortlisted candidates:", err)
+                setLoadError(err.message || 'Failed to load candidates')
+                // Fallback to mock data on error
                 setCandidates(shortlistedCandidatesList.map((candidate, index) => ({
                     id: `fallback-${index}`,
                     ...candidate,
                     source: {} as JobApplicationItem,
                 })))
+            } finally {
                 setLoading(false)
-            }, 400)
+            }
         }
 
         loadShortlisted()
@@ -357,8 +435,8 @@ export default function ShortlistedPage() {
                                         <button
                                             type="button"
                                             onClick={() => {
-                                                toast.success(`Opening interview scheduler for ${candidate.name}...`)
-                                                router.push('/dashboard/corporate/interviews')
+                                                setSelectedCandidateId(candidate.id)
+                                                setScheduleModalOpen(true)
                                             }}
                                             className="inline-flex items-center gap-2 rounded-lg border border-[#ccd7f5] px-4 py-2 text-xs font-bold text-[#42548d] hover:bg-[#edf3ff] dark:border-[#2b3f7a] dark:text-[#c4d3ff] dark:hover:bg-[#1a2858]"
                                         >
@@ -739,6 +817,82 @@ export default function ShortlistedPage() {
                         </div>
                     </div>
                 )}
+
+                {/* Schedule Interview Modal */}
+                <Modal
+                    isOpen={scheduleModalOpen}
+                    onClose={() => setScheduleModalOpen(false)}
+                    title="Schedule Interview"
+                    maxWidth="md"
+                >
+                    <div className="space-y-4">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Set up an interview with <span className="font-bold text-[#16213f] dark:text-white">{candidates.find(c => c.id === selectedCandidateId)?.name || 'the candidate'}</span>.
+                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-[#5c73b5] dark:text-[#8ea1d6] uppercase tracking-wide">Date</label>
+                                <input
+                                    type="date"
+                                    value={scheduleDate}
+                                    onChange={(e) => setScheduleDate(e.target.value)}
+                                    className="w-full rounded-lg border border-[#ccd7f5] bg-white px-3 py-2 text-sm font-semibold text-[#1c2f61] focus:border-[#2d63c8] focus:outline-none dark:border-[#2b3f7a] dark:bg-[#1a2858] dark:text-white"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-bold text-[#5c73b5] dark:text-[#8ea1d6] uppercase tracking-wide">Time (UTC)</label>
+                                <input
+                                    type="time"
+                                    value={scheduleTime}
+                                    onChange={(e) => setScheduleTime(e.target.value)}
+                                    className="w-full rounded-lg border border-[#ccd7f5] bg-white px-3 py-2 text-sm font-semibold text-[#1c2f61] focus:border-[#2d63c8] focus:outline-none dark:border-[#2b3f7a] dark:bg-[#1a2858] dark:text-white"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-[#5c73b5] dark:text-[#8ea1d6] uppercase tracking-wide">Interview Type</label>
+                            <select
+                                value={interviewType}
+                                onChange={(e) => setInterviewType(e.target.value)}
+                                className="w-full rounded-lg border border-[#ccd7f5] bg-white px-3 py-2 text-sm font-semibold text-[#1c2f61] focus:border-[#2d63c8] focus:outline-none dark:border-[#2b3f7a] dark:bg-[#1a2858] dark:text-white"
+                            >
+                                <option value="technical">Technical Round</option>
+                                <option value="hr">HR Round</option>
+                                <option value="culture_fit">Culture Fit</option>
+                                <option value="final">Final Round</option>
+                            </select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-[#5c73b5] dark:text-[#8ea1d6] uppercase tracking-wide">Meeting Link (Optional)</label>
+                            <input
+                                type="url"
+                                placeholder="https://meet.google.com/..."
+                                value={meetingLink}
+                                onChange={(e) => setMeetingLink(e.target.value)}
+                                className="w-full rounded-lg border border-[#ccd7f5] bg-white px-3 py-2 text-sm font-semibold text-[#1c2f61] focus:border-[#2d63c8] focus:outline-none dark:border-[#2b3f7a] dark:bg-[#1a2858] dark:text-white"
+                            />
+                        </div>
+
+                        <div className="mt-6 flex items-center justify-end gap-3 border-t border-gray-100 dark:border-[#223067] pt-4">
+                            <button
+                                onClick={() => setScheduleModalOpen(false)}
+                                disabled={isScheduling}
+                                className="px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleScheduleInterview}
+                                disabled={isScheduling}
+                                className="rounded-lg bg-[#4f8cff] hover:bg-[#3a7de0] px-4 py-2 text-sm font-bold text-white transition-colors shadow-sm disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {isScheduling ? 'Scheduling...' : 'Schedule Interview'}
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
             </div>
         </div>
     )

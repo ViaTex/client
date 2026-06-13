@@ -20,7 +20,7 @@ export const corporateService = {
     /** Update a specific applicant's status or offer letter URL */
     updateApplicant: (
         applicationId: string,
-        data: { status?: string; offer_letter?: string },
+        data: { status?: string; offer_letter?: string; cover_letter?: string },
     ): Promise<JobApplicationItem> =>
         patchRequest<JobApplicationItem>(
             `/corporate/applicants/${applicationId}`,
@@ -32,6 +32,16 @@ export const corporateService = {
         applicationId: string,
     ): Promise<{ message: string; id: string }> =>
         deleteRequest(`/corporate/applicants/${applicationId}`),
+
+    /** Schedule a new interview for a candidate */
+    scheduleInterview: (data: {
+        job_application_id: string;
+        student_id: string;
+        proposed_slots?: string[];
+        duration_minutes?: number;
+        meeting_link?: string;
+        interview_type?: string;
+    }): Promise<any> => postRequest('/interviews', data),
 
     /**
      * Upload an offer letter PDF/file for a specific applicant.
